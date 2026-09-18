@@ -1,0 +1,14 @@
+[
+ {
+  "identifier": "dsod-content",
+  "code": "dsod-content",
+  "name": "discover.swiss OpenData - Content",
+  "type": "Project"
+ },
+ {
+  "identifier": "dsod-hs",
+  "code": "dsod-hs",
+  "name": "discover.swiss OpenData - HotellerieSuisse Dataset",
+  "type": "Project"
+ }
+]

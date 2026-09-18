@@ -1,0 +1,510 @@
+{
+ "request": {
+  "project": [
+   "dsod-content"
+  ],
+  "type": [
+   "Event"
+  ],
+  "resultsPerPage": 5,
+  "select": "identifier,name,nextOccurrence",
+  "scheduleStart": "2026-09-17",
+  "scheduleEnd": "2026-12-16"
+ },
+ "status": 200,
+ "response": {
+  "count": 7,
+  "values": [
+   {
+    "identifier": "eve_s9t_ihqsuiqu-bdht-esue-itju-sfajvrtcbdqc",
+    "name": "Schweizer Genusswoche"
+   },
+   {
+    "identifier": "eve_wt1_bbgefdccag",
+    "name": "Öffentliche Genuss-Degustation im Breitenmoser Gustarium"
+   },
+   {
+    "identifier": "eve_s9t_cdbhtcet-shit-egfq-itrv-rfvegsqhrqhb",
+    "name": "Graduation Days",
+    "nextOccurrence": "2026-10-01T00:00:00+02:00"
+   },
+   {
+    "identifier": "eve_s9t_crrbtaeu-fgeb-eced-ihdr-fgabjdsibaqd",
+    "name": "PrexCon Fachmesse & Fachkongress Präzisionsindustrie",
+    "nextOccurrence": "2026-11-02T00:00:00+01:00"
+   },
+   {
+    "identifier": "eve_s9t_dshjrcer-tfsb-essd-rirq-hugidebuvjge",
+    "name": "Demo Event",
+    "nextOccurrence": "2026-11-11T14:00:00+01:00"
+   }
+  ],
+  "facets": {
+   "address/addressLocality": {
+    "filterPropertyName": "addressLocality",
+    "odataFilterPropertyName": "address/addressLocality",
+    "name": "Ort",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "St. Gallen",
+      "count": 2,
+      "query": "St. Gallen",
+      "name": "St. Gallen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Appenzell Steinegg ",
+      "count": 1,
+      "query": "Appenzell Steinegg ",
+      "name": "Appenzell Steinegg "
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Ort",
+      "count": 1,
+      "query": "Ort",
+      "name": "Ort"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Schaffhausen-Hegau",
+      "count": 1,
+      "query": "Schaffhausen-Hegau",
+      "name": "Schaffhausen-Hegau"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "St.Gallen",
+      "count": 1,
+      "query": "St.Gallen",
+      "name": "St.Gallen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "St.Gallen ",
+      "count": 1,
+      "query": "St.Gallen ",
+      "name": "St.Gallen "
+     }
+    ]
+   },
+   "address/postalCode": {
+    "filterPropertyName": "addressPostalCode",
+    "odataFilterPropertyName": "address/postalCode",
+    "name": "Postleitzahl",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9000",
+      "count": 2,
+      "query": "9000",
+      "name": "9000"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9001",
+      "count": 1,
+      "query": "9001",
+      "name": "9001"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9007",
+      "count": 1,
+      "query": "9007",
+      "name": "9007"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9050",
+      "count": 1,
+      "query": "9050",
+      "name": "9050"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "PLZ",
+      "count": 1,
+      "query": "PLZ",
+      "name": "PLZ"
+     }
+    ]
+   },
+   "tag": {
+    "filterPropertyName": "tag",
+    "odataFilterPropertyName": "tag",
+    "name": "Tag",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "culinary-tasting",
+      "count": 1,
+      "query": "culinary-tasting",
+      "name": "Degustation",
+      "additionalType": "culinary"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "music-classic",
+      "count": 1,
+      "query": "music-classic",
+      "name": "Klassik",
+      "additionalType": "music"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "proposed-by-editor",
+      "count": 1,
+      "query": "proposed-by-editor",
+      "name": "redaktionell empfohlen",
+      "additionalType": "proposed"
+     }
+    ]
+   },
+   "categoryTree": {
+    "filterPropertyName": "categoryTree",
+    "odataFilterPropertyName": "categoryTree",
+    "name": "Kategorie",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root",
+      "count": 7,
+      "query": "sui_root",
+      "name": "Themen-SUI",
+      "namePlural": "Themen-SUIs"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_02",
+      "count": 7,
+      "query": "sui_root|sui_02",
+      "name": "Kultur",
+      "namePlural": "Kulturs"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_02|sui_0204",
+      "count": 1,
+      "query": "sui_root|sui_02|sui_0204",
+      "name": "Bühne",
+      "namePlural": "Bühnes"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_02|sui_0210",
+      "count": 1,
+      "query": "sui_root|sui_02|sui_0210",
+      "name": "Kunst",
+      "namePlural": "Kunsts"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_02|sui_0213",
+      "count": 1,
+      "query": "sui_root|sui_02|sui_0213",
+      "name": "Musik",
+      "namePlural": "Musiks"
+     }
+    ]
+   },
+   "containedInPlace/id": {
+    "filterPropertyName": "containedInPlace",
+    "odataFilterPropertyName": "containedInPlace/id",
+    "name": "Enthalten in Ort",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_51701",
+      "count": 6,
+      "query": "osm_51701",
+      "name": "Schweiz"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_sanktgallen",
+      "count": 5,
+      "query": "ds_sanktgallen",
+      "name": "St.Gallen-Bodensee"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1683941",
+      "count": 5,
+      "query": "osm_1683941",
+      "name": "St. Gallen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1687006",
+      "count": 5,
+      "query": "osm_1687006",
+      "name": "Sankt Gallen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1687161",
+      "count": 5,
+      "query": "osm_1687161",
+      "name": "Wahlkreis St. Gallen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_9000_0",
+      "count": 5,
+      "query": "plz_9000_0",
+      "name": "St. Gallen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_appenzellerland",
+      "count": 1,
+      "query": "ds_appenzellerland",
+      "name": "Appenzellerland"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_ostschweiz",
+      "count": 1,
+      "query": "ds_ostschweiz",
+      "name": "Ostschweiz"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_11342353",
+      "count": 1,
+      "query": "osm_11342353",
+      "name": "Appenzeller Alpen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_14096673",
+      "count": 1,
+      "query": "osm_14096673",
+      "name": "Schwende-Rüte"
+     }
+    ]
+   },
+   "type": {
+    "filterPropertyName": "type",
+    "odataFilterPropertyName": "type",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Event",
+      "count": 7,
+      "query": "Event",
+      "name": "Veranstaltung"
+     }
+    ]
+   },
+   "combinedType": {
+    "filterPropertyName": "combinedType",
+    "odataFilterPropertyName": "combinedType",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Event",
+      "count": 7,
+      "query": "Event",
+      "name": "Veranstaltung"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "FoodEvent",
+      "count": 1,
+      "query": "FoodEvent",
+      "name": "Kulinarische Veranstaltung"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "MusicEvent",
+      "count": 1,
+      "query": "MusicEvent",
+      "name": "Konzert"
+     }
+    ]
+   },
+   "combinedTypeTree": {
+    "filterPropertyName": "combinedTypeTree",
+    "odataFilterPropertyName": "combinedTypeTree",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing",
+      "count": 7,
+      "query": "Thing",
+      "name": "Ding"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Event",
+      "count": 7,
+      "query": "Thing|Event",
+      "name": "Veranstaltung"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Event|FoodEvent",
+      "count": 1,
+      "query": "Thing|Event|FoodEvent",
+      "name": "Kulinarische Veranstaltung"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Event|MusicEvent",
+      "count": 1,
+      "query": "Thing|Event|MusicEvent",
+      "name": "Konzert"
+     }
+    ]
+   },
+   "leafType": {
+    "filterPropertyName": "leafType",
+    "odataFilterPropertyName": "leafType",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Event",
+      "count": 5,
+      "query": "Event",
+      "name": "Veranstaltung"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "FoodEvent",
+      "count": 1,
+      "query": "FoodEvent",
+      "name": "Kulinarische Veranstaltung"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "MusicEvent",
+      "count": 1,
+      "query": "MusicEvent",
+      "name": "Konzert"
+     }
+    ]
+   },
+   "sourcePartner": {
+    "filterPropertyName": "sourcePartner",
+    "odataFilterPropertyName": "sourcePartner",
+    "name": "Dateninhaber",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sgt",
+      "count": 4,
+      "query": "sgt",
+      "name": "St.Gallen-Bodensee Tourismus"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "alar",
+      "count": 2,
+      "query": "alar",
+      "name": "Appenzellerland Tourismus AR"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sht",
+      "count": 1,
+      "query": "sht",
+      "name": "Schaffhauserland Tourismus"
+     }
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,1815 @@
+{
+ "request": {
+  "project": [
+   "dsod-content"
+  ],
+  "type": [
+   "Tour"
+  ],
+  "resultsPerPage": 3,
+  "select": "identifier,name,length,elevation,rating",
+  "filters": [
+   "length le 10000"
+  ]
+ },
+ "status": 200,
+ "response": {
+  "count": 29,
+  "values": [
+   {
+    "identifier": "tou_s9t_fgurfdve-sfas-eegq-qrtf-bbrfaccirvdt",
+    "name": "Glarner Planetenweg",
+    "length": 2210.517462,
+    "elevation": {
+     "ascent": 11,
+     "descent": 0,
+     "minAltitude": 442,
+     "maxAltitude": 454
+    }
+   },
+   {
+    "identifier": "tou_s9t_jqausttu-ehhh-ejib-ivrq-cuscgqucefbv",
+    "name": "Glarner Wasserweg",
+    "length": 387.406101,
+    "rating": {
+     "condition": 1,
+     "difficulty": 1
+    },
+    "elevation": {
+     "ascent": 8,
+     "descent": 11,
+     "minAltitude": 632,
+     "maxAltitude": 643
+    }
+   },
+   {
+    "identifier": "tou_sx2_81utwy3w-gcf",
+    "name": "Schlittelweg Kerenzerberg",
+    "length": 6000.0,
+    "rating": {
+     "difficulty": 2
+    },
+    "elevation": {
+     "descent": 540
+    }
+   }
+  ],
+  "facets": {
+   "address/addressLocality": {
+    "filterPropertyName": "addressLocality",
+    "odataFilterPropertyName": "address/addressLocality",
+    "name": "Ort",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Elm",
+      "count": 7,
+      "query": "Elm",
+      "name": "Elm"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Braunwald",
+      "count": 5,
+      "query": "Braunwald",
+      "name": "Braunwald"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Filzbach",
+      "count": 4,
+      "query": "Filzbach",
+      "name": "Filzbach"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Glarus",
+      "count": 2,
+      "query": "Glarus",
+      "name": "Glarus"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Linthal",
+      "count": 2,
+      "query": "Linthal",
+      "name": "Linthal"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Urnerboden",
+      "count": 2,
+      "query": "Urnerboden",
+      "name": "Urnerboden"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Engi",
+      "count": 1,
+      "query": "Engi",
+      "name": "Engi"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Matt",
+      "count": 1,
+      "query": "Matt",
+      "name": "Matt"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Mollis",
+      "count": 1,
+      "query": "Mollis",
+      "name": "Mollis"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Niederurnen",
+      "count": 1,
+      "query": "Niederurnen",
+      "name": "Niederurnen"
+     }
+    ]
+   },
+   "address/postalCode": {
+    "filterPropertyName": "addressPostalCode",
+    "odataFilterPropertyName": "address/postalCode",
+    "name": "Postleitzahl",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8767",
+      "count": 8,
+      "query": "8767",
+      "name": "8767"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8757",
+      "count": 4,
+      "query": "8757",
+      "name": "8757"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8784",
+      "count": 4,
+      "query": "8784",
+      "name": "8784"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8750",
+      "count": 2,
+      "query": "8750",
+      "name": "8750"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8751",
+      "count": 2,
+      "query": "8751",
+      "name": "8751"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8783",
+      "count": 2,
+      "query": "8783",
+      "name": "8783"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8753",
+      "count": 1,
+      "query": "8753",
+      "name": "8753"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8762",
+      "count": 1,
+      "query": "8762",
+      "name": "8762"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8766",
+      "count": 1,
+      "query": "8766",
+      "name": "8766"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "8867",
+      "count": 1,
+      "query": "8867",
+      "name": "8867"
+     }
+    ]
+   },
+   "tag": {
+    "filterPropertyName": "tag",
+    "odataFilterPropertyName": "tag",
+    "name": "Tag",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "general-suitableforfamilies",
+      "count": 19,
+      "query": "general-suitableforfamilies",
+      "name": "familienfreundlich",
+      "additionalType": "general"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "general-dining",
+      "count": 17,
+      "query": "general-dining",
+      "name": "Einkehrmöglichkeit",
+      "additionalType": "general"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "month-august",
+      "count": 14,
+      "query": "month-august",
+      "name": "August",
+      "additionalType": "month"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "month-july",
+      "count": 14,
+      "query": "month-july",
+      "name": "Juli",
+      "additionalType": "month"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "month-june",
+      "count": 14,
+      "query": "month-june",
+      "name": "Juni",
+      "additionalType": "month"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "seasonality-winter",
+      "count": 14,
+      "query": "seasonality-winter",
+      "name": "Winter",
+      "additionalType": "seasonality"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "trail-looptour",
+      "count": 14,
+      "query": "trail-looptour",
+      "name": "Rundtour",
+      "additionalType": "trail"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "areascope-local",
+      "count": 13,
+      "query": "areascope-local",
+      "name": "Lokal",
+      "additionalType": "areascope"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "month-october",
+      "count": 13,
+      "query": "month-october",
+      "name": "Oktober",
+      "additionalType": "month"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "month-september",
+      "count": 13,
+      "query": "month-september",
+      "name": "September",
+      "additionalType": "month"
+     }
+    ]
+   },
+   "award": {
+    "filterPropertyName": "award",
+    "odataFilterPropertyName": "award",
+    "name": "Auszeichnung",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "chm_langlaufen",
+      "count": 4,
+      "query": "chm_langlaufen",
+      "name": "SchweizMobil langlaufen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "chm_schlitteln",
+      "count": 4,
+      "query": "chm_schlitteln",
+      "name": "SchweizMobil schlitteln"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "chm_schneeschuhwandern",
+      "count": 3,
+      "query": "chm_schneeschuhwandern",
+      "name": "SchweizMobil schneeschuhwandern"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "chm_wanderland",
+      "count": 3,
+      "query": "chm_wanderland",
+      "name": "SchweizMobil wanderland"
+     }
+    ]
+   },
+   "categoryTree": {
+    "filterPropertyName": "categoryTree",
+    "odataFilterPropertyName": "categoryTree",
+    "name": "Kategorie",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root",
+      "count": 29,
+      "query": "sui_root",
+      "name": "Themen-SUI",
+      "namePlural": "Themen-SUIs"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_01",
+      "count": 29,
+      "query": "sui_root|sui_01",
+      "name": "Aktivitäten",
+      "namePlural": "Aktivitätens"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_01|sui_0101",
+      "count": 16,
+      "query": "sui_root|sui_01|sui_0101",
+      "name": "Zu Fuss",
+      "namePlural": "Zu Fusses"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_01|sui_0101|sui_010112",
+      "count": 16,
+      "query": "sui_root|sui_01|sui_0101|sui_010112",
+      "name": "Wandern",
+      "namePlural": "Wanderns"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_01|sui_0110",
+      "count": 13,
+      "query": "sui_root|sui_01|sui_0110",
+      "name": "Wintersport",
+      "namePlural": "Wintersports"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_01|sui_0110|sui_011007",
+      "count": 5,
+      "query": "sui_root|sui_01|sui_0110|sui_011007",
+      "name": "Langlaufen",
+      "namePlural": "Langlaufens"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_01|sui_0110|sui_011010",
+      "count": 4,
+      "query": "sui_root|sui_01|sui_0110|sui_011010",
+      "name": "Schlitteln",
+      "namePlural": "Schlittelns"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_01|sui_0110|sui_011011",
+      "count": 3,
+      "query": "sui_root|sui_01|sui_0110|sui_011011",
+      "name": "Schneeschuhwandern",
+      "namePlural": "Schneeschuhwanderns"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_01|sui_0101|sui_010104",
+      "count": 1,
+      "query": "sui_root|sui_01|sui_0101|sui_010104",
+      "name": "Geocaching",
+      "namePlural": "Geocachings"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sui_root|sui_01|sui_0101|sui_010110",
+      "count": 1,
+      "query": "sui_root|sui_01|sui_0101|sui_010110",
+      "name": "Spazieren",
+      "namePlural": "Spazierens"
+     }
+    ]
+   },
+   "containedInPlace/id": {
+    "filterPropertyName": "containedInPlace",
+    "odataFilterPropertyName": "containedInPlace/id",
+    "name": "Enthalten in Ort",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_glarnerland",
+      "count": 29,
+      "query": "ds_glarnerland",
+      "name": "Glarnerland"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_kire",
+      "count": 29,
+      "query": "ds_kire",
+      "name": "Kinderregion"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_51701",
+      "count": 29,
+      "query": "osm_51701",
+      "name": "Schweiz"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_11342352",
+      "count": 28,
+      "query": "osm_11342352",
+      "name": "Glarner Alpen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1685673",
+      "count": 27,
+      "query": "osm_1685673",
+      "name": "Glarus"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1683141",
+      "count": 19,
+      "query": "osm_1683141",
+      "name": "Glarus Süd"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_braunwald_toedigebiet",
+      "count": 10,
+      "query": "ds_braunwald_toedigebiet",
+      "name": "Braunwald / Tödigebiet"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_elm_sernftal",
+      "count": 9,
+      "query": "ds_elm_sernftal",
+      "name": "Elm / Sernftal"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8767_0",
+      "count": 7,
+      "query": "plz_8767_0",
+      "name": "Elm"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_glarusnord_walensee",
+      "count": 6,
+      "query": "ds_glarusnord_walensee",
+      "name": "Glarusnord / Walensee"
+     }
+    ]
+   },
+   "time": {
+    "filterPropertyName": "time",
+    "odataFilterPropertyName": "time",
+    "name": "Zeit",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 45,
+      "count": 3,
+      "query": "45",
+      "name": "45"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 15,
+      "count": 2,
+      "query": "15",
+      "name": "15"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 25,
+      "count": 2,
+      "query": "25",
+      "name": "25"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 90,
+      "count": 2,
+      "query": "90",
+      "name": "90"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 210,
+      "count": 2,
+      "query": "210",
+      "name": "210"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 6,
+      "count": 1,
+      "query": "6",
+      "name": "6"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 8,
+      "count": 1,
+      "query": "8",
+      "name": "8"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 12,
+      "count": 1,
+      "query": "12",
+      "name": "12"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 55,
+      "count": 1,
+      "query": "55",
+      "name": "55"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 60,
+      "count": 1,
+      "query": "60",
+      "name": "60"
+     }
+    ]
+   },
+   "length": {
+    "filterPropertyName": "length",
+    "odataFilterPropertyName": "length",
+    "name": "Länge",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 2000.0,
+      "count": 2,
+      "query": "2000",
+      "name": "2000"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 3000.0,
+      "count": 2,
+      "query": "3000",
+      "name": "3000"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 5000.0,
+      "count": 2,
+      "query": "5000",
+      "name": "5000"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 8000.0,
+      "count": 2,
+      "query": "8000",
+      "name": "8000"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 9000.0,
+      "count": 2,
+      "query": "9000",
+      "name": "9000"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 90.195062,
+      "count": 1,
+      "query": "90.195062",
+      "name": "90.195062"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 387.406101,
+      "count": 1,
+      "query": "387.406101",
+      "name": "387.406101"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 911.64904,
+      "count": 1,
+      "query": "911.64904",
+      "name": "911.64904"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 1399.345123,
+      "count": 1,
+      "query": "1399.345123",
+      "name": "1399.345123"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "number",
+      "value": 1824.734285,
+      "count": 1,
+      "query": "1824.734285",
+      "name": "1824.734285"
+     }
+    ]
+   },
+   "state": {
+    "filterPropertyName": "state",
+    "odataFilterPropertyName": "state",
+    "name": "Status",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Closed",
+      "count": 12,
+      "query": "Closed",
+      "name": "Closed"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Open",
+      "count": 11,
+      "query": "Open",
+      "name": "Open"
+     }
+    ]
+   },
+   "rating/condition": {
+    "filterPropertyName": "ratingCondition",
+    "odataFilterPropertyName": "rating/condition",
+    "name": "Zustand",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 1,
+      "count": 6,
+      "query": "1",
+      "name": "1"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 2,
+      "count": 6,
+      "query": "2",
+      "name": "2"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 4,
+      "count": 5,
+      "query": "4",
+      "name": "4"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 6,
+      "count": 4,
+      "query": "6",
+      "name": "6"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 3,
+      "count": 3,
+      "query": "3",
+      "name": "3"
+     }
+    ]
+   },
+   "rating/difficulty": {
+    "filterPropertyName": "ratingDifficulty",
+    "odataFilterPropertyName": "rating/difficulty",
+    "name": "Schwierigkeit",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 1,
+      "count": 11,
+      "query": "1",
+      "name": "1"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 2,
+      "count": 8,
+      "query": "2",
+      "name": "2"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 3,
+      "count": 2,
+      "query": "3",
+      "name": "3"
+     }
+    ]
+   },
+   "elevation/ascent": {
+    "filterPropertyName": "elevationAscent",
+    "odataFilterPropertyName": "elevation/ascent",
+    "name": "Höhenaufstieg",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 0,
+      "count": 1,
+      "query": "0",
+      "name": "0"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 2,
+      "count": 1,
+      "query": "2",
+      "name": "2"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 8,
+      "count": 1,
+      "query": "8",
+      "name": "8"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 11,
+      "count": 1,
+      "query": "11",
+      "name": "11"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 40,
+      "count": 1,
+      "query": "40",
+      "name": "40"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 53,
+      "count": 1,
+      "query": "53",
+      "name": "53"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 54,
+      "count": 1,
+      "query": "54",
+      "name": "54"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 71,
+      "count": 1,
+      "query": "71",
+      "name": "71"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 79,
+      "count": 1,
+      "query": "79",
+      "name": "79"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 80,
+      "count": 1,
+      "query": "80",
+      "name": "80"
+     }
+    ]
+   },
+   "elevation/descent": {
+    "filterPropertyName": "elevationDescent",
+    "odataFilterPropertyName": "elevation/descent",
+    "name": "Höhendifferenz",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 0,
+      "count": 2,
+      "query": "0",
+      "name": "0"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 440,
+      "count": 2,
+      "query": "440",
+      "name": "440"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 2,
+      "count": 1,
+      "query": "2",
+      "name": "2"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 11,
+      "count": 1,
+      "query": "11",
+      "name": "11"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 40,
+      "count": 1,
+      "query": "40",
+      "name": "40"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 54,
+      "count": 1,
+      "query": "54",
+      "name": "54"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 58,
+      "count": 1,
+      "query": "58",
+      "name": "58"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 61,
+      "count": 1,
+      "query": "61",
+      "name": "61"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 71,
+      "count": 1,
+      "query": "71",
+      "name": "71"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 80,
+      "count": 1,
+      "query": "80",
+      "name": "80"
+     }
+    ]
+   },
+   "elevation/minAltitude": {
+    "filterPropertyName": "elevationMinAltitude",
+    "odataFilterPropertyName": "elevation/minAltitude",
+    "name": "Min. Höhe",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 1256,
+      "count": 2,
+      "query": "1256",
+      "name": "1256"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 442,
+      "count": 1,
+      "query": "442",
+      "name": "442"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 471,
+      "count": 1,
+      "query": "471",
+      "name": "471"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 534,
+      "count": 1,
+      "query": "534",
+      "name": "534"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 620,
+      "count": 1,
+      "query": "620",
+      "name": "620"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 632,
+      "count": 1,
+      "query": "632",
+      "name": "632"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 633,
+      "count": 1,
+      "query": "633",
+      "name": "633"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 801,
+      "count": 1,
+      "query": "801",
+      "name": "801"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 972,
+      "count": 1,
+      "query": "972",
+      "name": "972"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 983,
+      "count": 1,
+      "query": "983",
+      "name": "983"
+     }
+    ]
+   },
+   "elevation/maxAltitude": {
+    "filterPropertyName": "elevationMaxAltitude",
+    "odataFilterPropertyName": "elevation/maxAltitude",
+    "name": "Max. Höhe",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 454,
+      "count": 1,
+      "query": "454",
+      "name": "454"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 473,
+      "count": 1,
+      "query": "473",
+      "name": "473"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 535,
+      "count": 1,
+      "query": "535",
+      "name": "535"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 643,
+      "count": 1,
+      "query": "643",
+      "name": "643"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 678,
+      "count": 1,
+      "query": "678",
+      "name": "678"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 739,
+      "count": 1,
+      "query": "739",
+      "name": "739"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 849,
+      "count": 1,
+      "query": "849",
+      "name": "849"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 1115,
+      "count": 1,
+      "query": "1115",
+      "name": "1115"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 1288,
+      "count": 1,
+      "query": "1288",
+      "name": "1288"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "integer",
+      "value": 1310,
+      "count": 1,
+      "query": "1310",
+      "name": "1310"
+     }
+    ]
+   },
+   "season": {
+    "filterPropertyName": "season",
+    "odataFilterPropertyName": "season",
+    "name": "Jahreszeit",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "jan",
+      "count": 12,
+      "query": "jan",
+      "name": "Januar"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "feb",
+      "count": 12,
+      "query": "feb",
+      "name": "Februar"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "mar",
+      "count": 10,
+      "query": "mar",
+      "name": "März"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "may",
+      "count": 10,
+      "query": "may",
+      "name": "Mai"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "jun",
+      "count": 14,
+      "query": "jun",
+      "name": "Juni"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "jul",
+      "count": 14,
+      "query": "jul",
+      "name": "Juli"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "aug",
+      "count": 14,
+      "query": "aug",
+      "name": "August"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sep",
+      "count": 13,
+      "query": "sep",
+      "name": "September"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "oct",
+      "count": 13,
+      "query": "oct",
+      "name": "Oktober"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "dec",
+      "count": 11,
+      "query": "dec",
+      "name": "Dezember"
+     }
+    ]
+   },
+   "type": {
+    "filterPropertyName": "type",
+    "odataFilterPropertyName": "type",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Tour",
+      "count": 29,
+      "query": "Tour",
+      "name": "Tour"
+     }
+    ]
+   },
+   "campaignTag": {
+    "filterPropertyName": "campaignTag",
+    "odataFilterPropertyName": "campaignTag",
+    "name": "Kampagnen-Tag",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "vgl_label-kinderregion",
+      "count": 11,
+      "query": "vgl_label-kinderregion",
+      "name": "Kinderregion",
+      "additionalType": "campaign"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "vgl_label-glarnerlandpass",
+      "count": 10,
+      "query": "vgl_label-glarnerlandpass",
+      "name": "GlarnerlandPass",
+      "additionalType": "campaign"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "vgl_highlight_app",
+      "count": 6,
+      "query": "vgl_highlight_app",
+      "name": "Highlights",
+      "additionalType": "campaign"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "vgl_label-unesco",
+      "count": 3,
+      "query": "vgl_label-unesco",
+      "name": "UNESCO Sardona",
+      "additionalType": "campaign"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "szt_uri-winter",
+      "count": 2,
+      "query": "szt_uri-winter",
+      "name": "URI Winter",
+      "additionalType": "campaign"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "vgl_home-4",
+      "count": 2,
+      "query": "vgl_home-4",
+      "name": "Speziell für Kinder",
+      "additionalType": "campaign"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "szt_uri-sommer",
+      "count": 1,
+      "query": "szt_uri-sommer",
+      "name": "URI Sommer",
+      "additionalType": "campaign"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "vgl_home-2",
+      "count": 1,
+      "query": "vgl_home-2",
+      "name": "Die Sonne geniessen",
+      "additionalType": "campaign"
+     }
+    ]
+   },
+   "combinedType": {
+    "filterPropertyName": "combinedType",
+    "odataFilterPropertyName": "combinedType",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Tour",
+      "count": 29,
+      "query": "Tour",
+      "name": "Tour"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ThemeTrail",
+      "count": 13,
+      "query": "ThemeTrail",
+      "name": "Themenweg"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "CrossCountry",
+      "count": 5,
+      "query": "CrossCountry",
+      "name": "Langlaufloipe"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Route",
+      "count": 5,
+      "query": "Route",
+      "name": "Route"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "TobogganRun",
+      "count": 4,
+      "query": "TobogganRun",
+      "name": "Schlittelpiste"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "HikingTrail",
+      "count": 1,
+      "query": "HikingTrail",
+      "name": "Wanderweg"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Way",
+      "count": 1,
+      "query": "Way",
+      "name": "Weg"
+     }
+    ]
+   },
+   "combinedTypeTree": {
+    "filterPropertyName": "combinedTypeTree",
+    "odataFilterPropertyName": "combinedTypeTree",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing",
+      "count": 29,
+      "query": "Thing",
+      "name": "Ding"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place",
+      "count": 29,
+      "query": "Thing|Place",
+      "name": "Ort"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place|Tour",
+      "count": 29,
+      "query": "Thing|Place|Tour",
+      "name": "Tour"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place|Tour|Route",
+      "count": 18,
+      "query": "Thing|Place|Tour|Route",
+      "name": "Route"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place|Tour|Route|ThemeTrail",
+      "count": 13,
+      "query": "Thing|Place|Tour|Route|ThemeTrail",
+      "name": "Themenweg"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place|Tour|Way",
+      "count": 11,
+      "query": "Thing|Place|Tour|Way",
+      "name": "Weg"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place|Tour|Way|CrossCountry",
+      "count": 5,
+      "query": "Thing|Place|Tour|Way|CrossCountry",
+      "name": "Langlaufloipe"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place|Tour|Way|TobogganRun",
+      "count": 4,
+      "query": "Thing|Place|Tour|Way|TobogganRun",
+      "name": "Schlittelpiste"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place|Tour|Way|HikingTrail",
+      "count": 1,
+      "query": "Thing|Place|Tour|Way|HikingTrail",
+      "name": "Wanderweg"
+     }
+    ]
+   },
+   "leafType": {
+    "filterPropertyName": "leafType",
+    "odataFilterPropertyName": "leafType",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "ThemeTrail",
+      "count": 13,
+      "query": "ThemeTrail",
+      "name": "Themenweg"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "CrossCountry",
+      "count": 5,
+      "query": "CrossCountry",
+      "name": "Langlaufloipe"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Route",
+      "count": 5,
+      "query": "Route",
+      "name": "Route"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "TobogganRun",
+      "count": 4,
+      "query": "TobogganRun",
+      "name": "Schlittelpiste"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "HikingTrail",
+      "count": 1,
+      "query": "HikingTrail",
+      "name": "Wanderweg"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Way",
+      "count": 1,
+      "query": "Way",
+      "name": "Weg"
+     }
+    ]
+   },
+   "sourcePartner": {
+    "filterPropertyName": "sourcePartner",
+    "odataFilterPropertyName": "sourcePartner",
+    "name": "Dateninhaber",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "vgl",
+      "count": 29,
+      "query": "vgl",
+      "name": "VISIT Glarnerland AG"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "chm",
+      "count": 14,
+      "query": "chm",
+      "name": "SchweizMobil"
+     }
+    ]
+   },
+   "openingHoursSpecification/dayOfWeek": {
+    "filterPropertyName": "openingHoursSpecificationDayOfWeek",
+    "odataFilterPropertyName": "openingHoursSpecification/dayOfWeek",
+    "name": "Wochentag",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Monday",
+      "count": 4,
+      "query": "Monday",
+      "name": "Montag"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Tuesday",
+      "count": 4,
+      "query": "Tuesday",
+      "name": "Dienstag"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Wednesday",
+      "count": 4,
+      "query": "Wednesday",
+      "name": "Mittwoch"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thursday",
+      "count": 4,
+      "query": "Thursday",
+      "name": "Donnerstag"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Friday",
+      "count": 4,
+      "query": "Friday",
+      "name": "Freitag"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Saturday",
+      "count": 4,
+      "query": "Saturday",
+      "name": "Samstag"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Sunday",
+      "count": 4,
+      "query": "Sunday",
+      "name": "Sonntag"
+     }
+    ]
+   }
+  }
+ }
+}

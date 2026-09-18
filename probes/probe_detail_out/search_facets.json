@@ -1,0 +1,524 @@
+{
+ "count": 20817,
+ "values": [
+  {
+   "identifier": "acc_x8-89_l3kv_ebfgi"
+  }
+ ],
+ "facets": {
+  "leafType": {
+   "filterPropertyName": "leafType",
+   "odataFilterPropertyName": "leafType",
+   "name": "Typ",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "HotelRoom",
+     "count": 5314,
+     "query": "HotelRoom",
+     "name": "Hotelzimmer"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "MeetingRoom",
+     "count": 4524,
+     "query": "MeetingRoom",
+     "name": "Besprechungsraum"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Hotel",
+     "count": 3093,
+     "query": "Hotel",
+     "name": "Hotel"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "LodgingBusiness",
+     "count": 1394,
+     "query": "LodgingBusiness",
+     "name": "Beherbergungsbetrieb"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Restaurant",
+     "count": 906,
+     "query": "Restaurant",
+     "name": "Restaurant"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "LocalBusiness",
+     "count": 344,
+     "query": "LocalBusiness",
+     "name": "Freizeit/Dienstleistung"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Place",
+     "count": 322,
+     "query": "Place",
+     "name": "Ort"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "HolidayApartment",
+     "count": 276,
+     "query": "HolidayApartment",
+     "name": "Ferienwohnung"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "SportsActivityLocation",
+     "count": 216,
+     "query": "SportsActivityLocation",
+     "name": "Sportanlage"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Store",
+     "count": 215,
+     "query": "Store",
+     "name": "Geschäft"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Museum",
+     "count": 202,
+     "query": "Museum",
+     "name": "Museum"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Fireplace",
+     "count": 176,
+     "query": "Fireplace",
+     "name": "Feuerstelle"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "BarOrPub",
+     "count": 153,
+     "query": "BarOrPub",
+     "name": "Bar"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Offer",
+     "count": 152,
+     "query": "Offer",
+     "name": "Angebot"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Apartment",
+     "count": 141,
+     "query": "Apartment",
+     "name": "Wohnung"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "HolidayHouse",
+     "count": 121,
+     "query": "HolidayHouse",
+     "name": "Ferienhaus"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "TouristAttraction",
+     "count": 111,
+     "query": "TouristAttraction",
+     "name": "Touristenattraktion"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Playground",
+     "count": 108,
+     "query": "Playground",
+     "name": "Spielplatz"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "CafeOrCoffeeShop",
+     "count": 97,
+     "query": "CafeOrCoffeeShop",
+     "name": "Café"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "MountainRestaurant",
+     "count": 94,
+     "query": "MountainRestaurant",
+     "name": "Bergrestaurant"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Accommodation",
+     "count": 91,
+     "query": "Accommodation",
+     "name": "Unterkunft"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "GroupAccommodation",
+     "count": 88,
+     "query": "GroupAccommodation",
+     "name": "Gruppenunterkunft"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "ThemeTrail",
+     "count": 88,
+     "query": "ThemeTrail",
+     "name": "Themenweg"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Hostel",
+     "count": 81,
+     "query": "Hostel",
+     "name": "Herberge"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "HotelGroup",
+     "count": 78,
+     "query": "HotelGroup",
+     "name": "Hotelkette"
+    }
+   ]
+  },
+  "sourcePartner": {
+   "filterPropertyName": "sourcePartner",
+   "odataFilterPropertyName": "sourcePartner",
+   "name": "Dateninhaber",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs",
+     "count": 9619,
+     "query": "hs",
+     "name": "HotellerieSuisse"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "st",
+     "count": 3072,
+     "query": "st",
+     "name": "Schweiz Tourismus"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "vgl",
+     "count": 1752,
+     "query": "vgl",
+     "name": "VISIT Glarnerland AG"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "tht",
+     "count": 1381,
+     "query": "tht",
+     "name": "Thurgau Tourismus"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sgt",
+     "count": 1338,
+     "query": "sgt",
+     "name": "St.Gallen-Bodensee Tourismus"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "zht",
+     "count": 1311,
+     "query": "zht",
+     "name": "Zürich Tourismus"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "pi",
+     "count": 1049,
+     "query": "pi",
+     "name": "Pro Infirmis"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hlt",
+     "count": 711,
+     "query": "hlt",
+     "name": "Heidiland Tourismus AG"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "alar",
+     "count": 608,
+     "query": "alar",
+     "name": "Appenzellerland Tourismus AR"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "ltm",
+     "count": 553,
+     "query": "ltm",
+     "name": "Liechtenstein Marketing"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "gs",
+     "count": 453,
+     "query": "gs",
+     "name": "GastroSuisse"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "grf-tessvm",
+     "count": 429,
+     "query": "grf-tessvm",
+     "name": "Tourismus Engadin Scuol Samnaun Val Müstair AG"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "tt",
+     "count": 421,
+     "query": "tt",
+     "name": "Toggenburg Tourismus"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "okgo",
+     "count": 401,
+     "query": "okgo",
+     "name": "OK:GO Initiative - Förderverein Barrierefreie Schweiz"
+    }
+   ]
+  },
+  "season": {
+   "filterPropertyName": "season",
+   "odataFilterPropertyName": "season",
+   "name": "Jahreszeit",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "jan",
+     "count": 16,
+     "query": "jan",
+     "name": "Januar"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "feb",
+     "count": 16,
+     "query": "feb",
+     "name": "Februar"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "mar",
+     "count": 14,
+     "query": "mar",
+     "name": "März"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "apr",
+     "count": 10,
+     "query": "apr",
+     "name": "April"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "may",
+     "count": 15,
+     "query": "may",
+     "name": "Mai"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "jun",
+     "count": 19,
+     "query": "jun",
+     "name": "Juni"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "jul",
+     "count": 20,
+     "query": "jul",
+     "name": "Juli"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "aug",
+     "count": 20,
+     "query": "aug",
+     "name": "August"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sep",
+     "count": 19,
+     "query": "sep",
+     "name": "September"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "oct",
+     "count": 18,
+     "query": "oct",
+     "name": "Oktober"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "nov",
+     "count": 7,
+     "query": "nov",
+     "name": "November"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "dec",
+     "count": 15,
+     "query": "dec",
+     "name": "Dezember"
+    }
+   ]
+  },
+  "priceRange": {
+   "filterPropertyName": "priceRange",
+   "odataFilterPropertyName": "priceRange",
+   "name": "Preisspanne",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 1,
+     "count": 292,
+     "query": "1",
+     "name": "Niedrig"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 2,
+     "count": 245,
+     "query": "2",
+     "name": "Mittel"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 3,
+     "count": 46,
+     "query": "3",
+     "name": "Hoch"
+    }
+   ]
+  }
+ }
+}

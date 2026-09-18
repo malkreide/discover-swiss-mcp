@@ -1,0 +1,1765 @@
+{
+ "count": 53,
+ "values": [
+  {
+   "identifier": "civ_px9-s28_bggg",
+   "type": "CivicStructure",
+   "name": "Landesmuseum Zürich"
+  },
+  {
+   "identifier": "plc_s9t_qgsrctqd-ujqv-evjg-jquc-addqhtjsifeb",
+   "type": "Place",
+   "name": "Liechtensteinisches LandesMuseum"
+  },
+  {
+   "identifier": "loc_px9-s28_bbfiff",
+   "type": "LocalBusiness",
+   "name": "Shop Landesmuseum"
+  },
+  {
+   "identifier": "civ_px9-s28_cdbcji",
+   "type": "CivicStructure",
+   "name": "Erweiterungsbau Landesmuseum"
+  },
+  {
+   "identifier": "log_x8-tdgf_bbajj",
+   "type": "LodgingBusiness",
+   "name": "Hotel Arlette"
+  }
+ ],
+ "facets": {
+  "address/addressLocality": {
+   "filterPropertyName": "addressLocality",
+   "odataFilterPropertyName": "address/addressLocality",
+   "name": "Ort",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Zürich",
+     "count": 16,
+     "query": "Zürich",
+     "name": "Zürich"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Vaduz",
+     "count": 4,
+     "query": "Vaduz",
+     "name": "Vaduz"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Näfels",
+     "count": 3,
+     "query": "Näfels",
+     "name": "Näfels"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Flums",
+     "count": 2,
+     "query": "Flums",
+     "name": "Flums"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "St. Gallen",
+     "count": 2,
+     "query": "St. Gallen",
+     "name": "St. Gallen"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Bad Ragaz",
+     "count": 1,
+     "query": "Bad Ragaz",
+     "name": "Bad Ragaz"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Balgach",
+     "count": 1,
+     "query": "Balgach",
+     "name": "Balgach"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Basel",
+     "count": 1,
+     "query": "Basel",
+     "name": "Basel"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Berneck",
+     "count": 1,
+     "query": "Berneck",
+     "name": "Berneck"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Brienz",
+     "count": 1,
+     "query": "Brienz",
+     "name": "Brienz"
+    }
+   ]
+  },
+  "address/postalCode": {
+   "filterPropertyName": "addressPostalCode",
+   "odataFilterPropertyName": "address/postalCode",
+   "name": "Postleitzahl",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "8001",
+     "count": 9,
+     "query": "8001",
+     "name": "8001"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "8005",
+     "count": 4,
+     "query": "8005",
+     "name": "8005"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "9490",
+     "count": 4,
+     "query": "9490",
+     "name": "9490"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "8752",
+     "count": 3,
+     "query": "8752",
+     "name": "8752"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "8762",
+     "count": 2,
+     "query": "8762",
+     "name": "8762"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "8890",
+     "count": 2,
+     "query": "8890",
+     "name": "8890"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "1637",
+     "count": 1,
+     "query": "1637",
+     "name": "1637"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "3855",
+     "count": 1,
+     "query": "3855",
+     "name": "3855"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "4052",
+     "count": 1,
+     "query": "4052",
+     "name": "4052"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "4125",
+     "count": 1,
+     "query": "4125",
+     "name": "4125"
+    }
+   ]
+  },
+  "tag": {
+   "filterPropertyName": "tag",
+   "odataFilterPropertyName": "tag",
+   "name": "Tag",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "accessibility-suitableforperambulators",
+     "count": 10,
+     "query": "accessibility-suitableforperambulators",
+     "name": "kinderwagengerecht",
+     "additionalType": "accessibility"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "atmosphere-cultural-and-inspiring",
+     "count": 9,
+     "query": "atmosphere-cultural-and-inspiring",
+     "name": "kulturell-inspirierend",
+     "additionalType": "atmosphere"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "accesssitios-toilet-accessible",
+     "count": 7,
+     "query": "accesssitios-toilet-accessible",
+     "name": "WC rollstuhlgängig",
+     "additionalType": "accesssitios"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "accessibility-wheelchair-accessible",
+     "count": 6,
+     "query": "accessibility-wheelchair-accessible",
+     "name": "rollstuhlgängig",
+     "additionalType": "accessibility"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "accesssitios-parking-accessible",
+     "count": 6,
+     "query": "accesssitios-parking-accessible",
+     "name": "Parkplatz rollstuhlgängig",
+     "additionalType": "accesssitios"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "accesssitios-qualityinfo-selfdeclared",
+     "count": 6,
+     "query": "accesssitios-qualityinfo-selfdeclared",
+     "name": "Vom Betrieb geprüft",
+     "additionalType": "accesssitios-qualityinfo"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "accesssitios-wheelchair-accessible",
+     "count": 6,
+     "query": "accesssitios-wheelchair-accessible",
+     "name": "rollstuhlgängig",
+     "additionalType": "accesssitios"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "tourismzone-city",
+     "count": 6,
+     "query": "tourismzone-city",
+     "name": "Grossstadt",
+     "additionalType": "tourismzone"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "accessibility-wheelchair-partiallyaccessible",
+     "count": 5,
+     "query": "accessibility-wheelchair-partiallyaccessible",
+     "name": "eingeschränkt rollstuhlgängig",
+     "additionalType": "accessibility"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "accesssitios-wheelchair-partiallyaccessible",
+     "count": 5,
+     "query": "accesssitios-wheelchair-partiallyaccessible",
+     "name": "eingeschränkt rollstuhlgängig",
+     "additionalType": "accesssitios"
+    }
+   ]
+  },
+  "award": {
+   "filterPropertyName": "award",
+   "odataFilterPropertyName": "award",
+   "name": "Auszeichnung",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "stb_level-3",
+     "count": 6,
+     "query": "stb_level-3",
+     "name": "Swisstainable Level III - leading"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs_14_seminars",
+     "count": 4,
+     "query": "hs_14_seminars",
+     "name": "HotellerieSuisse Spezialisierung Seminars",
+     "additionalType": "Hotelclass"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs_10_familyfriendly",
+     "count": 2,
+     "query": "hs_10_familyfriendly",
+     "name": "HotellerieSuisse Spezialisierung Family-friendly",
+     "additionalType": "Hotelclass"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs_6_business",
+     "count": 2,
+     "query": "hs_6_business",
+     "name": "HotellerieSuisse Spezialisierung Business",
+     "additionalType": "Hotelclass"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sjh_level-basic",
+     "count": 2,
+     "query": "sjh_level-basic",
+     "name": "Schweizer Jugendherberge Kategorie BASIC"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs_13_congresses",
+     "count": 1,
+     "query": "hs_13_congresses",
+     "name": "HotellerieSuisse Spezialisierung Congresses",
+     "additionalType": "Hotelclass"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs_15_excellentcuisine",
+     "count": 1,
+     "query": "hs_15_excellentcuisine",
+     "name": "HotellerieSuisse Spezialisierung Excellent Cuisine",
+     "additionalType": "Hotelclass"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs_16_hiking",
+     "count": 1,
+     "query": "hs_16_hiking",
+     "name": "HotellerieSuisse Spezialisierung Hiking",
+     "additionalType": "Hotelclass"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs_18_wellness",
+     "count": 1,
+     "query": "hs_18_wellness",
+     "name": "HotellerieSuisse Spezialisierung Wellness",
+     "additionalType": "Hotelclass"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs_1_biking",
+     "count": 1,
+     "query": "hs_1_biking",
+     "name": "HotellerieSuisse Spezialisierung Biking",
+     "additionalType": "Hotelclass"
+    }
+   ]
+  },
+  "categoryTree": {
+   "filterPropertyName": "categoryTree",
+   "odataFilterPropertyName": "categoryTree",
+   "name": "Kategorie",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root",
+     "count": 33,
+     "query": "sui_root",
+     "name": "Themen-SUI",
+     "namePlural": "Themen-SUIs"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root|sui_02",
+     "count": 15,
+     "query": "sui_root|sui_02",
+     "name": "Kultur",
+     "namePlural": "Kulturs"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root|sui_03",
+     "count": 7,
+     "query": "sui_root|sui_03",
+     "name": "Gesellschaft",
+     "namePlural": "Gesellschafts"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root|sui_02|sui_0202",
+     "count": 5,
+     "query": "sui_root|sui_02|sui_0202",
+     "name": "Architektur",
+     "namePlural": "Architekturs"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root|sui_01",
+     "count": 4,
+     "query": "sui_root|sui_01",
+     "name": "Aktivitäten",
+     "namePlural": "Aktivitätens"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root|sui_02|sui_0209",
+     "count": 4,
+     "query": "sui_root|sui_02|sui_0209",
+     "name": "Kulturgeschichte",
+     "namePlural": "Kulturgeschichtes"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root|sui_03|sui_0321",
+     "count": 4,
+     "query": "sui_root|sui_03|sui_0321",
+     "name": "Vorträge",
+     "namePlural": "Vorträges"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root|sui_03|sui_0322",
+     "count": 4,
+     "query": "sui_root|sui_03|sui_0322",
+     "name": "Workshops/Seminar",
+     "namePlural": "Workshops/Seminars"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root|sui_06",
+     "count": 3,
+     "query": "sui_root|sui_06",
+     "name": "Natur",
+     "namePlural": "Naturs"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sui_root|sui_01|sui_0102",
+     "count": 2,
+     "query": "sui_root|sui_01|sui_0102",
+     "name": "Velofahren",
+     "namePlural": "Velofahrens"
+    }
+   ]
+  },
+  "containedInPlace/id": {
+   "filterPropertyName": "containedInPlace",
+   "odataFilterPropertyName": "containedInPlace/id",
+   "name": "Enthalten in Ort",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "osm_51701",
+     "count": 45,
+     "query": "osm_51701",
+     "name": "Schweiz"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "ds_kire",
+     "count": 26,
+     "query": "ds_kire",
+     "name": "Kinderregion"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "kire_zurich",
+     "count": 16,
+     "query": "kire_zurich",
+     "name": "Zürich"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "osm_1682248",
+     "count": 16,
+     "query": "osm_1682248",
+     "name": "Zürich"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "osm_1690227",
+     "count": 16,
+     "query": "osm_1690227",
+     "name": "Zürich"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "osm_1690941",
+     "count": 16,
+     "query": "osm_1690941",
+     "name": "Bezirk Zürich"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "osm_11342352",
+     "count": 12,
+     "query": "osm_11342352",
+     "name": "Glarner Alpen"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "osm_1687006",
+     "count": 10,
+     "query": "osm_1687006",
+     "name": "Sankt Gallen"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "osm_1693096",
+     "count": 10,
+     "query": "osm_1693096",
+     "name": "Altstadt"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "ds_glarnerland",
+     "count": 9,
+     "query": "ds_glarnerland",
+     "name": "Glarnerland"
+    }
+   ]
+  },
+  "type": {
+   "filterPropertyName": "type",
+   "odataFilterPropertyName": "type",
+   "name": "Typ",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "CivicStructure",
+     "count": 26,
+     "query": "CivicStructure",
+     "name": "Öffentliche Anlage/Einrichtung"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "LodgingBusiness",
+     "count": 12,
+     "query": "LodgingBusiness",
+     "name": "Beherbergungsbetrieb"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "FoodEstablishment",
+     "count": 5,
+     "query": "FoodEstablishment",
+     "name": "Gastronomie"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Place",
+     "count": 4,
+     "query": "Place",
+     "name": "Ort"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "LocalBusiness",
+     "count": 3,
+     "query": "LocalBusiness",
+     "name": "Freizeit/Dienstleistung"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Product",
+     "count": 2,
+     "query": "Product",
+     "name": "Produkt"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Tour",
+     "count": 1,
+     "query": "Tour",
+     "name": "Tour"
+    }
+   ]
+  },
+  "campaignTag": {
+   "filterPropertyName": "campaignTag",
+   "odataFilterPropertyName": "campaignTag",
+   "name": "Kampagnen-Tag",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "vgl_label-glarnerlandpass",
+     "count": 3,
+     "query": "vgl_label-glarnerlandpass",
+     "name": "GlarnerlandPass",
+     "additionalType": "campaign"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sjh_accessibility-accessible",
+     "count": 2,
+     "query": "sjh_accessibility-accessible",
+     "name": "Hindernisfrei",
+     "additionalType": "campaign"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sjh_category-basic",
+     "count": 2,
+     "query": "sjh_category-basic",
+     "name": "Basic",
+     "additionalType": "campaign"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sjh_thema-wasser",
+     "count": 2,
+     "query": "sjh_thema-wasser",
+     "name": "Wasser",
+     "additionalType": "campaign"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "vgl_label-kinderregion",
+     "count": 2,
+     "query": "vgl_label-kinderregion",
+     "name": "Kinderregion",
+     "additionalType": "campaign"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "zht_zc-free",
+     "count": 2,
+     "query": "zht_zc-free",
+     "name": "Zürich Card Gratis",
+     "additionalType": "campaign"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "rgr_ew-reben-rheinfall",
+     "count": 1,
+     "query": "rgr_ew-reben-rheinfall",
+     "name": "EW Reben & Rheinfall",
+     "additionalType": "campaign"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sjh_thema-berge",
+     "count": 1,
+     "query": "sjh_thema-berge",
+     "name": "Berge",
+     "additionalType": "campaign"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sjh_thema-land",
+     "count": 1,
+     "query": "sjh_thema-land",
+     "name": "Land",
+     "additionalType": "campaign"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "szt_sztbarrierefrei",
+     "count": 1,
+     "query": "szt_sztbarrierefrei",
+     "name": "SZTbarrierefrei",
+     "additionalType": "campaign"
+    }
+   ]
+  },
+  "combinedType": {
+   "filterPropertyName": "combinedType",
+   "odataFilterPropertyName": "combinedType",
+   "name": "Typ",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "CivicStructure",
+     "count": 26,
+     "query": "CivicStructure",
+     "name": "Öffentliche Anlage/Einrichtung"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "LodgingBusiness",
+     "count": 12,
+     "query": "LodgingBusiness",
+     "name": "Beherbergungsbetrieb"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Museum",
+     "count": 12,
+     "query": "Museum",
+     "name": "Museum"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Hotel",
+     "count": 9,
+     "query": "Hotel",
+     "name": "Hotel"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "FoodEstablishment",
+     "count": 5,
+     "query": "FoodEstablishment",
+     "name": "Gastronomie"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "TouristAttraction",
+     "count": 5,
+     "query": "TouristAttraction",
+     "name": "Touristenattraktion"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Place",
+     "count": 4,
+     "query": "Place",
+     "name": "Ort"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "LocalBusiness",
+     "count": 3,
+     "query": "LocalBusiness",
+     "name": "Freizeit/Dienstleistung"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Restaurant",
+     "count": 3,
+     "query": "Restaurant",
+     "name": "Restaurant"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Hostel",
+     "count": 2,
+     "query": "Hostel",
+     "name": "Herberge"
+    }
+   ]
+  },
+  "combinedTypeTree": {
+   "filterPropertyName": "combinedTypeTree",
+   "odataFilterPropertyName": "combinedTypeTree",
+   "name": "Typ",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing",
+     "count": 53,
+     "query": "Thing",
+     "name": "Ding"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing|Place",
+     "count": 51,
+     "query": "Thing|Place",
+     "name": "Ort"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing|Place|CivicStructure",
+     "count": 26,
+     "query": "Thing|Place|CivicStructure",
+     "name": "Öffentliche Anlage/Einrichtung"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing|Place|LocalBusiness",
+     "count": 20,
+     "query": "Thing|Place|LocalBusiness",
+     "name": "Freizeit/Dienstleistung"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing|Place|CivicStructure|Museum",
+     "count": 12,
+     "query": "Thing|Place|CivicStructure|Museum",
+     "name": "Museum"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing|Place|LocalBusiness|LodgingBusiness",
+     "count": 12,
+     "query": "Thing|Place|LocalBusiness|LodgingBusiness",
+     "name": "Beherbergungsbetrieb"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing|Place|LocalBusiness|LodgingBusiness|Hotel",
+     "count": 9,
+     "query": "Thing|Place|LocalBusiness|LodgingBusiness|Hotel",
+     "name": "Hotel"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing|Place|CivicStructure|TouristAttraction",
+     "count": 6,
+     "query": "Thing|Place|CivicStructure|TouristAttraction",
+     "name": "Touristenattraktion"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing|Place|LocalBusiness|FoodEstablishment",
+     "count": 5,
+     "query": "Thing|Place|LocalBusiness|FoodEstablishment",
+     "name": "Gastronomie"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thing|Place|LocalBusiness|FoodEstablishment|Restaurant",
+     "count": 3,
+     "query": "Thing|Place|LocalBusiness|FoodEstablishment|Restaurant",
+     "name": "Restaurant"
+    }
+   ]
+  },
+  "leafType": {
+   "filterPropertyName": "leafType",
+   "odataFilterPropertyName": "leafType",
+   "name": "Typ",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Museum",
+     "count": 12,
+     "query": "Museum",
+     "name": "Museum"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Hotel",
+     "count": 9,
+     "query": "Hotel",
+     "name": "Hotel"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "TouristAttraction",
+     "count": 5,
+     "query": "TouristAttraction",
+     "name": "Touristenattraktion"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Place",
+     "count": 3,
+     "query": "Place",
+     "name": "Ort"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Restaurant",
+     "count": 3,
+     "query": "Restaurant",
+     "name": "Restaurant"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Hostel",
+     "count": 2,
+     "query": "Hostel",
+     "name": "Herberge"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Offer",
+     "count": 2,
+     "query": "Offer",
+     "name": "Angebot"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Store",
+     "count": 2,
+     "query": "Store",
+     "name": "Geschäft"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Airport",
+     "count": 1,
+     "query": "Airport",
+     "name": "Flughafen"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "ArtObject",
+     "count": 1,
+     "query": "ArtObject",
+     "name": "Kunstobjekt"
+    }
+   ]
+  },
+  "sourcePartner": {
+   "filterPropertyName": "sourcePartner",
+   "odataFilterPropertyName": "sourcePartner",
+   "name": "Dateninhaber",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "zht",
+     "count": 16,
+     "query": "zht",
+     "name": "Zürich Tourismus"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "st",
+     "count": 13,
+     "query": "st",
+     "name": "Schweiz Tourismus"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hs",
+     "count": 11,
+     "query": "hs",
+     "name": "HotellerieSuisse"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "vgl",
+     "count": 11,
+     "query": "vgl",
+     "name": "VISIT Glarnerland AG"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "sgt",
+     "count": 7,
+     "query": "sgt",
+     "name": "St.Gallen-Bodensee Tourismus"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "ltm",
+     "count": 6,
+     "query": "ltm",
+     "name": "Liechtenstein Marketing"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "okgo",
+     "count": 6,
+     "query": "okgo",
+     "name": "OK:GO Initiative - Förderverein Barrierefreie Schweiz"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "efr",
+     "count": 3,
+     "query": "efr",
+     "name": "Eventfrog"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "hlt",
+     "count": 3,
+     "query": "hlt",
+     "name": "Heidiland Tourismus AG"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "pi",
+     "count": 3,
+     "query": "pi",
+     "name": "Pro Infirmis"
+    }
+   ]
+  },
+  "amenityFeature": {
+   "filterPropertyName": "amenityFeature",
+   "odataFilterPropertyName": "amenityFeature",
+   "name": "Ausstattungsmerkmal",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "characteristics-nonsmoking",
+     "count": 11,
+     "query": "characteristics-nonsmoking",
+     "name": "Nichtraucher-Unterkunft"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "general-wifi",
+     "count": 10,
+     "query": "general-wifi",
+     "name": "WiFi"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "characteristics-petfriendly",
+     "count": 8,
+     "query": "characteristics-petfriendly",
+     "name": "Haustierfreundlich"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "food-restaurant",
+     "count": 8,
+     "query": "food-restaurant",
+     "name": "Restaurant"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "general-garage",
+     "count": 7,
+     "query": "general-garage",
+     "name": "Garage"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "events-conferenceroom",
+     "count": 6,
+     "query": "events-conferenceroom",
+     "name": "Konferenzraum"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "food-bar",
+     "count": 6,
+     "query": "food-bar",
+     "name": "Bar"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "building-floors",
+     "count": 5,
+     "query": "building-floors",
+     "name": "Stockwerke"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "general-airconinaccommodation",
+     "count": 5,
+     "query": "general-airconinaccommodation",
+     "name": "Klimaanlage in der Unterkunft"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "breakfast-buffet",
+     "count": 4,
+     "query": "breakfast-buffet",
+     "name": "Frühstücksbuffet"
+    }
+   ]
+  },
+  "starRating/name": {
+   "filterPropertyName": "starRatingName",
+   "odataFilterPropertyName": "starRating/name",
+   "name": "Sterne Bewertung",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "4-Sterne",
+     "count": 3,
+     "query": "4-Sterne",
+     "name": "4-Sterne"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "3-Sterne",
+     "count": 2,
+     "query": "3-Sterne",
+     "name": "3-Sterne"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "Hostel",
+     "count": 2,
+     "query": "Hostel",
+     "name": "Hostel"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "1-Sterne",
+     "count": 1,
+     "query": "1-Sterne",
+     "name": "1-Sterne"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "2-Sterne",
+     "count": 1,
+     "query": "2-Sterne",
+     "name": "2-Sterne"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "3-Sterne Superior",
+     "count": 1,
+     "query": "3-Sterne Superior",
+     "name": "3-Sterne Superior"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "string",
+     "value": "5-Sterne",
+     "count": 1,
+     "query": "5-Sterne",
+     "name": "5-Sterne"
+    }
+   ]
+  },
+  "starRating/ratingValue": {
+   "filterPropertyName": "starRatingValue",
+   "odataFilterPropertyName": "starRating/ratingValue",
+   "name": "Sterne Bewertung",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 4.0,
+     "count": 3,
+     "query": "4",
+     "name": "4"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 3.0,
+     "count": 2,
+     "query": "3",
+     "name": "3"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 1.0,
+     "count": 1,
+     "query": "1",
+     "name": "1"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 2.0,
+     "count": 1,
+     "query": "2",
+     "name": "2"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 3.5,
+     "count": 1,
+     "query": "3.5",
+     "name": "3.5"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 5.0,
+     "count": 1,
+     "query": "5",
+     "name": "5"
+    }
+   ]
+  },
+  "starRating/garni": {
+   "filterPropertyName": "starRatingGarni",
+   "odataFilterPropertyName": "starRating/garni",
+   "name": "Garni",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "boolean",
+     "value": false,
+     "count": 7,
+     "query": "False",
+     "name": "Nein"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "boolean",
+     "value": true,
+     "count": 4,
+     "query": "True",
+     "name": "Ja"
+    }
+   ]
+  },
+  "starRating/superior": {
+   "filterPropertyName": "starRatingSuperior",
+   "odataFilterPropertyName": "starRating/superior",
+   "name": "Superior",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "boolean",
+     "value": false,
+     "count": 10,
+     "query": "False",
+     "name": "Nein"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "boolean",
+     "value": true,
+     "count": 1,
+     "query": "True",
+     "name": "Ja"
+    }
+   ]
+  },
+  "numberOfRooms": {
+   "filterPropertyName": "numberOfRooms",
+   "odataFilterPropertyName": "numberOfRooms",
+   "name": "Anzahl Zimmer",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 13.0,
+     "count": 1,
+     "query": "13",
+     "name": "13"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 19.0,
+     "count": 1,
+     "query": "19",
+     "name": "19"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 21.0,
+     "count": 1,
+     "query": "21",
+     "name": "21"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 28.0,
+     "count": 1,
+     "query": "28",
+     "name": "28"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 63.0,
+     "count": 1,
+     "query": "63",
+     "name": "63"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 74.0,
+     "count": 1,
+     "query": "74",
+     "name": "74"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 96.0,
+     "count": 1,
+     "query": "96",
+     "name": "96"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 145.0,
+     "count": 1,
+     "query": "145",
+     "name": "145"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 155.0,
+     "count": 1,
+     "query": "155",
+     "name": "155"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "number",
+     "value": 160.0,
+     "count": 1,
+     "query": "160",
+     "name": "160"
+    }
+   ]
+  },
+  "numberOfBeds": {
+   "filterPropertyName": "numberOfBeds",
+   "odataFilterPropertyName": "numberOfBeds",
+   "name": "Anzahl Betten",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 39,
+     "count": 1,
+     "query": "39",
+     "name": "39"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 42,
+     "count": 1,
+     "query": "42",
+     "name": "42"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 76,
+     "count": 1,
+     "query": "76",
+     "name": "76"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 92,
+     "count": 1,
+     "query": "92",
+     "name": "92"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 95,
+     "count": 1,
+     "query": "95",
+     "name": "95"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 134,
+     "count": 1,
+     "query": "134",
+     "name": "134"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 150,
+     "count": 1,
+     "query": "150",
+     "name": "150"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 156,
+     "count": 1,
+     "query": "156",
+     "name": "156"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 195,
+     "count": 1,
+     "query": "195",
+     "name": "195"
+    },
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 320,
+     "count": 1,
+     "query": "320",
+     "name": "320"
+    }
+   ]
+  },
+  "openingHoursSpecification/dayOfWeek": {
+   "filterPropertyName": "openingHoursSpecificationDayOfWeek",
+   "odataFilterPropertyName": "openingHoursSpecification/dayOfWeek",
+   "name": "Wochentag",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Monday",
+     "count": 7,
+     "query": "Monday",
+     "name": "Montag"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Tuesday",
+     "count": 14,
+     "query": "Tuesday",
+     "name": "Dienstag"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Wednesday",
+     "count": 14,
+     "query": "Wednesday",
+     "name": "Mittwoch"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Thursday",
+     "count": 15,
+     "query": "Thursday",
+     "name": "Donnerstag"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Friday",
+     "count": 15,
+     "query": "Friday",
+     "name": "Freitag"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Saturday",
+     "count": 13,
+     "query": "Saturday",
+     "name": "Samstag"
+    },
+    {
+     "facetType": "value",
+     "filterType": "collection",
+     "valueType": "string",
+     "value": "Sunday",
+     "count": 12,
+     "query": "Sunday",
+     "name": "Sonntag"
+    }
+   ]
+  },
+  "priceRange": {
+   "filterPropertyName": "priceRange",
+   "odataFilterPropertyName": "priceRange",
+   "name": "Preisspanne",
+   "values": [
+    {
+     "facetType": "value",
+     "filterType": "object",
+     "valueType": "integer",
+     "value": 1,
+     "count": 3,
+     "query": "1",
+     "name": "Niedrig"
+    }
+   ]
+  }
+ }
+}

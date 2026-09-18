@@ -1,0 +1,28 @@
+{
+ "request": {
+  "project": [
+   "dsod-content"
+  ],
+  "resultsPerPage": 1,
+  "select": "identifier",
+  "facets": [
+   {
+    "name": "containedInPlace",
+    "count": 5
+   },
+   {
+    "name": "ratingDifficulty",
+    "count": 5
+   }
+  ]
+ },
+ "status": 200,
+ "response": {
+  "count": 20773,
+  "values": [
+   {
+    "identifier": "acc_x8-89_l3kv_ebfgi"
+   }
+  ]
+ }
+}

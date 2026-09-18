@@ -1,0 +1,357 @@
+{
+ "request": {
+  "project": [
+   "dsod-content"
+  ],
+  "type": [
+   "Webcam"
+  ],
+  "resultsPerPage": 3,
+  "select": "identifier,name,geo",
+  "filters": [
+   "geo.distance(geo, geography'POINT(9.3767 47.4245)') le 25"
+  ]
+ },
+ "status": 200,
+ "response": {
+  "count": 17,
+  "values": [
+   {
+    "identifier": "web_s9t_grfadetc-hegs-ejhj-iaad-fvvrssdeqteh",
+    "geo": {
+     "latitude": 47.42203289730424,
+     "longitude": 9.412000179290771
+    },
+    "name": "Webcam St.Gallen, Kapfwaldweg"
+   },
+   {
+    "identifier": "web_s9t_tcfjdird-hchh-eeud-ruhg-qqusjutvgjba",
+    "geo": {
+     "latitude": 47.2493844,
+     "longitude": 9.3432366
+    },
+    "name": "Webcam Säntis – der Berg"
+   },
+   {
+    "identifier": "web_s9t_bascsecc-gdbf-erfu-rfdr-bhfaeahjqtdf",
+    "geo": {
+     "latitude": 47.50093113666867,
+     "longitude": 9.560455083847048
+    },
+    "name": "Webcam Thal, Rheinspitz"
+   }
+  ],
+  "facets": {
+   "address/postalCode": {
+    "filterPropertyName": "addressPostalCode",
+    "odataFilterPropertyName": "address/postalCode",
+    "name": "Postleitzahl",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9011",
+      "count": 2,
+      "query": "9011",
+      "name": "9011"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9107",
+      "count": 2,
+      "query": "9107",
+      "name": "9107"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9423",
+      "count": 2,
+      "query": "9423",
+      "name": "9423"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9000",
+      "count": 1,
+      "query": "9000",
+      "name": "9000"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9058",
+      "count": 1,
+      "query": "9058",
+      "name": "9058"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "9404",
+      "count": 1,
+      "query": "9404",
+      "name": "9404"
+     }
+    ]
+   },
+   "containedInPlace/id": {
+    "filterPropertyName": "containedInPlace",
+    "odataFilterPropertyName": "containedInPlace/id",
+    "name": "Enthalten in Ort",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_51701",
+      "count": 17,
+      "query": "osm_51701",
+      "name": "Schweiz"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_11342353",
+      "count": 12,
+      "query": "osm_11342353",
+      "name": "Appenzeller Alpen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1687006",
+      "count": 9,
+      "query": "osm_1687006",
+      "name": "Sankt Gallen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_ostschweiz",
+      "count": 8,
+      "query": "ds_ostschweiz",
+      "name": "Ostschweiz"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_sanktgallen",
+      "count": 6,
+      "query": "ds_sanktgallen",
+      "name": "St.Gallen-Bodensee"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_appenzellerland",
+      "count": 4,
+      "query": "ds_appenzellerland",
+      "name": "Appenzellerland"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_thurgau",
+      "count": 4,
+      "query": "ds_thurgau",
+      "name": "Thurgau"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1693811",
+      "count": 4,
+      "query": "osm_1693811",
+      "name": "Thurgau"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1845517",
+      "count": 4,
+      "query": "osm_1845517",
+      "name": "Bezirk Arbon"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_toggenburg",
+      "count": 3,
+      "query": "ds_toggenburg",
+      "name": "Toggenburg"
+     }
+    ]
+   },
+   "type": {
+    "filterPropertyName": "type",
+    "odataFilterPropertyName": "type",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Webcam",
+      "count": 17,
+      "query": "Webcam",
+      "name": "Webcam"
+     }
+    ]
+   },
+   "combinedType": {
+    "filterPropertyName": "combinedType",
+    "odataFilterPropertyName": "combinedType",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Webcam",
+      "count": 17,
+      "query": "Webcam",
+      "name": "Webcam"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "WebLink",
+      "count": 1,
+      "query": "WebLink",
+      "name": "WebLink"
+     }
+    ]
+   },
+   "combinedTypeTree": {
+    "filterPropertyName": "combinedTypeTree",
+    "odataFilterPropertyName": "combinedTypeTree",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing",
+      "count": 17,
+      "query": "Thing",
+      "name": "Ding"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place",
+      "count": 17,
+      "query": "Thing|Place",
+      "name": "Ort"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place|Webcam",
+      "count": 17,
+      "query": "Thing|Place|Webcam",
+      "name": "Webcam"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "Thing|Place|Webcam|WebLink",
+      "count": 1,
+      "query": "Thing|Place|Webcam|WebLink",
+      "name": "WebLink"
+     }
+    ]
+   },
+   "leafType": {
+    "filterPropertyName": "leafType",
+    "odataFilterPropertyName": "leafType",
+    "name": "Typ",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "Webcam",
+      "count": 16,
+      "query": "Webcam",
+      "name": "Webcam"
+     },
+     {
+      "facetType": "value",
+      "filterType": "object",
+      "valueType": "string",
+      "value": "WebLink",
+      "count": 1,
+      "query": "WebLink",
+      "name": "WebLink"
+     }
+    ]
+   },
+   "sourcePartner": {
+    "filterPropertyName": "sourcePartner",
+    "odataFilterPropertyName": "sourcePartner",
+    "name": "Dateninhaber",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "sgt",
+      "count": 7,
+      "query": "sgt",
+      "name": "St.Gallen-Bodensee Tourismus"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "tht",
+      "count": 4,
+      "query": "tht",
+      "name": "Thurgau Tourismus"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "tt",
+      "count": 4,
+      "query": "tt",
+      "name": "Toggenburg Tourismus"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "alar",
+      "count": 2,
+      "query": "alar",
+      "name": "Appenzellerland Tourismus AR"
+     }
+    ]
+   }
+  }
+ }
+}

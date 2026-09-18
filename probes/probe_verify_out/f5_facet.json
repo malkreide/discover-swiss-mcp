@@ -1,0 +1,304 @@
+{
+ "request": {
+  "project": [
+   "dsod-content"
+  ],
+  "searchText": "Glarnerland",
+  "resultsPerPage": 1,
+  "select": "identifier",
+  "facets": [
+   {
+    "name": "containedInPlace/id",
+    "count": 30
+   }
+  ]
+ },
+ "status": 200,
+ "response": {
+  "count": 379,
+  "values": [
+   {
+    "identifier": "loc_s9t_acaqvaca-rvib-efjs-reei-tbrqdribjsdh"
+   }
+  ],
+  "facets": {
+   "containedInPlace/id": {
+    "filterPropertyName": "containedInPlace",
+    "odataFilterPropertyName": "containedInPlace/id",
+    "name": "Enthalten in Ort",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_51701",
+      "count": 351,
+      "query": "osm_51701",
+      "name": "Schweiz"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_glarnerland",
+      "count": 345,
+      "query": "ds_glarnerland",
+      "name": "Glarnerland"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1685673",
+      "count": 338,
+      "query": "osm_1685673",
+      "name": "Glarus"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_11342352",
+      "count": 327,
+      "query": "osm_11342352",
+      "name": "Glarner Alpen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_kire",
+      "count": 172,
+      "query": "ds_kire",
+      "name": "Kinderregion"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1683141",
+      "count": 155,
+      "query": "osm_1683141",
+      "name": "Glarus Süd"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_glarus_kloental",
+      "count": 115,
+      "query": "ds_glarus_kloental",
+      "name": "Glarus / Klöntal"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1683142",
+      "count": 115,
+      "query": "osm_1683142",
+      "name": "Glarus"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8750_0",
+      "count": 75,
+      "query": "plz_8750_0",
+      "name": "Glarus"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_glarusnord_walensee",
+      "count": 71,
+      "query": "ds_glarusnord_walensee",
+      "name": "Glarusnord / Walensee"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_grosstal_mettmen",
+      "count": 71,
+      "query": "ds_grosstal_mettmen",
+      "name": "Grosstal / Mettmen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1683140",
+      "count": 68,
+      "query": "osm_1683140",
+      "name": "Glarus Nord"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_elm_sernftal",
+      "count": 49,
+      "query": "ds_elm_sernftal",
+      "name": "Elm / Sernftal"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_braunwald_toedigebiet",
+      "count": 42,
+      "query": "ds_braunwald_toedigebiet",
+      "name": "Braunwald / Tödigebiet"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8762_0",
+      "count": 37,
+      "query": "plz_8762_0",
+      "name": "Schwanden GL"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8767_0",
+      "count": 24,
+      "query": "plz_8767_0",
+      "name": "Elm"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8752_0",
+      "count": 21,
+      "query": "plz_8752_0",
+      "name": "Näfels"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8784_0",
+      "count": 21,
+      "query": "plz_8784_0",
+      "name": "Braunwald"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_11342351",
+      "count": 19,
+      "query": "osm_11342351",
+      "name": "Schwyzer Alpen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8783_0",
+      "count": 17,
+      "query": "plz_8783_0",
+      "name": "Linthal"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8754_0",
+      "count": 15,
+      "query": "plz_8754_0",
+      "name": "Netstal"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8755_0",
+      "count": 15,
+      "query": "plz_8755_0",
+      "name": "Ennenda"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8757_0",
+      "count": 15,
+      "query": "plz_8757_0",
+      "name": "Filzbach"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8766_0",
+      "count": 14,
+      "query": "plz_8766_0",
+      "name": "Matt"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8753_0",
+      "count": 13,
+      "query": "plz_8753_0",
+      "name": "Mollis"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8765_0",
+      "count": 12,
+      "query": "plz_8765_0",
+      "name": "Engi"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8867_0",
+      "count": 10,
+      "query": "plz_8867_0",
+      "name": "Niederurnen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8775_1",
+      "count": 8,
+      "query": "plz_8775_1",
+      "name": "Luchsingen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8750_3",
+      "count": 7,
+      "query": "plz_8750_3",
+      "name": "Klöntal"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8777_0",
+      "count": 7,
+      "query": "plz_8777_0",
+      "name": "Diesbach GL"
+     }
+    ]
+   }
+  }
+ }
+}

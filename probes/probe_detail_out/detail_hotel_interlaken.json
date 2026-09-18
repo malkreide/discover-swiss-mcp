@@ -1,0 +1,2990 @@
+{
+ "checkinTime": "15:00:00",
+ "checkinTimeTo": "23:00:00",
+ "checkoutTimeFrom": "06:00:00",
+ "checkoutTime": "11:00:00",
+ "numberOfRooms": [
+  {
+   "propertyId": "total",
+   "unitCode": "count",
+   "value": "61",
+   "name": "Zimmer insgesamt"
+  },
+  {
+   "propertyId": "double",
+   "unitCode": "count",
+   "value": "43",
+   "name": "Doppelzimmer"
+  }
+ ],
+ "numberOfBeds": 113,
+ "starRating": {
+  "ratingValue": 4.0,
+  "garni": true,
+  "superior": false,
+  "author": {
+   "acronym": "hs",
+   "logo": {
+    "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+    "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+    "identifier": "img_x8_14w4",
+    "type": "schema.org/ImageObject",
+    "additionalType": "Logo",
+    "name": "HotellerieSuisse"
+   },
+   "identifier": "hs",
+   "type": "schema.org/Partner",
+   "name": "HotellerieSuisse"
+  },
+  "image": {
+   "contentUrl": "https://cdn.discover.swiss/img/hcl_4-star.png",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hcl",
+     "type": "schema.org/Partner"
+    },
+    "source": {
+     "acronym": "hs",
+     "type": "schema.org/Partner"
+    }
+   },
+   "type": "schema.org/ImageObject",
+   "additionalType": "StarRating"
+  },
+  "additionalType": "Hotel",
+  "name": "4-Sterne"
+ },
+ "paymentAccepted": "American Express,Cash,Diners Club,Eurocard,JCB,JCB Card,MasterCard,PostFinance Card,Pre-payment,Reka,Twint,UnionPay,Visa,VISA",
+ "availableLanguage": [
+  "de"
+ ],
+ "address": {
+  "addressCountry": "CH",
+  "addressLocality": "Interlaken",
+  "addressRegion": "Bern",
+  "postalCode": "3800",
+  "streetAddress": "Höheweg 70",
+  "email": "info@hotel-dunord.ch",
+  "telephone": "+41 33 827 50 50"
+ },
+ "geo": {
+  "latitude": 46.688237,
+  "longitude": 7.862343
+ },
+ "photo": [
+  {
+   "tagToQuery": [
+    "image-outdoor-exterior",
+    "image-saisonality-summer"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs-my/a7617dc2-39e8-4894-ab79-1b973c8510f6.jpg",
+   "copyrightNotice": "Du Nord, HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "author": {
+     "familyName": "Du Nord"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8-2o_bavdrvjs-vret-esqg-iaag-bqjiuijdsrqe",
+   "identifier": "img_x8-2o_bavdrvjs-vret-esqg-iaag-bqjiuijdsrqe",
+   "type": "schema.org/ImageObject",
+   "name": "20240823-MAMO-Photography-9029-R-2500px.jpg"
+  },
+  {
+   "tagToQuery": [
+    "image-outdoor-exterior",
+    "image-saisonality-winter"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs-my/efe00f94-e065-45ce-9554-a70e647fbc06.jpg",
+   "copyrightNotice": "Du Nord, HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "author": {
+     "familyName": "Du Nord"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/hs-my_05ab2334-ed08-41d3-805b-4bebf6fdce89",
+   "identifier": "hs-my_05ab2334-ed08-41d3-805b-4bebf6fdce89",
+   "type": "schema.org/ImageObject",
+   "name": "20240823-MAMO-Photography-8995-R-2500px.jpg"
+  },
+  {
+   "tagToQuery": [
+    "image-event-meeting-room"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs-my/dd7b9ca9-431c-4dc7-953b-afd3e7419509.jpg",
+   "copyrightNotice": "Du Nord, HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "author": {
+     "familyName": "Du Nord"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/hs-my_62449150-b53c-4080-83d4-c04476bd329d",
+   "identifier": "hs-my_62449150-b53c-4080-83d4-c04476bd329d",
+   "type": "schema.org/ImageObject",
+   "name": "20240823-MAMO-Photography-8969-R-2500px.jpg"
+  },
+  {
+   "tagToQuery": [
+    "image-outdoor-terrace-balcony"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092029_e233baef4547c542a1d92d516b28f193_m.jpg",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_bbbiae",
+   "identifier": "img_x8_y2w_bbbiae",
+   "type": "schema.org/ImageObject",
+   "name": "Hotel Du Nord (hs_img_92029)"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092031_95d4653549f853913bb5dcdfed390b66_m.jpg",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcadb",
+   "identifier": "img_x8_y2w_jcadb",
+   "type": "schema.org/ImageObject",
+   "name": "Hotel Du Nord (hs_img_92031)"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00063905_m.jpg",
+   "caption": "Frühstück",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_gdjaf",
+   "identifier": "img_x8_y2w_gdjaf",
+   "type": "schema.org/ImageObject",
+   "name": "Frühstück"
+  },
+  {
+   "tagToQuery": [
+    "image-food-bar"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00096697_8ee723f053d371b5d7540ec9fbd3fc76_m.jpg",
+   "caption": "Bar",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jggjh",
+   "identifier": "img_x8_y2w_jggjh",
+   "type": "schema.org/ImageObject",
+   "name": "Bar"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092028_b87bfa7a34332bfa73db7c126ab0fe4f_m.jpg",
+   "caption": "Garten",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_gdijh",
+   "identifier": "img_x8_y2w_gdijh",
+   "type": "schema.org/ImageObject",
+   "name": "Hotel Du Nord (hs_img_92028)"
+  },
+  {
+   "tagToQuery": [
+    "image-amenity-bathroom"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092071_244b7e151bca533f98c3b8b8aa4aeda6_m.jpg",
+   "caption": "Badezimmer Doppelzim",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcahb",
+   "identifier": "img_x8_y2w_jcahb",
+   "type": "schema.org/ImageObject",
+   "name": "Badezimmer Doppelzim"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092072_8bda3463c8554adb9165790ed9bda61c_m.jpg",
+   "caption": "Doppelzimmer Superio",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcahc",
+   "identifier": "img_x8_y2w_jcahc",
+   "type": "schema.org/ImageObject",
+   "name": "Doppelzimmer Superio"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092073_84702922c0aed7b8f902b62a983d5be4_m.jpg",
+   "caption": "Dreibettzimmer",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcahd",
+   "identifier": "img_x8_y2w_jcahd",
+   "type": "schema.org/ImageObject",
+   "name": "Dreibettzimmer"
+  },
+  {
+   "tagToQuery": [
+    "image-sport-indoor-swimming-pool"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092069_6c42b668733b0127aecffc7aff3d58ca_m.jpg",
+   "caption": "Balkon Doppelzimmer",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcacg",
+   "identifier": "img_x8_y2w_jcacg",
+   "type": "schema.org/ImageObject",
+   "name": "Balkon Doppelzimmer"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092032_a18c027cffe3452593f8fe7500f40b6b_m.jpg",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcadc",
+   "identifier": "img_x8_y2w_jcadc",
+   "type": "schema.org/ImageObject",
+   "name": "Hotel Du Nord (hs_img_92032)"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092063_870f1aeae095040051c4b1873ff067ea_m.jpg",
+   "caption": "Deluxe Eckzimmer Wes",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcagd",
+   "identifier": "img_x8_y2w_jcagd",
+   "type": "schema.org/ImageObject",
+   "name": "Deluxe Eckzimmer Wes"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092075_030bd05f9bcbdd7985a2fc4d4dbd6437_m.jpg",
+   "caption": "Junior Suite",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcahf",
+   "identifier": "img_x8_y2w_jcahf",
+   "type": "schema.org/ImageObject",
+   "name": "Junior Suite"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00063903_m.jpg",
+   "caption": "Frühstück",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_gdjad",
+   "identifier": "img_x8_y2w_gdjad",
+   "type": "schema.org/ImageObject",
+   "name": "Frühstück"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00096698_ed846a9b491049056cad773c80732ecd_m.jpg",
+   "caption": "Bar",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jggji",
+   "identifier": "img_x8_y2w_jggji",
+   "type": "schema.org/ImageObject",
+   "name": "Bar"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00063898_m.jpg",
+   "caption": "Garten",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_gdiji",
+   "identifier": "img_x8_y2w_gdiji",
+   "type": "schema.org/ImageObject",
+   "name": "Garten"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00096699_df4f4079d096f6dfb073a05840199e83_m.jpg",
+   "caption": "Lounge",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jggjj",
+   "identifier": "img_x8_y2w_jggjj",
+   "type": "schema.org/ImageObject",
+   "name": "Lounge"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092064_b157e08b03ec191bfc909740ebd898ad_m.jpg",
+   "caption": "Badezimmer Deluxe Ec",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcage",
+   "identifier": "img_x8_y2w_jcage",
+   "type": "schema.org/ImageObject",
+   "name": "Badezimmer Deluxe Ec"
+  },
+  {
+   "tagToQuery": [
+    "image-amenity-bed"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092076_49e66383ab8088859358ec6f4f6f2dec_m.jpg",
+   "caption": "Superior Junior Suit",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcahg",
+   "identifier": "img_x8_y2w_jcahg",
+   "type": "schema.org/ImageObject",
+   "name": "Superior Junior Suit"
+  },
+  {
+   "tagToQuery": [
+    "image-wellness-treatments"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00063904_m.jpg",
+   "caption": "Frühstück",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_gdjae",
+   "identifier": "img_x8_y2w_gdjae",
+   "type": "schema.org/ImageObject",
+   "name": "Frühstück"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00025375_m.jpg",
+   "caption": "Garten",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_cfdhf",
+   "identifier": "img_x8_y2w_cfdhf",
+   "type": "schema.org/ImageObject",
+   "name": "Garten"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00063882_m.jpg",
+   "caption": "Aussenansicht",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_gdiic",
+   "identifier": "img_x8_y2w_gdiic",
+   "type": "schema.org/ImageObject",
+   "name": "Aussenansicht"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00096700_76a1601fff65468ad8cff7afd4afb185_m.jpg",
+   "caption": "Lounge",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jghaa",
+   "identifier": "img_x8_y2w_jghaa",
+   "type": "schema.org/ImageObject",
+   "name": "Lounge"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092065_1b37db872fced3b8f658a798483d3ceb_m.jpg",
+   "caption": "Deluxe Doppelzimmer",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcagf",
+   "identifier": "img_x8_y2w_jcagf",
+   "type": "schema.org/ImageObject",
+   "name": "Deluxe Doppelzimmer"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092077_9d8b44cf6fae904cf8ad32d1dc5aaf93_m.jpg",
+   "caption": "Superior Junior Suit",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcahh",
+   "identifier": "img_x8_y2w_jcahh",
+   "type": "schema.org/ImageObject",
+   "name": "Superior Junior Suit"
+  },
+  {
+   "tagToQuery": [
+    "image-food-restaurant"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00063906_m.jpg",
+   "caption": "Frühstück",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_gdjag",
+   "identifier": "img_x8_y2w_gdjag",
+   "type": "schema.org/ImageObject",
+   "name": "Frühstück"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092027_eccaea5ed0d318e17ccd4061376841fc_m.jpg",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcach",
+   "identifier": "img_x8_y2w_jcach",
+   "type": "schema.org/ImageObject",
+   "name": "Hotel Du Nord (hs_img_92027)"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00096701_1664ad81d125c65cf13581a85a20840b_m.jpg",
+   "caption": "Lounge",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jghab",
+   "identifier": "img_x8_y2w_jghab",
+   "type": "schema.org/ImageObject",
+   "name": "Lounge"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092066_7c2abfe22926a190f135e4e3c15a525d_m.jpg",
+   "caption": "Doppelzimmer",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcagg",
+   "identifier": "img_x8_y2w_jcagg",
+   "type": "schema.org/ImageObject",
+   "name": "Doppelzimmer"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092078_7a0763a9f6b37e5c57b4c1d486261399_m.jpg",
+   "caption": "Badezimmer Superior",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcahi",
+   "identifier": "img_x8_y2w_jcahi",
+   "type": "schema.org/ImageObject",
+   "name": "Badezimmer Superior"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00063907_m.jpg",
+   "caption": "Frühstück",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_gdjah",
+   "identifier": "img_x8_y2w_gdjah",
+   "type": "schema.org/ImageObject",
+   "name": "Frühstück"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00096702_b684fbb6d058d9176a33bd956608e3b5_m.jpg",
+   "caption": "Rezeption blau",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jghac",
+   "identifier": "img_x8_y2w_jghac",
+   "type": "schema.org/ImageObject",
+   "name": "Rezeption blau"
+  },
+  {
+   "tagToQuery": [
+    "image-amenity-bed"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092067_50364d90f776c03f838e59a551a69ca4_m.jpg",
+   "caption": "Doppelzimmer Superio",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcagh",
+   "identifier": "img_x8_y2w_jcagh",
+   "type": "schema.org/ImageObject",
+   "name": "Doppelzimmer Superio"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092079_3df8b4affc988ed0f70f9b8160c10854_m.jpg",
+   "caption": "Panorama Junior Suit",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcahj",
+   "identifier": "img_x8_y2w_jcahj",
+   "type": "schema.org/ImageObject",
+   "name": "Panorama Junior Suit"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00063908_m.jpg",
+   "caption": "Frühstück",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_gdjai",
+   "identifier": "img_x8_y2w_gdjai",
+   "type": "schema.org/ImageObject",
+   "name": "Frühstück"
+  },
+  {
+   "tagToQuery": [
+    "image-indoor-lobby"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00096703_1c658d93029380efb63c5096eb80b7bf_m.jpg",
+   "caption": "Rezeption weiss",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jghad",
+   "identifier": "img_x8_y2w_jghad",
+   "type": "schema.org/ImageObject",
+   "name": "Rezeption weiss"
+  },
+  {
+   "tagToQuery": [
+    "image-amenity-bed"
+   ],
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092068_9cdc4e522e2fe5312ecac2c11adc4341_m.jpg",
+   "caption": "Doppelzimmer Superio",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcagi",
+   "identifier": "img_x8_y2w_jcagi",
+   "type": "schema.org/ImageObject",
+   "name": "Doppelzimmer Superio"
+  },
+  {
+   "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00092070_386bbf860529ae6b7b53f72ca37c6bcf_m.jpg",
+   "caption": "Doppelzimmer Superio",
+   "copyrightNotice": "HotellerieSuisse",
+   "dataGovernance": {
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse (hs_logo)"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_jcaha",
+   "identifier": "img_x8_y2w_jcaha",
+   "type": "schema.org/ImageObject",
+   "name": "Doppelzimmer Superio"
+  }
+ ],
+ "telephone": "+41 33 827 50 50",
+ "category": [
+  {
+   "@id": "https://api.discover.swiss/info/v2/categories/sui_root",
+   "identifier": "sui_root",
+   "type": "schema.org/Category",
+   "name": "Themen-SUI"
+  }
+ ],
+ "containedInPlace": [
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_11342347",
+   "identifier": "osm_11342347",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "MountainArea",
+   "name": "Berner Alpen"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1682493",
+   "identifier": "osm_1682493",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "City",
+   "name": "Interlaken"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_51701",
+   "identifier": "osm_51701",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "Country",
+   "name": "Schweiz"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1684606",
+   "identifier": "osm_1684606",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "AdministrativeRegion",
+   "name": "Verwaltungsregion Oberland"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1684823",
+   "identifier": "osm_1684823",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "District",
+   "name": "Verwaltungskreis Interlaken-Oberhasli"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1686344",
+   "identifier": "osm_1686344",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "State",
+   "name": "Bern"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/ds_mib",
+   "identifier": "ds_mib",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "TourismArea",
+   "name": "Made in Bern"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/ds_ferienregion_interlaken",
+   "identifier": "ds_ferienregion_interlaken",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "TourismArea",
+   "name": "Ferienregion Interlaken"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/plz_3800_0",
+   "identifier": "plz_3800_0",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "PostalArea",
+   "name": "Interlaken"
+  }
+ ],
+ "tag": [
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/tourismzone-mountains",
+   "identifier": "tourismzone-mountains",
+   "type": "schema.org/Tag",
+   "additionalType": "tourismzone",
+   "name": "Berg"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/tourismregion-bernregion",
+   "identifier": "tourismregion-bernregion",
+   "type": "schema.org/Tag",
+   "additionalType": "tourismregion",
+   "name": "Bern Region"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/accessibility-wheelchair-accessible",
+   "identifier": "accessibility-wheelchair-accessible",
+   "type": "schema.org/Tag",
+   "additionalType": "accessibility",
+   "name": "rollstuhlgängig"
+  },
+  {
+   "iconUrl": "https://cdn.discover.swiss/img/accesssitios-parking-partiallyaccessible.svg",
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-parking-partiallyaccessible",
+   "identifier": "accesssitios-parking-partiallyaccessible",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios",
+   "name": "Parkplatz eingeschränkt rollstuhlgängig"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-hs-accessiblepublicarea",
+   "identifier": "accesssitios-hs-accessiblepublicarea",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios-hs",
+   "name": "Öffentliche Bereiche barrierefrei"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-hs-accessiblelift",
+   "identifier": "accesssitios-hs-accessiblelift",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios-hs",
+   "name": "Lift barrierefrei"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-hs-accessiblepublictoilet",
+   "identifier": "accesssitios-hs-accessiblepublictoilet",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios-hs",
+   "name": "rollstuhlgängige öffentliche Toilette"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-hs-visuallyimpaired",
+   "identifier": "accesssitios-hs-visuallyimpaired",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios-hs",
+   "name": "Angebote für Gäste mit Sehbehinderung"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-hs-partiallyaccessiblehotelroom",
+   "identifier": "accesssitios-hs-partiallyaccessiblehotelroom",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios-hs",
+   "name": "bedingt barrierefreies Zimmer"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-hs-accessiblebathroom",
+   "identifier": "accesssitios-hs-accessiblebathroom",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios-hs",
+   "name": "barrierefreies Badezimmer"
+  },
+  {
+   "iconUrl": "https://cdn.discover.swiss/img/accesssitios-wheelchair-accessible.svg",
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-wheelchair-accessible",
+   "identifier": "accesssitios-wheelchair-accessible",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios",
+   "name": "rollstuhlgängig"
+  },
+  {
+   "iconUrl": "https://cdn.discover.swiss/img/accesssitios-toilet-accessible.svg",
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-toilet-accessible",
+   "identifier": "accesssitios-toilet-accessible",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios",
+   "name": "WC rollstuhlgängig"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/accessibility-suitableforperambulators",
+   "identifier": "accessibility-suitableforperambulators",
+   "type": "schema.org/Tag",
+   "additionalType": "accessibility",
+   "name": "kinderwagengerecht"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/tags/accesssitios-qualityinfo-audited",
+   "identifier": "accesssitios-qualityinfo-audited",
+   "type": "schema.org/Tag",
+   "additionalType": "accesssitios-qualityinfo",
+   "name": "Von Fachorganisation geprüft"
+  }
+ ],
+ "accessibility": [
+  {
+   "ratingProfileId": 78,
+   "grade": 1,
+   "conformance": 92,
+   "ratingProfileName": {
+    "de": "Aktivrollstuhl",
+    "en": "Active wheelchair",
+    "fr": "Fauteuil roulant actif",
+    "it": "Sedia a rotelle attiva"
+   },
+   "gradeName": {
+    "de": "Voll zugänglich",
+    "en": "Fully accessible",
+    "fr": "Entièrement accessible",
+    "it": "Completamente accessibile"
+   }
+  },
+  {
+   "ratingProfileId": 79,
+   "grade": 1,
+   "conformance": 92,
+   "ratingProfileName": {
+    "de": "E-Rollstuhl",
+    "en": "E-wheelchair",
+    "fr": "Fauteuil roulant électrique",
+    "it": "Sedia a rotelle elettronica"
+   },
+   "gradeName": {
+    "de": "Voll zugänglich",
+    "en": "Fully accessible",
+    "fr": "Entièrement accessible",
+    "it": "Completamente accessibile"
+   }
+  },
+  {
+   "ratingProfileId": 80,
+   "grade": 1,
+   "conformance": 94,
+   "ratingProfileName": {
+    "de": "Kinderwagen",
+    "en": "Stroller",
+    "fr": "Poussette",
+    "it": "Passeggino"
+   },
+   "gradeName": {
+    "de": "Voll zugänglich",
+    "en": "Fully accessible",
+    "fr": "Entièrement accessible",
+    "it": "Completamente accessibile"
+   }
+  },
+  {
+   "ratingProfileId": 3951,
+   "grade": 1,
+   "conformance": 93,
+   "ratingProfileName": {
+    "de": "Scewo BRO",
+    "en": "Scewo BRO",
+    "fr": "Scewo BRO",
+    "it": "Scewo BRO"
+   },
+   "gradeName": {
+    "de": "Voll zugänglich",
+    "en": "Fully accessible",
+    "fr": "Entièrement accessible",
+    "it": "Completamente accessibile"
+   }
+  },
+  {
+   "ratingProfileId": 11674,
+   "grade": 1,
+   "conformance": 100,
+   "ratingProfileName": {
+    "de": "Gehörlos",
+    "en": "Deaf",
+    "fr": "Sourd",
+    "it": "Sordi"
+   },
+   "gradeName": {
+    "de": "Voll zugänglich",
+    "en": "Fully accessible",
+    "fr": "Entièrement accessible",
+    "it": "Completamente accessibile"
+   }
+  },
+  {
+   "ratingProfileId": 11671,
+   "grade": 2,
+   "conformance": 85,
+   "ratingProfileName": {
+    "de": "Sehbehinderungen",
+    "en": "Visual impairments",
+    "fr": "Handicap visuel",
+    "it": "Disabilità visive"
+   },
+   "gradeName": {
+    "de": "Teilweise zugänglich",
+    "en": "Partially accessible",
+    "fr": "Partiellement accessible",
+    "it": "Parzialmente accessibile"
+   }
+  },
+  {
+   "ratingProfileId": 11672,
+   "grade": 2,
+   "conformance": 85,
+   "ratingProfileName": {
+    "de": "Blind",
+    "en": "Blind",
+    "fr": "Aveugle",
+    "it": "Cieco"
+   },
+   "gradeName": {
+    "de": "Teilweise zugänglich",
+    "en": "Partially accessible",
+    "fr": "Partiellement accessible",
+    "it": "Parzialmente accessibile"
+   }
+  },
+  {
+   "ratingProfileId": 11673,
+   "grade": 1,
+   "conformance": 100,
+   "ratingProfileName": {
+    "de": "Hörbehinderungen",
+    "en": "Hearing impairments",
+    "fr": "Déficiences auditives",
+    "it": "Disturbi dell'udito"
+   },
+   "gradeName": {
+    "de": "Voll zugänglich",
+    "en": "Fully accessible",
+    "fr": "Entièrement accessible",
+    "it": "Completamente accessibile"
+   }
+  }
+ ],
+ "amenityFeature": [
+  {
+   "maxValue": "23:00",
+   "minValue": "06:00",
+   "propertyId": "general-receptionfromuntil",
+   "valueType": "timerange",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Öffnungszeiten der Rezeption"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-wifi",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "WiFi"
+  },
+  {
+   "value": "true",
+   "propertyId": "characteristics-nonsmoking",
+   "valueType": "boolean",
+   "typeName": "Charaktereigenschaften",
+   "additionalType": "characteristics",
+   "name": "Nichtraucher-Unterkunft"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-carpark",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Parkplatz"
+  },
+  {
+   "value": "true",
+   "propertyId": "characteristics-petfriendly",
+   "valueType": "boolean",
+   "typeName": "Charaktereigenschaften",
+   "additionalType": "characteristics",
+   "name": "Haustierfreundlich"
+  },
+  {
+   "value": "true",
+   "propertyId": "outdoor-garden",
+   "valueType": "boolean",
+   "typeName": "Aussenanlagen",
+   "additionalType": "outdoor",
+   "name": "Garten"
+  },
+  {
+   "value": "true",
+   "propertyId": "wellness-thermalbaths",
+   "valueType": "boolean",
+   "typeName": "Wellness-Dienstleistungen",
+   "additionalType": "wellness",
+   "name": "Thermalbäder"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-mountainbiking",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Mountainbiken"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-hiking",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Wandern"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-curling",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Curling Angebot"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-crosscountryskiing",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Langlauf Angebote"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-iceskating",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Eislaufen"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-canoeing",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Kanusport Angebote"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-waterskiing",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Wasserski"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-windsurfing",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Windsurfen"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-boatrental",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Bootsverleih"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-fishing",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Angeln"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-golf",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Golf"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-horseriding",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Reiten"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-bowling",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Bowlingbahn"
+  },
+  {
+   "value": "true",
+   "propertyId": "entertainment-casino",
+   "valueType": "boolean",
+   "typeName": "Unterhaltung und Lifestyle",
+   "additionalType": "entertainment",
+   "name": "Casino"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-motorboatrides",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Fahrten mit dem Motorboot"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "300",
+   "propertyId": "location-distanceplayground",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Spielplatz"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "20000",
+   "propertyId": "location-distancetoskislope",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Skipiste"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "134000",
+   "propertyId": "location-distanceairport",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Flughafen"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "800",
+   "propertyId": "location-distancebarspubs",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Bars/Pubs"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "100",
+   "propertyId": "location-distancebusstation",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Busbahnhof"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "500",
+   "propertyId": "location-distancecitycentre",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Stadtzentrum"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "20000",
+   "propertyId": "location-distancecrosscountryskitrail",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Langlaufloipe"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "2400",
+   "propertyId": "location-distancehospital",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Krankenhaus"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "4000",
+   "propertyId": "location-distancelake",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung See"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "50",
+   "propertyId": "location-distancepark",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Park"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "500",
+   "propertyId": "location-distancepharmacy",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Apotheke"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "800",
+   "propertyId": "location-distancerestaurants",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Restaurants"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "600",
+   "propertyId": "location-distanceriver",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Fluss"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "800",
+   "propertyId": "location-distanceshops",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Shops"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "20000",
+   "propertyId": "location-distanceskilift",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Skilift"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "20000",
+   "propertyId": "location-distanceskiresort",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Skigebiet"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "1000",
+   "propertyId": "location-distancetouristcenter",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung touristisches Zentrum"
+  },
+  {
+   "unitCode": "MTR",
+   "unitText": "m",
+   "value": "600",
+   "propertyId": "location-distancetrainstation",
+   "valueType": "number",
+   "typeName": "Standort",
+   "additionalType": "location",
+   "name": "Entfernung Bahnhof"
+  },
+  {
+   "maxValue": "10:00",
+   "minValue": "07:00",
+   "propertyId": "general-breakfastfromuntil",
+   "valueType": "timerange",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Frühstückszeit"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-baggagestorageservice",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Gepäckaufbewahrung"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-highchairforchildren",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Hochstuhl für Kinder"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-illuminatedentrancearea",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Beleuchteter Eingangsbereich"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-lobby",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Lobby"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-multilingualstaff",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Mehrsprachiges Personal"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-outdoorfurniture",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Gartenmöbel"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-reception",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Empfang"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-smokealarm",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Rauchmelder"
+  },
+  {
+   "value": "true",
+   "propertyId": "general-smokingarea",
+   "valueType": "boolean",
+   "typeName": "Allgemein",
+   "additionalType": "general",
+   "name": "Raucherbereich"
+  },
+  {
+   "value": "true",
+   "propertyId": "food-bar",
+   "valueType": "boolean",
+   "typeName": "Essen",
+   "additionalType": "food",
+   "name": "Bar"
+  },
+  {
+   "value": "true",
+   "propertyId": "food-barlounge",
+   "valueType": "boolean",
+   "typeName": "Essen",
+   "additionalType": "food",
+   "name": "Bar/Lounge"
+  },
+  {
+   "value": "true",
+   "propertyId": "food-breakfastroom",
+   "valueType": "boolean",
+   "typeName": "Essen",
+   "additionalType": "food",
+   "name": "Frühstücksraum"
+  },
+  {
+   "value": "true",
+   "propertyId": "food-drinksmachine",
+   "valueType": "boolean",
+   "typeName": "Essen",
+   "additionalType": "food",
+   "name": "Getränkeautomat"
+  },
+  {
+   "value": "true",
+   "propertyId": "food-electrickettle",
+   "valueType": "boolean",
+   "typeName": "Essen",
+   "additionalType": "food",
+   "name": "Wasserkocher"
+  },
+  {
+   "value": "true",
+   "propertyId": "food-lobbybar",
+   "valueType": "boolean",
+   "typeName": "Essen",
+   "additionalType": "food",
+   "name": "Lobby-Bar"
+  },
+  {
+   "value": "true",
+   "propertyId": "entertainment-dailynewspaperinthelobby",
+   "valueType": "boolean",
+   "typeName": "Unterhaltung und Lifestyle",
+   "additionalType": "entertainment",
+   "name": "Tageszeitung in der Lobby"
+  },
+  {
+   "value": "true",
+   "propertyId": "sport-paragliding",
+   "valueType": "boolean",
+   "typeName": "Sport und Freizeit",
+   "additionalType": "sport",
+   "name": "Gleitschirmfliegen"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-audiblealarms",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Akustische Alarme"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-automatictofiredepartment",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Automatische Verbindung zur Feuerwehr"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-automaticfirealarmsystem",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Automatische Brandmeldeanlage"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-automaticfiredoors",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Automatische Brandschutztüren"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-compliancewithfireregulations",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Einhaltung der Brandschutzvorschriften"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-elevatorwithautomaticrecall",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Aufzug mit automatischem Rückruf"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-emergencylights",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Notbeleuchtung"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-fireextinguisherinhallway",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Feuerlöscher im Flur"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-fireextinguishersinpublicareas",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Feuerlöscher in öffentlichen Bereichen"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-firstaidavailable",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Erste Hilfe verfügbar"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-haccpconcept",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "HACCP-Konzept (Hygienekonzept im Bereich der Lebensmittelsicherheit und Gastronomie)"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-hardwiredsmokedetectors",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Fest verdrahtete Rauchmelder"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-legalrailingheight",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Gesetzliche Geländerhöhe auf dem Balkon eingehalten (100cm)"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-publicliabilityinsurance",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Betriebshaftpflichtversicherung"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-regularfunctionaltestsfirealarm",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Regelmässige Funktionsprüfungen Feueralarm"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-regularhygienetraining",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Regelmässige Hygieneschulungen"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-regulartemperaturechecks",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Regelmässige Temperaturkontrollen"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-smokedetectorsinpublicareas",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Rauchmelder in öffentlichen Bereichen"
+  },
+  {
+   "value": "true",
+   "propertyId": "security-wellilluminatedpaths",
+   "valueType": "boolean",
+   "typeName": "Sicherheit und Schutz",
+   "additionalType": "security",
+   "name": "Gut beleuchtete Wege"
+  },
+  {
+   "value": "true",
+   "propertyId": "characteristics-urbanhotel",
+   "valueType": "boolean",
+   "typeName": "Charaktereigenschaften",
+   "additionalType": "characteristics",
+   "name": "Stadthotel"
+  },
+  {
+   "value": "1847",
+   "propertyId": "building-built",
+   "valueType": "number",
+   "typeName": "Gebäude",
+   "additionalType": "building",
+   "name": "Erbaut"
+  },
+  {
+   "value": "5",
+   "propertyId": "building-floors",
+   "valueType": "number",
+   "typeName": "Gebäude",
+   "additionalType": "building",
+   "name": "Stockwerke"
+  },
+  {
+   "value": "2011",
+   "propertyId": "building-renovated",
+   "valueType": "number",
+   "typeName": "Gebäude",
+   "additionalType": "building",
+   "name": "Renoviert"
+  }
+ ],
+ "@id": "https://api.discover.swiss/info/v2/lodgingbusinesses/log_x8-tdgf_bcfch",
+ "identifier": "log_x8-tdgf_bcfch",
+ "removed": false,
+ "dataGovernance": {
+  "origin": [
+   {
+    "datasource": "hs-d365",
+    "sourceId": "12527",
+    "created": "2021-12-14T15:43:44+00:00",
+    "lastModified": "2026-08-06T15:47:44+00:00",
+    "license": "CC BY",
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   {
+    "datasource": "hs-my",
+    "sourceId": "95901b5e-2ec0-49fb-8361-7a1614638ec1",
+    "license": "CC BY",
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   {
+    "datasource": "hs",
+    "sourceId": "12527",
+    "license": "CC BY",
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   {
+    "datasource": "hcl",
+    "sourceId": "31647",
+    "created": "2017-12-22T10:00:12+00:00",
+    "lastModified": "2024-07-24T01:15:05+00:00",
+    "license": "CC BY-SA",
+    "provider": {
+     "acronym": "hcl",
+     "identifier": "hcl",
+     "type": "schema.org/Partner",
+     "name": "Hotelclass"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   {
+    "datasource": "gin",
+    "sourceId": "4839c9c5-ab75-4850-8436-c87a1789afc8",
+    "created": "2022-02-26T09:49:04+00:00",
+    "lastModified": "2026-06-30T04:14:29+00:00",
+    "license": "CC BY-SA",
+    "provider": {
+     "acronym": "gin",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/gin.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_wy3_14w4",
+      "identifier": "img_wy3_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "Ginto (gin_logo)"
+     },
+     "identifier": "gin",
+     "type": "schema.org/Partner",
+     "name": "Ginto"
+    },
+    "source": {
+     "acronym": "pi",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/pi.jpg",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_5y_14w4",
+      "identifier": "img_5y_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "Pro Infirmis (pi_logo)"
+     },
+     "identifier": "pi",
+     "type": "schema.org/Partner",
+     "name": "Pro Infirmis"
+    }
+   },
+   {
+    "datasource": "st-sc",
+    "sourceId": "ff9ae056-c01c-425a-a4bb-202088b32ff7",
+    "license": "CC BY-SA",
+    "provider": {
+     "acronym": "st",
+     "identifier": "st",
+     "type": "schema.org/Partner",
+     "name": "Schweiz Tourismus"
+    },
+    "source": {
+     "acronym": "st",
+     "identifier": "st",
+     "type": "schema.org/Partner",
+     "name": "Schweiz Tourismus"
+    }
+   }
+  ],
+  "provider": {
+   "acronym": "hs",
+   "logo": {
+    "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+    "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+    "identifier": "img_x8_14w4",
+    "type": "schema.org/ImageObject",
+    "additionalType": "Logo",
+    "name": "HotellerieSuisse"
+   },
+   "identifier": "hs",
+   "type": "schema.org/Partner",
+   "name": "HotellerieSuisse"
+  },
+  "source": {
+   "acronym": "hs",
+   "logo": {
+    "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+    "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+    "identifier": "img_x8_14w4",
+    "type": "schema.org/ImageObject",
+    "additionalType": "Logo",
+    "name": "HotellerieSuisse"
+   },
+   "identifier": "hs",
+   "type": "schema.org/Partner",
+   "name": "HotellerieSuisse"
+  }
+ },
+ "additionalProperty": [
+  {
+   "value": "12527",
+   "propertyId": "hsId",
+   "valueType": "string",
+   "name": "HotellerieSuisse Kennung"
+  },
+  {
+   "value": "IMPORTED_RATEABLE",
+   "propertyId": "ginDetailLevel",
+   "valueType": "string"
+  },
+  {
+   "value": "95901b5e-2ec0-49fb-8361-7a1614638ec1",
+   "propertyId": "sourceId",
+   "valueType": "string"
+  }
+ ],
+ "lastModified": "2026-08-31T21:28:35.30539+00:00",
+ "availableDataLanguage": [
+  "de",
+  "en",
+  "fr",
+  "it"
+ ],
+ "autoTranslatedData": false,
+ "license": "CC BY",
+ "description": "Unser Hotel Du Nord - ein gemütliches 4-Sterne Haus – eine Oase der Gastlichkeit, ein traditionelles Haus mit persönlicher, familiärer Atmosphäre heisst Sie herzlich willkommen. Dieses charmante Hotel ist eines der ältesten, seit 1847 ein Gastronomiebetrieb. Ebenfalls im Zimmerpreis inbegriffen ist die kostenlose Benützung des öffentlichen Schwimm- & Wellness Centres \"Bödelibad\" welches innerhalb von 10 Minuten erreichbar ist. Detaillierte Information und Öffnungszeiten finden Sie unter www.boedelibad.ch.<br>Das Hotel Du Nord befindet sich an der berühmten Höhenmatte nur 5 Gehminuten vom Zentrum und dem Interlaken Ost Bahnhof, von welchen zahlreiche Ausflüge in diese grandiose Jungfrau-Region unternommen werden können.  Für mehr Information beratet Sie unsere Rezeptionsmitarbeiter gerne oder besuchen Sie vorgängig www.jungfrau.ch",
+ "image": {
+  "tagToQuery": [
+   "image-outdoor-exterior",
+   "image-saisonality-summer"
+  ],
+  "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs-my/a7617dc2-39e8-4894-ab79-1b973c8510f6.jpg",
+  "copyrightNotice": "Du Nord, HotellerieSuisse",
+  "dataGovernance": {
+   "provider": {
+    "acronym": "hs",
+    "logo": {
+     "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+     "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+     "identifier": "img_x8_14w4",
+     "type": "schema.org/ImageObject",
+     "additionalType": "Logo",
+     "name": "HotellerieSuisse (hs_logo)"
+    },
+    "identifier": "hs",
+    "type": "schema.org/Partner",
+    "name": "HotellerieSuisse"
+   },
+   "source": {
+    "acronym": "hs",
+    "logo": {
+     "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+     "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+     "identifier": "img_x8_14w4",
+     "type": "schema.org/ImageObject",
+     "additionalType": "Logo",
+     "name": "HotellerieSuisse (hs_logo)"
+    },
+    "identifier": "hs",
+    "type": "schema.org/Partner",
+    "name": "HotellerieSuisse"
+   },
+   "author": {
+    "familyName": "Du Nord"
+   }
+  },
+  "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8-2o_bavdrvjs-vret-esqg-iaag-bqjiuijdsrqe",
+  "identifier": "img_x8-2o_bavdrvjs-vret-esqg-iaag-bqjiuijdsrqe",
+  "type": "schema.org/ImageObject",
+  "name": "20240823-MAMO-Photography-9029-R-2500px.jpg"
+ },
+ "url": "http://www.hotel-dunord.ch",
+ "additionalType": "Hotel",
+ "link": [
+  {
+   "url": "https://www.myswitzerland.com/de/unterkuenfte/swiss-dreams-hotel-du-nord/",
+   "inLanguage": "de",
+   "type": "MySwitzerland"
+  },
+  {
+   "url": "http://www.hotel-dunord.ch",
+   "type": "WebHomepage"
+  },
+  {
+   "url": "https://www.ginto.guide/entries/4839c9c5-ab75-4850-8436-c87a1789afc8?lnk_src=business",
+   "title": "Detaillierte Zugänglichkeitsinfo",
+   "type": "GintoWeb"
+  }
+ ],
+ "name": "Hotel Du Nord",
+ "type": "schema.org/LodgingBusiness"
+}
