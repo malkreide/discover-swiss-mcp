@@ -13,7 +13,9 @@ Two rules this file exists to enforce:
    empty or shortened result is legible as such. An empty list with no
    explanation is the shape that invites an invented answer.
 
-The tool layer lands in P1; this module holds only the envelope.
+:class:`Attribution` itself lives in :mod:`discover_swiss_mcp.licenses`, next to
+the rules that build it, and is re-exported here so the tool layer has one
+import for the response shape.
 """
 
 from __future__ import annotations
@@ -23,18 +25,9 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from discover_swiss_mcp.licenses import Attribution
 
-class Attribution(BaseModel):
-    """Per-object attribution, built from the object itself.
-
-    ``copyright_notice`` is the source's own wording (e.g. «Zürich Tourismus
-    www.zuerich.com») and is passed through verbatim, not reworded.
-    """
-
-    provider: str
-    license: str
-    copyright_notice: str | None
-    source_url: str | None
+__all__ = ["Attribution", "Envelope"]
 
 
 class Envelope(BaseModel):

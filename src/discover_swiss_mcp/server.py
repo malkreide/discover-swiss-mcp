@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from mcp.server.caching import CacheHint
 from mcp.server.mcpserver import MCPServer
 
+from discover_swiss_mcp.client import DiscoverSwissClient
 from discover_swiss_mcp.config import ConfigError, Settings, load_settings
 from discover_swiss_mcp.logging_config import configure_logging, get_logger
 
@@ -61,19 +62,22 @@ class AppContext:
     """Server-wide resources shared across tool calls."""
 
     settings: Settings | None = None
+    client: DiscoverSwissClient | None = None
 
 
 @asynccontextmanager
 async def app_lifespan(server: MCPServer) -> AsyncIterator[AppContext]:
     """Manage server-wide resources across the whole lifecycle.
 
-    From P1 this creates the single shared ``DiscoverSwissClient`` and closes
-    it in the ``finally`` block — one client per process, not one per tool
-    call. In P0 it only proves the lifecycle runs.
+    The shared ``DiscoverSwissClient`` is created here and closed in the
+    ``finally`` block — one client per process, not one per tool call. Its rate
+    budget and its cache only mean anything if every tool call goes through the
+    same instance; a client per call would hand each caller a fresh 55-per-
+    minute allowance against a gateway that counts 60 for all of them together.
 
     Settings are loaded without requiring the key: a server that cannot even
     start without a subscription key cannot report its own configuration, and
-    `source_status` (P1) has to be able to say "no key" rather than crash.
+    `source_status` has to be able to say "no key" rather than crash.
     """
     try:
         settings: Settings | None = load_settings(require_key=False)
@@ -82,6 +86,8 @@ async def app_lifespan(server: MCPServer) -> AsyncIterator[AppContext]:
         # not stop the process before it can say what is wrong.
         logger.error("settings_invalid", error=str(exc))
         settings = None
+
+    client = DiscoverSwissClient(settings) if settings is not None else None
 
     # The structlog event the CI smoke test looks for. Never carries the key:
     # `safe_summary()` is the only view of Settings that gets logged.
@@ -92,8 +98,10 @@ async def app_lifespan(server: MCPServer) -> AsyncIterator[AppContext]:
         **(settings.safe_summary() if settings else {"config": "invalid"}),
     )
     try:
-        yield AppContext(settings=settings)
+        yield AppContext(settings=settings, client=client)
     finally:
+        if client is not None:
+            await client.aclose()
         logger.info("Server lifespan stopped")
 
 

@@ -68,3 +68,10 @@ async def test_lifespan_logs_its_start_without_the_key() -> None:
     assert rendered[0]["tools"] == 0
     assert rendered[0]["api_key"] == "set"
     assert "test-key" not in str(events)
+
+
+async def test_lifespan_hands_out_one_shared_client() -> None:
+    """The rate budget and the cache only work if every call shares one client."""
+    async with app_lifespan(mcp) as ctx:
+        assert ctx.client is not None
+        assert ctx.client.settings is ctx.settings
