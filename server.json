@@ -1,0 +1,65 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.malkreide/discover-swiss-mcp",
+  "description": "Swiss tourism data from discover.swiss Infocenter Open, with per-object licence and attribution",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/malkreide/discover-swiss-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/malkreide/discover-swiss-mcp",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "discover-swiss-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeHint": "uvx",
+      "environmentVariables": [
+        {
+          "name": "DISCOVER_SWISS_KEY",
+          "description": "discover.swiss Infocenter Open subscription key (bring your own key, self-service at portal.discover.swiss). Sent as the Ocp-Apim-Subscription-Key header.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "DISCOVER_SWISS_PROJECT",
+          "description": "discover.swiss project to query. dsod-content is the superset; dsod-hs is the HotellerieSuisse subset.",
+          "default": "dsod-content",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "DISCOVER_SWISS_MCP_TRANSPORT",
+          "description": "MCP transport: stdio for local clients, streamable-http for cloud deployments.",
+          "default": "stdio",
+          "isRequired": false,
+          "isSecret": false,
+          "choices": ["stdio", "streamable-http"]
+        },
+        {
+          "name": "DISCOVER_SWISS_MCP_HOST",
+          "description": "Bind address for the streamable-http transport. Loopback by default; a non-loopback bind needs an explicit host allow-list.",
+          "default": "127.0.0.1",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "DISCOVER_SWISS_MCP_PORT",
+          "description": "TCP port for the streamable-http transport.",
+          "default": "8000",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "category": "Travel & Transportation",
+      "scope": "core"
+    }
+  }
+}

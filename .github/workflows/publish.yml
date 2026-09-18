@@ -1,0 +1,72 @@
+# Dateiname zählt: 'publish.yml' ist der Wert, der auf PyPI unter
+# "Workflow name" eingetragen wird — nicht der 'name:'-Wert unten.
+name: Publish to PyPI
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:      # A4: erlaubt einen Re-Run auf dem AKTUELLEN Stand,
+                          # statt einen alten fehlgeschlagenen Tag-Lauf zu wiederholen
+
+# B5: Default fuer alle Jobs. Der publish-Job hebt sich das an, was er
+# zusaetzlich braucht (id-token) — ein Release-Workflow ist der letzte Ort,
+# an dem ein Job mehr Rechte tragen sollte als seine Aufgabe verlangt.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15                       # B6
+    steps:
+      # B4: SHA-gepinnt, nicht Tag-gepinnt — siehe Kommentar in ci.yml.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Build distributions
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+
+      # Release-Gate: prüft das GEBAUTE Artefakt, nicht die Quelldateien.
+      # A1 (mcp-name-Marker in der Wheel-METADATA), A2 (description <= 100),
+      # A4 (Tag == gebaute Version). Läuft VOR dem Upload — nach dem Upload
+      # ist die Version unveränderlich.
+      - name: Verify release artifacts
+        run: |
+          python scripts/check_release_artifacts.py \
+            --dist dist \
+            --tag "${GITHUB_REF_NAME}"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15                       # B6
+    # A3: Dieser Wert muss auf PyPI beim Pending Publisher unter
+    # "Environment name" exakt so eingetragen sein. Leer lassen ist der
+    # häufigste Grund für 'invalid-publisher'.
+    environment:
+      name: pypi
+    permissions:
+      id-token: write       # Trusted Publishing via OIDC
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: dist
+          path: dist/
+
+      # B4: Diese Referenz war ein BRANCH ('release/v1'), nicht einmal ein Tag —
+      # sie verschiebt sich bei jedem Push des Maintainers, und der Schritt
+      # dahinter haelt das PyPI-Token. Der einzige Ort im Bundle, an dem
+      # Pinning nicht optional ist.
+      - uses: pypa/gh-action-pypi-publish@a892a5a61159132606e93a2fa6f4358831b04d26 # v1.14.2
+        with:
+          skip-existing: true    # A4: verhindert Doppel-Upload beim Re-Run

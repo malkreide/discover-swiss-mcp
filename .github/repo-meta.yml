@@ -1,0 +1,39 @@
+# .github/repo-meta.yml — von der github-repo Skill gepflegt.
+# Einzige Quelle der Wahrheit fuer Repo-Metadaten. Aendert sich ein Wert,
+# wird diese Datei aktualisiert — nicht erneut gefragt.
+repo_name: discover-swiss-mcp
+title: discover.swiss MCP Server
+description: MCP server for discover.swiss Infocenter Open — search Swiss tourism data with per-object attribution
+topics:
+  - mcp
+  - model-context-protocol
+  - llm
+  - python
+  - swiss-open-data
+  - tourism
+  - discover-swiss
+  - schema-org
+  - swiss-public-data-mcp
+project_type: mcp-server
+visibility: public
+license: MIT
+author_legal_name: Hayal Oezkan
+author_label: Autor
+github_user: malkreide
+default_branch: main
+language: python
+version: 0.1.0
+pypi_package: discover-swiss-mcp
+mcp_name: io.github.malkreide/discover-swiss-mcp
+confirmed: true
+
+# Was das aktuelle Backend nicht setzen konnte.
+# Backend ist B (GitHub-MCP-Tools, kein `gh`): Topics liessen sich damit nicht
+# setzen. Sie sind im GitHub-UI bereits exakt wie oben gesetzt, ebenso die
+# Description — deshalb steht hier nichts offen und es wird nichts ueber die
+# API nachgezogen.
+offen: []
+
+# Die Repo-Description ist 101 Zeichen lang. GitHub traegt das; die
+# MCP-Registry nicht (422 ab 101). `server.json` fuehrt deshalb eine eigene,
+# kuerzere Beschreibung — siehe dort.
