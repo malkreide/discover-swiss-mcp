@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets — the DISCOVER_SWISS_KEY never belongs in a committed file.
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+secrets.yaml
+config.local.*
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NOT ignored, deliberately: probes/probe_out/, probes/probe_detail_out/ and
+# probes/probe_verify_out/. Those raw responses are the evidence behind every
+# design decision in the probe report — the documentation is wrong in several
+# places and the recorded response is what settles it. They are documentation,
+# not build output.

@@ -1,0 +1,93 @@
+[build-system]
+requires      = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name        = "discover-swiss-mcp"
+version     = "0.1.0"
+description = "MCP server for discover.swiss Infocenter Open — Swiss tourism data with per-object attribution"
+readme      = "README.md"
+license     = { file = "LICENSE" }
+requires-python = ">=3.11"
+
+keywords = [
+    "mcp", "model-context-protocol", "llm",
+    "swiss-open-data", "tourism", "discover-swiss",
+    "schema-org",
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    # Upper bound on purpose: `mcp` 2.0.0 moved the server API from
+    # `mcp.server.fastmcp` to `mcp.server.mcpserver`. An unbounded pin lets a
+    # resolver make that migration decision silently, on a fresh install, in
+    # CI. The variant this server is built against is 2.x (spec 2026-07-28).
+    "mcp>=2,<3",
+    "httpx>=0.27.0",
+    "pydantic>=2",
+    "structlog>=24.1.0,<27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "respx>=0.21.0",
+    # Pinned exactly, and pinned HERE rather than in the workflow. A format
+    # gate is only an assurance if the version that runs locally is the one
+    # that runs in CI. `ruff format` has no `select` — its output *is* the
+    # criterion, so any release that changes the formatter turns untouched code
+    # red in every repo at once. A bump belongs in its own commit, together
+    # with the reformatting it causes.
+    "ruff==0.16.4",
+]
+
+[project.scripts]
+discover-swiss-mcp = "discover_swiss_mcp.server:main"
+
+[project.urls]
+Homepage   = "https://github.com/malkreide/discover-swiss-mcp"
+Repository = "https://github.com/malkreide/discover-swiss-mcp"
+Issues     = "https://github.com/malkreide/discover-swiss-mcp/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/discover_swiss_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths    = ["tests"]
+addopts      = "-v --tb=short"
+markers      = [
+    "live: hits the live discover.swiss API (needs DISCOVER_SWISS_KEY; skipped in CI)",
+]
+
+[tool.ruff]
+# `probes/` is evidence, not source. Those scripts produced the recorded
+# responses under `probes/probe_out/`; reformatting them would edit the
+# instrument after the measurement. `extend-exclude` rather than `exclude`:
+# plain `exclude` replaces ruff's own default list and pulls `.venv/` and
+# `node_modules/` back into the gate.
+extend-exclude = ["probes"]
+
+# Explicit even though it matches the default: `ruff format` wraps a line as
+# soon as it no longer fits, so a file copied between repos is multi-line at 88
+# and single-line at 100. If the value is written down nowhere, that wrap looks
+# like a bug in the copying script rather than a difference in configuration.
+line-length    = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# Pinned explicitly: without `select`, ruff's default rule set applies — and
+# that set changes between releases. A repo can go red days after its last
+# green run without a single line having changed.
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
