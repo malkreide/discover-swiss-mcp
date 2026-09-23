@@ -36,8 +36,9 @@ Two consequences, both already decided:
   distance filtering, and labels the answer `provenance: list_fallback`. The
   fallback is deliberately narrow — no full text.
 
-This repository is currently a **scaffold**: structure, metadata and CI. No
-tools are registered yet; the table below is the P1 plan.
+Status: **P2** — four of the eight tools are registered (`search`,
+`get_details`, `find_accommodation`, `find_tours`); the other four follow in
+P3.
 
 ---
 
@@ -69,8 +70,8 @@ afterwards?"*
 
 ## Features
 
-- **8 read-only tools** (planned for P1) over search, detail, accommodation,
-  tours, events, webcams and area exploration
+- **8 read-only tools** over search, detail, accommodation, tours, events,
+  webcams and area exploration — four available, four planned for P3
 - **Per-object attribution** — provider, licence and copyright notice travel in
   the response, not in this README
 - **Licence whitelist** on the root `license` field; everything else is counted
@@ -123,20 +124,25 @@ never written to a log line, and belongs in no file that gets committed.
 
 <!-- Names exactly as registered — not the function names. -->
 
-None yet — this is the P0 scaffold. The eight tools below are the P1 plan, as
-derived from the probe report, section 7. All are read-only
-(`readOnlyHint: true`, `openWorldHint: true`).
+The eight tools of the probe report, section 7. All are read-only
+(`readOnlyHint: true`, `openWorldHint: true`). Every hit carries its own
+attribution; every response counts what it withheld (`excluded_by_license`,
+`excluded_test_objects`, `excluded_by_default_types`) and explains an empty
+result in `hint`.
 
-| Tool | Source | Planned for |
-|---|---|---|
-| `search` | `POST /search` | Full text, type, locality and distance across the whole index; rooms and meeting rooms excluded by default |
-| `get_details` | `/vertices/{id}` | Description, fees, accessibility, opening hours, amenities — truncated, HTML resolved to text |
-| `find_accommodation` | Search `type=LodgingBusiness` | Stars, price range, amenities, accessibility, distance |
-| `find_tours` | Search `type=Tour` | Difficulty, length, ascent, season, region |
-| `find_events` | Search `type=Event` | Thin coverage by design; test objects filtered and counted |
-| `webcams_near` | Search `type=Webcam` | Live image link plus last snapshot, labelled as such |
-| `explore_area` | Search with facets | What kinds of offers exist in a region, with missing facets reported |
-| `source_status` | `/status` plus counters | Reachability, quota headroom, whether search is available |
+| Tool | Status | Source | Purpose |
+|---|---|---|---|
+| `search` | available | `POST /search` | Full text (`match: all\|name`), type, locality and distance (`near`, `radius_km`) across the whole index; rooms and meeting rooms excluded unless requested |
+| `get_details` | available | `/vertices/{id}` | Description, fees, accessibility, opening hours, amenities — trimmed to ~8 KB, HTML resolved to text; `no_derivatives` for CC BY-ND |
+| `find_accommodation` | available | Search `type=LodgingBusiness` | Stars, garni, price band, amenities, accessibility (Pro Infirmis / OK:GO), distance; no availability, no nightly prices |
+| `find_tours` | available | Search `type=Tour` | Kind, difficulty, length, ascent, season month, region, distance |
+| `find_events` | P3 | Search `type=Event` | Thin coverage by design; test objects filtered and counted |
+| `webcams_near` | P3 | Search `type=Webcam` | Live image link plus last snapshot, labelled as such |
+| `explore_area` | P3 | Search with facets | What kinds of offers exist in a region, with missing facets reported |
+| `source_status` | P3 | `/status` plus counters | Reachability, quota headroom, whether search is available |
+
+Tool definitions are pinned in `docs/tool-hashes.json`; after an intended
+change, run `python scripts/gen_tool_hashes.py --write` in the same PR.
 
 ---
 
@@ -162,7 +168,8 @@ Data licences and the attribution rules are documented in
 discover-swiss-mcp/
 ├── src/discover_swiss_mcp/
 │   ├── __main__.py        # python -m entry point, transport chosen by env
-│   ├── server.py          # MCP server, lifespan; no tools yet (P0)
+│   ├── server.py          # MCP server, lifespan, tool wrappers
+│   ├── tools.py           # the *_impl functions, input and output models
 │   ├── config.py          # settings from env; the key is a SecretStr
 │   ├── models.py          # the response envelope
 │   ├── client.py          # API client — stub with P1 markers

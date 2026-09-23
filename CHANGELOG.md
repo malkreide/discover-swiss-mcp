@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- P2: the four core tools `search`, `get_details`, `find_accommodation` and
+  `find_tours`, each a pure `*_impl` function in `tools.py` plus an MCP
+  wrapper in `server.py` (`readOnlyHint`, `openWorldHint`). Every hit passes
+  the licence gate and the test-object filter first; `upstream_count`,
+  `fetched`, `returned` and the three `excluded_*` counters make every
+  shortfall visible. Empty results carry a concrete `hint`.
+- Envelope field `excluded_by_default_types`: rooms and meeting rooms that
+  `search` leaves out unless `types` asks for them.
+- Tool hash snapshot (`docs/tool-hashes.json`, `scripts/gen_tool_hashes.py`),
+  checked by the test suite — the `openlex-mcp` pattern.
+- `scripts/p2_anchor_run.py`: the three anchor queries of the probe report
+  against the live API, key from the environment only.
+
 - Scaffold: src layout, packaging metadata (`pyproject.toml`, `server.json`),
   CI and publish workflows, Dependabot, bilingual README, licence and data
   licence documentation. No tools are registered yet.

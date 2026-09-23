@@ -34,8 +34,9 @@ Zwei Konsequenzen, beide bereits entschieden:
   clientseitiger Distanzberechnung aus und kennzeichnet die Antwort als
   `provenance: list_fallback`. Der Fallback ist bewusst schmal — kein Volltext.
 
-Dieses Repository ist zurzeit ein **Scaffold**: Struktur, Metadaten und CI. Es
-ist noch kein Tool registriert; die Tabelle unten ist der P1-Plan.
+Stand: **P2** — vier der acht Tools sind registriert (`search`,
+`get_details`, `find_accommodation`, `find_tours`); die übrigen vier folgen in
+P3.
 
 ---
 
@@ -66,8 +67,8 @@ Gehdistanz zum HB, und wo esse ich danach vegetarisch?»*
 
 ## Funktionen
 
-- **8 Read-only-Tools** (geplant für P1) für Suche, Detail, Unterkunft, Touren,
-  Veranstaltungen, Webcams und Gebietsübersicht
+- **8 Read-only-Tools** für Suche, Detail, Unterkunft, Touren, Veranstaltungen,
+  Webcams und Gebietsübersicht — vier verfügbar, vier geplant für P3
 - **Attribution pro Objekt** — Anbieter, Lizenz und Copyright-Vermerk stehen in
   der Response, nicht in diesem README
 - **Lizenz-Whitelist** auf dem root-`license`-Feld; alles andere wird in
@@ -121,20 +122,26 @@ committet wird.
 
 <!-- Namen exakt so, wie sie registriert sind — nicht die Funktionsnamen. -->
 
-Noch keine — dies ist das P0-Scaffold. Die acht Tools unten sind der P1-Plan
-aus dem Probe-Report, Abschnitt 7. Alle sind read-only (`readOnlyHint: true`,
-`openWorldHint: true`).
+Die acht Tools aus dem Probe-Report, Abschnitt 7. Alle sind read-only
+(`readOnlyHint: true`, `openWorldHint: true`). Jeder Treffer trägt seine eigene
+Attribution; jede Antwort zählt, was sie zurückhält (`excluded_by_license`,
+`excluded_test_objects`, `excluded_by_default_types`), und erklärt eine
+Leermenge im `hint`.
 
-| Tool | Quelle | Geplant für |
-|---|---|---|
-| `search` | `POST /search` | Volltext, Typ, Ort und Distanz über den ganzen Index; Zimmer und Besprechungsräume per Default ausgeschlossen |
-| `get_details` | `/vertices/{id}` | Beschreibung, Preise, Barrierefreiheit, Öffnungszeiten, Ausstattung — gekürzt, HTML als Text |
-| `find_accommodation` | Search `type=LodgingBusiness` | Sterne, Preisspanne, Ausstattung, Barrierefreiheit, Distanz |
-| `find_tours` | Search `type=Tour` | Schwierigkeit, Länge, Aufstieg, Saison, Region |
-| `find_events` | Search `type=Event` | Dünne Abdeckung als Scope benannt; Testobjekte gefiltert und gezählt |
-| `webcams_near` | Search `type=Webcam` | Link aufs Livebild plus letzter Snapshot, so beschriftet |
-| `explore_area` | Search mit Facetten | Welche Angebote es in einer Region gibt; fehlende Facetten werden gemeldet |
-| `source_status` | `/status` und Zähler | Erreichbarkeit, Quota-Rest, ob Search verfügbar ist |
+| Tool | Stand | Quelle | Zweck |
+|---|---|---|---|
+| `search` | verfügbar | `POST /search` | Volltext (`match: all\|name`), Typ, Ort und Distanz (`near`, `radius_km`) über den ganzen Index; Zimmer und Besprechungsräume nur auf Anfrage |
+| `get_details` | verfügbar | `/vertices/{id}` | Beschreibung, Preise, Barrierefreiheit, Öffnungszeiten, Ausstattung — auf ~8 KB gekürzt, HTML als Text; `no_derivatives` bei CC BY-ND |
+| `find_accommodation` | verfügbar | Search `type=LodgingBusiness` | Sterne, Garni, Preisspanne, Ausstattung, Barrierefreiheit (Pro Infirmis / OK:GO), Distanz; keine Verfügbarkeit, keine Preise pro Nacht |
+| `find_tours` | verfügbar | Search `type=Tour` | Art, Schwierigkeit, Länge, Aufstieg, Saisonmonat, Region, Distanz |
+| `find_events` | P3 | Search `type=Event` | Dünne Abdeckung als Scope benannt; Testobjekte gefiltert und gezählt |
+| `webcams_near` | P3 | Search `type=Webcam` | Link aufs Livebild plus letzter Snapshot, so beschriftet |
+| `explore_area` | P3 | Search mit Facetten | Welche Angebote es in einer Region gibt; fehlende Facetten werden gemeldet |
+| `source_status` | P3 | `/status` und Zähler | Erreichbarkeit, Quota-Rest, ob Search verfügbar ist |
+
+Die Tool-Definitionen sind in `docs/tool-hashes.json` festgehalten; nach einer
+gewollten Änderung im selben PR `python scripts/gen_tool_hashes.py --write`
+ausführen.
 
 ---
 
@@ -160,7 +167,8 @@ Datenlizenzen und Attributionsregeln stehen in
 discover-swiss-mcp/
 ├── src/discover_swiss_mcp/
 │   ├── __main__.py        # python -m Einstieg, Transport aus der Umgebung
-│   ├── server.py          # MCP-Server, Lifespan; noch ohne Tools (P0)
+│   ├── server.py          # MCP-Server, Lifespan, Tool-Wrapper
+│   ├── tools.py           # die *_impl-Funktionen, Ein- und Ausgabemodelle
 │   ├── config.py          # Settings aus ENV; der Key ist ein SecretStr
 │   ├── models.py          # der Response-Envelope
 │   ├── client.py          # API-Client — Stub mit P1-Markern

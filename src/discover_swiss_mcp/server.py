@@ -1,14 +1,15 @@
-"""discover-swiss MCP Server — scaffold (P0).
+"""discover-swiss MCP Server.
 
 Swiss tourism data from the discover.swiss Infocenter Open: accommodation
 nationwide, points of interest for Zurich, Eastern Switzerland and
 Liechtenstein, tours, webcams and events, each hit carrying its own licence and
 attribution.
 
-This module currently registers **no tools**. P0 is structure, metadata and
-CI; the eight tools of section 7 of the probe report land in P1. The empty
-tool list is asserted by `tests/test_smoke.py`, so the first tool to appear
-does so on purpose.
+P2 registers the four core tools of section 7 of the probe report —
+``search``, ``get_details``, ``find_accommodation``, ``find_tours``. The logic
+lives in :mod:`discover_swiss_mcp.tools` as ``*_impl`` functions; this module
+only adds the protocol layer: annotations, the description the model reads,
+the shared client from the lifespan and the masking of errors.
 
 Transport: stdio (local) and streamable-http (cloud), selected by
 ``DISCOVER_SWISS_MCP_TRANSPORT``.
@@ -19,13 +20,35 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from typing import NoReturn
 
 from mcp.server.caching import CacheHint
-from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver import Context, MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 
-from discover_swiss_mcp.client import DiscoverSwissClient
+from discover_swiss_mcp import net
+from discover_swiss_mcp.client import (
+    AuthorizationError,
+    DiscoverSwissClient,
+    NotFoundError,
+    UpstreamRejectedError,
+)
 from discover_swiss_mcp.config import ConfigError, Settings, load_settings
-from discover_swiss_mcp.logging_config import configure_logging, get_logger
+from discover_swiss_mcp.logging_config import configure_logging, get_logger, tool_logger
+from discover_swiss_mcp.tools import (
+    AccommodationResponse,
+    DetailResponse,
+    FindAccommodationInput,
+    FindToursInput,
+    GetDetailsInput,
+    SearchInput,
+    SearchResponse,
+    ToursResponse,
+    find_accommodation_impl,
+    find_tours_impl,
+    get_details_impl,
+    search_impl,
+)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -94,7 +117,7 @@ async def app_lifespan(server: MCPServer) -> AsyncIterator[AppContext]:
     logger.info(
         "Server lifespan started",
         protocol_version=MCP_PROTOCOL_VERSION,
-        tools=0,
+        tools=len(await server.list_tools()),
         **(settings.safe_summary() if settings else {"config": "invalid"}),
     )
     try:
@@ -118,21 +141,138 @@ mcp = MCPServer(
         "accommodation is nationwide, points of interest are regional (Zurich, "
         "Eastern Switzerland, Liechtenstein, Engadin Scuol), and events are "
         "nearly empty. Every hit carries its own provider, licence and copyright "
-        "notice — quote them. SCAFFOLD: this server registers no tools yet."
+        "notice — quote them. Start with `search`; `get_details` takes an "
+        "identifier from a hit. An empty result carries a `hint` — follow it "
+        "before concluding that something does not exist."
     ),
     lifespan=app_lifespan,
 )
 
 
 # ---------------------------------------------------------------------------
+# Tool plumbing
+# ---------------------------------------------------------------------------
+
+# Every tool reads a public tourism index and changes nothing. `openWorldHint`
+# because the data comes from an external source the server does not control.
+_READ_ONLY = {
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": True,
+}
+
+
+def _annotations(title: str) -> dict[str, object]:
+    return {"title": title, **_READ_ONLY}
+
+
+def _client(ctx: Context) -> DiscoverSwissClient:
+    """The one shared client from the lifespan, or a named configuration error.
+
+    The key is checked here and not left to the API: `/search` answers 401
+    without one, and the client reads a 401 on `/search` as "entitlement
+    withdrawn" — ten minutes of `search_unavailable` for a missing variable.
+    """
+    app: AppContext = ctx.request_context.lifespan_context
+    if app.client is None or app.settings is None:
+        raise ToolError("Server configuration is invalid; see the server log.")
+    if not app.settings.api_key.get_secret_value():
+        raise ToolError(
+            "DISCOVER_SWISS_KEY is not set. This server is bring-your-own-key: create a "
+            "subscription at portal.discover.swiss and export the key."
+        )
+    return app.client
+
+
+def _fail(exc: Exception, tool: str, log) -> NoReturn:
+    """Log the original error, raise a masked ``ToolError`` (OBS-001, OBS-002).
+
+    States the model can act on — quota, unreachable, search refused — never
+    get here: the tools return those as ``degraded`` envelopes. What arrives
+    here is configuration or a bug, and the model gets one sentence saying
+    which, not a stack trace.
+    """
+    if isinstance(exc, ToolError):
+        raise exc
+    log.exception("tool_execution_failed", tool=tool)
+    if isinstance(exc, AuthorizationError):
+        message = "discover.swiss refused the subscription key; check DISCOVER_SWISS_KEY."
+    elif isinstance(exc, UpstreamRejectedError | NotFoundError):
+        message = (
+            "discover.swiss rejected the request as malformed. This is a server defect, "
+            "not an empty result — do not conclude anything about the data."
+        )
+    elif isinstance(exc, net.EgressError):
+        message = "The outbound request was blocked by the server's egress policy."
+    else:
+        message = "An unexpected internal error occurred; the details are in the server log."
+    raise ToolError(f"{tool}: {message}") from exc
+
+
+# ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
-#
-# None yet. P1 registers the eight read-only tools of the probe report,
-# section 7 — `search`, `get_details`, `find_accommodation`, `find_tours`,
-# `find_events`, `webcams_near`, `explore_area`, `source_status` — each with
-# `readOnlyHint: true` and `openWorldHint: true`, and each split into a
-# testable `*_impl` function separate from the MCP wrapper.
+
+
+@mcp.tool(name="search", annotations=_annotations("Search Swiss tourism data"))
+async def search(params: SearchInput, ctx: Context) -> SearchResponse:
+    """Full-text and geo search over discover.swiss open tourism data (~20k objects: hotels nationwide; museums, restaurants, shops, tours, webcams, ski resorts for Zurich, Eastern Switzerland, Liechtenstein, Engadin). `query` matches whole words in name AND descriptions by default (`match='all'`), so a hit count includes objects that merely mention the term; use `match='name'` for exact lookups. Compounds are not found by their parts. `near` ranks by distance from a coordinate; `locality` filters by the exact municipality name in the address. Rooms and meeting rooms are excluded unless requested via `types`. Every hit carries its own licence and attribution — cite the provider when you present it. Empty result: follow the `hint` before concluding anything.
+
+    `types` takes leafType values (Hotel, Museum, Restaurant, HikingTrail, Webcam, Event, HotelRoom, MeetingRoom), ORed. `radius_km` only works together with `near` and is a hard cut-off; without it `near` only sorts. `upstream_count` is the source's total before filtering; `returned` is what this page holds after the licence gate, the test-data filter and the room default — each exclusion is counted in its own `excluded_*` field. Page through with `page` while `has_more` is true. For full text, fees and accessibility of one hit, call `get_details` with its `identifier`.
+    """
+    log = tool_logger("search")
+    client = _client(ctx)
+    try:
+        log.info("tool_call", query=params.query, types=params.types, page=params.page)
+        return await search_impl(client, params)
+    except Exception as exc:
+        _fail(exc, "search", log)
+
+
+@mcp.tool(name="get_details", annotations=_annotations("Details of one tourism object"))
+async def get_details(params: GetDetailsInput, ctx: Context) -> DetailResponse:
+    """Full details for one object by identifier: description, address, opening hours, fees, accessibility (Pro Infirmis profiles), amenities, star rating, check-in times, photos, links. Response is trimmed to ~8 KB. If `no_derivatives` is true the description is licensed CC BY-ND: quote it verbatim or summarise facts, do not rewrite it as your own text. Opening hours and prices are provider-maintained and can be outdated — say so when you present them (see `disclaimer`).
+
+    `identifier` must come from a hit of `search`, `find_accommodation` or `find_tours`. `removed: true` means the provider withdrew the object; its data is shown but may be stale. An object whose licence is not open is returned as name, licence and attribution only, with `excluded_by_license: 1` — name it and link to the provider, do not describe it.
+    """
+    log = tool_logger("get_details")
+    client = _client(ctx)
+    try:
+        log.info("tool_call", identifier=params.identifier)
+        return await get_details_impl(client, params)
+    except Exception as exc:
+        _fail(exc, "get_details", log)
+
+
+@mcp.tool(name="find_accommodation", annotations=_annotations("Find hotels and lodging"))
+async def find_accommodation(params: FindAccommodationInput, ctx: Context) -> AccommodationResponse:
+    """Find hotels and other lodging near a point or in a municipality. Covers 5'275 establishments nationwide (Zermatt to Geneva), not only the regions where points of interest exist. Star ratings are the official HotellerieSuisse classification (`stars`, `garni`, `superior`). `accessible=true` keeps lodgings with an accessibility profile from Pro Infirmis or OK:GO; each hit lists its accessibility data sources, and `get_details` returns the profiles themselves (wheelchair, stroller, hearing, vision). `price_range` is the provider's own band (Niedrig/Mittel/Hoch). This source has NO availability and NO nightly prices — never state that a room is free or what a night costs.
+
+    Give `near` (ranks by distance, each hit carries `distance_km`; add `radius_km` for a hard cut-off) or `locality` (exact municipality name from the address). `amenities` are amenity feature names, ORed. Every hit carries its own licence and attribution — cite the provider. `disclaimer` applies to everything shown.
+    """
+    log = tool_logger("find_accommodation")
+    client = _client(ctx)
+    try:
+        log.info("tool_call", locality=params.locality, accessible=params.accessible)
+        return await find_accommodation_impl(client, params)
+    except Exception as exc:
+        _fail(exc, "find_accommodation", log)
+
+
+@mcp.tool(name="find_tours", annotations=_annotations("Find hiking, cycling and winter tours"))
+async def find_tours(params: FindToursInput, ctx: Context) -> ToursResponse:
+    """Find hiking, cycling, mountain-bike, theme and winter tours (223 in total) in Eastern Switzerland (Glarnerland, St. Gallen, Thurgau, Appenzell, Toggenburg, Heidiland), the Zurich region, Liechtenstein and Engadin Scuol. The source has no tours for the Bernese Oberland, Valais, Ticino or Central Switzerland.
+
+    Filters: `kind` (hiking, cycling, mtb, winter, theme, all), `difficulty_max` (1 easy – 3 hard), `length_km_max`, `ascent_m_max` (metres), `season_month` (1–12). Place: `region` (area name such as 'Glarnerland', resolved to an area id; `area` in the response shows what it resolved to and flags ambiguous names), `near` (+ optional `radius_km`) or `locality`. Each hit reports `length_km`, `ascent_m`, `descent_m`, `difficulty`, `duration_min` where the provider supplies them — RailAway products often lack length and ascent. `provider` names the source: SchweizMobil tours are CC BY, contentdesk tours CC BY-SA; cite it. Trail conditions and closures are not in this source.
+    """
+    log = tool_logger("find_tours")
+    client = _client(ctx)
+    try:
+        log.info("tool_call", region=params.region, kind=params.kind)
+        return await find_tours_impl(client, params)
+    except Exception as exc:
+        _fail(exc, "find_tours", log)
 
 
 def main() -> None:

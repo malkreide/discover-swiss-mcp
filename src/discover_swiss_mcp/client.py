@@ -833,6 +833,14 @@ class DiscoverSwissClient:
         self._cache.set(key, payload, VERTEX_TTL_SECONDS)
         return payload
 
+    def is_vertex_cached(self, identifier: str, lang: str = "de") -> bool:
+        """Whether :meth:`get_vertex` would answer this from the cache.
+
+        Asked *before* the fetch, so ``get_details`` can report ``provenance:
+        cached`` truthfully instead of labelling a day-old object as live.
+        """
+        return self._cache.get(_cache_key("vertex", lang, identifier)) is not None
+
     # -- list endpoints ----------------------------------------------------
 
     async def list_endpoint(
