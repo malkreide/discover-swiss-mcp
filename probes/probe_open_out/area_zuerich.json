@@ -1,0 +1,290 @@
+{
+ "status": 200,
+ "response": {
+  "count": 1079,
+  "values": [
+   {
+    "identifier": "log_x8-tdgf_begcd"
+   }
+  ],
+  "facets": {
+   "containedInPlace/id": {
+    "filterPropertyName": "containedInPlace",
+    "odataFilterPropertyName": "containedInPlace/id",
+    "name": "Enthalten in Ort",
+    "values": [
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_51701",
+      "count": 1073,
+      "query": "osm_51701",
+      "name": "Schweiz"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1690227",
+      "count": 894,
+      "query": "osm_1690227",
+      "name": "Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "ds_kire",
+      "count": 878,
+      "query": "ds_kire",
+      "name": "Kinderregion"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "kire_zurich",
+      "count": 785,
+      "query": "kire_zurich",
+      "name": "Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1682248",
+      "count": 630,
+      "query": "osm_1682248",
+      "name": "Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1690941",
+      "count": 630,
+      "query": "osm_1690941",
+      "name": "Bezirk Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1693096",
+      "count": 252,
+      "query": "osm_1693096",
+      "name": "Altstadt"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8001_0",
+      "count": 240,
+      "query": "plz_8001_0",
+      "name": "Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1695424",
+      "count": 88,
+      "query": "osm_1695424",
+      "name": "Industriequartier"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8005_0",
+      "count": 88,
+      "query": "plz_8005_0",
+      "name": "Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1691279",
+      "count": 60,
+      "query": "osm_1691279",
+      "name": "Bezirk Bülach"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1700407",
+      "count": 47,
+      "query": "osm_1700407",
+      "name": "Kreis 7"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1694184",
+      "count": 46,
+      "query": "osm_1694184",
+      "name": "Aussersihl"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8004_0",
+      "count": 44,
+      "query": "plz_8004_0",
+      "name": "Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1701621",
+      "count": 37,
+      "query": "osm_1701621",
+      "name": "Kreis 11"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1701475",
+      "count": 36,
+      "query": "osm_1701475",
+      "name": "Riesbach"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8008_0",
+      "count": 36,
+      "query": "plz_8008_0",
+      "name": "Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1693145",
+      "count": 33,
+      "query": "osm_1693145",
+      "name": "Kreis 2"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1688583",
+      "count": 32,
+      "query": "osm_1688583",
+      "name": "Schwyz"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1691046",
+      "count": 32,
+      "query": "osm_1691046",
+      "name": "Bezirk Horgen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1701558",
+      "count": 31,
+      "query": "osm_1701558",
+      "name": "Kreis 9"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1691293",
+      "count": 30,
+      "query": "osm_1691293",
+      "name": "Bezirk Dielsdorf"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8050_0",
+      "count": 30,
+      "query": "plz_8050_0",
+      "name": "Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1695659",
+      "count": 29,
+      "query": "osm_1695659",
+      "name": "Kreis 6"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "plz_8006_0",
+      "count": 29,
+      "query": "plz_8006_0",
+      "name": "Zürich"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1687006",
+      "count": 28,
+      "query": "osm_1687006",
+      "name": "Sankt Gallen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1691150",
+      "count": 28,
+      "query": "osm_1691150",
+      "name": "Bezirk Meilen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_11342351",
+      "count": 27,
+      "query": "osm_11342351",
+      "name": "Schwyzer Alpen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_11342352",
+      "count": 26,
+      "query": "osm_11342352",
+      "name": "Glarner Alpen"
+     },
+     {
+      "facetType": "value",
+      "filterType": "collection",
+      "valueType": "string",
+      "value": "osm_1691239",
+      "count": 25,
+      "query": "osm_1691239",
+      "name": "Bezirk Winterthur"
+     }
+    ]
+   }
+  }
+ }
+}

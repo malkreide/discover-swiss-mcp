@@ -1,0 +1,167 @@
+{
+ "geo": {
+  "latitude": 47.2833559,
+  "longitude": 8.9940584
+ },
+ "containedInPlace": [
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_11342353",
+   "identifier": "osm_11342353",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "MountainArea",
+   "name": "Appenzeller Alpen"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_2743488",
+   "identifier": "osm_2743488",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "City",
+   "name": "Eschenbach (SG)"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_51701",
+   "identifier": "osm_51701",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "Country",
+   "name": "Schweiz"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1687006",
+   "identifier": "osm_1687006",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "State",
+   "name": "Sankt Gallen"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1687207",
+   "identifier": "osm_1687207",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "District",
+   "name": "Wahlkreis See-Gaster"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/plz_8735_2",
+   "identifier": "plz_8735_2",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "PostalArea",
+   "name": "Rüeterswil"
+  }
+ ],
+ "identifier": "web_s9t_shavstqa-aetu-ehja-reuf-irehfjttijud",
+ "dataGovernance": {
+  "origin": [
+   {
+    "datasource": "ctd-sgt",
+    "sourceId": "c70fcda0-04de-4790-b4e5-8b4759dd89e3",
+    "created": "2024-08-13T13:29:32+00:00",
+    "lastModified": "2025-04-02T08:25:32+00:00",
+    "license": "CC BY-SA",
+    "provider": {
+     "acronym": "tso-ctd",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/tso-ctd.svg",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_984-s9t_14w4",
+      "identifier": "img_984-s9t_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "contentdesk.io by TSO AG (tso-ctd_logo)"
+     },
+     "identifier": "tso-ctd",
+     "type": "schema.org/Partner",
+     "name": "contentdesk.io by TSO AG"
+    },
+    "source": {
+     "acronym": "sgt",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/sgt.jpg",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_8w9_14w4",
+      "identifier": "img_8w9_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "St.Gallen-Bodensee Tourismus (sgt_logo)"
+     },
+     "identifier": "sgt",
+     "type": "schema.org/Partner",
+     "name": "St.Gallen-Bodensee Tourismus"
+    }
+   }
+  ],
+  "provider": {
+   "acronym": "tso-ctd",
+   "logo": {
+    "contentUrl": "https://cdn.discover.swiss/logos/tso-ctd.svg",
+    "@id": "https://api.discover.swiss/info/v2/imageObjects/img_984-s9t_14w4",
+    "identifier": "img_984-s9t_14w4",
+    "type": "schema.org/ImageObject",
+    "additionalType": "Logo",
+    "name": "contentdesk.io by TSO AG (tso-ctd_logo)"
+   },
+   "identifier": "tso-ctd",
+   "type": "schema.org/Partner",
+   "name": "contentdesk.io by TSO AG"
+  },
+  "source": {
+   "acronym": "sgt",
+   "logo": {
+    "contentUrl": "https://cdn.discover.swiss/logos/sgt.jpg",
+    "@id": "https://api.discover.swiss/info/v2/imageObjects/img_8w9_14w4",
+    "identifier": "img_8w9_14w4",
+    "type": "schema.org/ImageObject",
+    "additionalType": "Logo",
+    "name": "St.Gallen-Bodensee Tourismus (sgt_logo)"
+   },
+   "identifier": "sgt",
+   "type": "schema.org/Partner",
+   "name": "St.Gallen-Bodensee Tourismus"
+  }
+ },
+ "lastModified": "2026-04-28T11:22:15.9813778+00:00",
+ "license": "CC BY-SA",
+ "image": {
+  "contentUrl": "https://media-v2.discover.swiss/rawmedia/ctd/ad8711583547eb2f672911652469a900ebc79194_2.png",
+  "copyrightNotice": "St.Gallen-Bodensee Tourismus",
+  "dataGovernance": {
+   "provider": {
+    "acronym": "tso-ctd",
+    "logo": {
+     "contentUrl": "https://cdn.discover.swiss/logos/tso-ctd.svg",
+     "@id": "https://api.discover.swiss/info/v2/imageObjects/img_984-s9t_14w4",
+     "identifier": "img_984-s9t_14w4",
+     "type": "schema.org/ImageObject",
+     "additionalType": "Logo",
+     "name": "contentdesk.io by TSO AG (tso-ctd_logo)"
+    },
+    "identifier": "tso-ctd",
+    "type": "schema.org/Partner",
+    "name": "contentdesk.io by TSO AG"
+   },
+   "source": {
+    "acronym": "sgt",
+    "logo": {
+     "contentUrl": "https://cdn.discover.swiss/logos/sgt.jpg",
+     "@id": "https://api.discover.swiss/info/v2/imageObjects/img_8w9_14w4",
+     "identifier": "img_8w9_14w4",
+     "type": "schema.org/ImageObject",
+     "additionalType": "Logo",
+     "name": "St.Gallen-Bodensee Tourismus (sgt_logo)"
+    },
+    "identifier": "sgt",
+    "type": "schema.org/Partner",
+    "name": "St.Gallen-Bodensee Tourismus"
+   }
+  },
+  "@id": "https://api.discover.swiss/info/v2/imageObjects/img_s9t_babfjrt",
+  "identifier": "img_s9t_babfjrt",
+  "type": "schema.org/ImageObject",
+  "name": "Atzmännig Seilpark (ctd_10159bd_image)"
+ },
+ "link": [
+  {
+   "url": "https://www.sky-cam.ch/atzmaennig/seilpark/livebild.php",
+   "inLanguage": "de",
+   "type": "WebDetail"
+  }
+ ],
+ "name": "Atzmännig Seilpark",
+ "type": "schema.org/Webcam"
+}

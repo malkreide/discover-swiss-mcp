@@ -1,0 +1,238 @@
+{
+ "address": {
+  "addressCountry": "CH",
+  "addressLocality": "Zürich",
+  "postalCode": "8001",
+  "streetAddress": "Werdmühlestrasse 10",
+  "email": "info@wow-museum.ch",
+  "telephone": "+41 43 244 15 70",
+  "url": "https://www.wow-museum.ch",
+  "link": [
+   {
+    "url": "https://www.wow-museum.ch",
+    "type": "WebHomepage"
+   }
+  ]
+ },
+ "geo": {
+  "latitude": 47.375022,
+  "longitude": 8.54033
+ },
+ "telephone": "+41 43 244 15 70",
+ "copyrightNotice": "Zürich Tourismus www.zuerich.com",
+ "containedInPlace": [
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_51701",
+   "identifier": "osm_51701",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "Country",
+   "name": "Schweiz"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1682248",
+   "identifier": "osm_1682248",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "City",
+   "name": "Zürich"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1690227",
+   "identifier": "osm_1690227",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "State",
+   "name": "Zürich"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1690941",
+   "identifier": "osm_1690941",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "District",
+   "name": "Bezirk Zürich"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1693096",
+   "identifier": "osm_1693096",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "Suburb",
+   "name": "Altstadt"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/plz_8001_0",
+   "identifier": "plz_8001_0",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "PostalArea",
+   "name": "Zürich"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/ds_kire",
+   "identifier": "ds_kire",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "TourismArea",
+   "name": "Kinderregion"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/kire_zurich",
+   "identifier": "kire_zurich",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "TourismArea",
+   "name": "Zürich"
+  }
+ ],
+ "identifier": "civ_px9-s28_ffgaag",
+ "dataGovernance": {
+  "origin": [
+   {
+    "datasource": "zht-cms",
+    "sourceId": "556006",
+    "lastModified": "2026-04-13T11:10:00+00:00",
+    "license": "CC BY-SA",
+    "provider": {
+     "acronym": "zht",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/zht.jpg",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_px9_14w4",
+      "identifier": "img_px9_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "Zürich Tourismus (zht_logo)"
+     },
+     "identifier": "zht",
+     "type": "schema.org/Partner",
+     "name": "Zürich Tourismus"
+    },
+    "source": {
+     "acronym": "zht",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/zht.jpg",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_px9_14w4",
+      "identifier": "img_px9_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "Zürich Tourismus (zht_logo)"
+     },
+     "identifier": "zht",
+     "type": "schema.org/Partner",
+     "name": "Zürich Tourismus"
+    }
+   },
+   {
+    "datasource": "gdl",
+    "sourceId": "680584709",
+    "license": "C-All-Rights-Reserved",
+    "provider": {
+     "acronym": "gdl",
+     "logo": {
+      "contentUrl": "https://img1.oastatic.com/img2/54940951/max/guidle.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_wt1_14w4",
+      "identifier": "img_wt1_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "Guidle (gdl_logo)"
+     },
+     "identifier": "gdl",
+     "type": "schema.org/Partner",
+     "name": "Guidle"
+    },
+    "source": {
+     "type": "schema.org/Partner",
+     "name": "gdl"
+    }
+   },
+   {
+    "datasource": "gdl",
+    "sourceId": "711973477",
+    "license": "CC-BY-ND-SA",
+    "provider": {
+     "acronym": "gdl",
+     "logo": {
+      "contentUrl": "https://img1.oastatic.com/img2/54940951/max/guidle.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_wt1_14w4",
+      "identifier": "img_wt1_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "Guidle (gdl_logo)"
+     },
+     "identifier": "gdl",
+     "type": "schema.org/Partner",
+     "name": "Guidle"
+    },
+    "source": {
+     "type": "schema.org/Partner",
+     "name": "GDL"
+    }
+   }
+  ],
+  "provider": {
+   "acronym": "zht",
+   "logo": {
+    "contentUrl": "https://cdn.discover.swiss/logos/zht.jpg",
+    "@id": "https://api.discover.swiss/info/v2/imageObjects/img_px9_14w4",
+    "identifier": "img_px9_14w4",
+    "type": "schema.org/ImageObject",
+    "additionalType": "Logo",
+    "name": "Zürich Tourismus (zht_logo)"
+   },
+   "identifier": "zht",
+   "type": "schema.org/Partner",
+   "name": "Zürich Tourismus"
+  },
+  "source": {
+   "acronym": "zht",
+   "logo": {
+    "contentUrl": "https://cdn.discover.swiss/logos/zht.jpg",
+    "@id": "https://api.discover.swiss/info/v2/imageObjects/img_px9_14w4",
+    "identifier": "img_px9_14w4",
+    "type": "schema.org/ImageObject",
+    "additionalType": "Logo",
+    "name": "Zürich Tourismus (zht_logo)"
+   },
+   "identifier": "zht",
+   "type": "schema.org/Partner",
+   "name": "Zürich Tourismus"
+  }
+ },
+ "lastModified": "2026-06-02T21:01:44.6245869+00:00",
+ "license": "CC BY-SA",
+ "image": {
+  "contentUrl": "https://www.zuerich.com/sites/default/files/image/2022/web_zuerich_kultur_wow_museum_1280x960_43038.jpg",
+  "caption": "Wow Museum",
+  "copyrightNotice": "Zürich Tourismus",
+  "dataGovernance": {
+   "provider": {
+    "acronym": "zht",
+    "logo": {
+     "contentUrl": "https://cdn.discover.swiss/logos/zht.jpg",
+     "@id": "https://api.discover.swiss/info/v2/imageObjects/img_px9_14w4",
+     "identifier": "img_px9_14w4",
+     "type": "schema.org/ImageObject",
+     "additionalType": "Logo",
+     "name": "Zürich Tourismus (zht_logo)"
+    },
+    "identifier": "zht",
+    "type": "schema.org/Partner",
+    "name": "Zürich Tourismus"
+   },
+   "source": {
+    "acronym": "zht",
+    "logo": {
+     "contentUrl": "https://cdn.discover.swiss/logos/zht.jpg",
+     "@id": "https://api.discover.swiss/info/v2/imageObjects/img_px9_14w4",
+     "identifier": "img_px9_14w4",
+     "type": "schema.org/ImageObject",
+     "additionalType": "Logo",
+     "name": "Zürich Tourismus (zht_logo)"
+    },
+    "identifier": "zht",
+    "type": "schema.org/Partner",
+    "name": "Zürich Tourismus"
+   }
+  },
+  "@id": "https://api.discover.swiss/info/v2/imageObjects/img_px9-s28_ccuhjji_y2w",
+  "identifier": "img_px9-s28_ccuhjji_y2w",
+  "type": "schema.org/ImageObject",
+  "name": "Wow Museum"
+ },
+ "additionalType": "Museum",
+ "name": "WOW Museum",
+ "type": "schema.org/CivicStructure"
+}
