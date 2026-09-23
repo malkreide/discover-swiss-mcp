@@ -1,0 +1,307 @@
+{
+ "address": {
+  "addressCountry": "CH",
+  "addressLocality": "Zuoz",
+  "addressRegion": "Graubünden",
+  "postalCode": "7524",
+  "streetAddress": "Plaz 2",
+  "email": "info@klarer-zuoz.ch",
+  "telephone": "+41 81 854 06 06"
+ },
+ "geo": {
+  "elevation": 1717.0,
+  "latitude": 46.60188,
+  "longitude": 9.95928
+ },
+ "telephone": "+41 81 854 06 06",
+ "containedInPlace": [
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1684213",
+   "identifier": "osm_1684213",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "City",
+   "name": "Zuoz"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_51701",
+   "identifier": "osm_51701",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "Country",
+   "name": "Schweiz"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_1686631",
+   "identifier": "osm_1686631",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "State",
+   "name": "Graubünden"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/osm_2018281",
+   "identifier": "osm_2018281",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "District",
+   "name": "Maloja"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/ds_stmoritz",
+   "identifier": "ds_stmoritz",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "TourismArea",
+   "name": "Engadin St. Moritz"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/ds_grf",
+   "identifier": "ds_grf",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "TourismArea",
+   "name": "Graubündenferien"
+  },
+  {
+   "@id": "https://api.discover.swiss/info/v2/areas/plz_7524_0",
+   "identifier": "plz_7524_0",
+   "type": "schema.org/AdministrativeArea",
+   "additionalType": "PostalArea",
+   "name": "Zuoz"
+  }
+ ],
+ "identifier": "log_4kq_ciiifgjf",
+ "dataGovernance": {
+  "origin": [
+   {
+    "datasource": "hs-d365",
+    "sourceId": "11358",
+    "created": "2021-12-14T15:42:27+00:00",
+    "lastModified": "2026-09-22T12:55:38+00:00",
+    "license": "CC BY",
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   {
+    "datasource": "hs-my",
+    "sourceId": "3fb32bec-7a88-47d0-a1d3-7439c2448a95",
+    "license": "CC BY",
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   {
+    "datasource": "hs",
+    "sourceId": "11358",
+    "license": "CC BY",
+    "provider": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   {
+    "datasource": "hcl",
+    "sourceId": "44378",
+    "created": "2018-01-17T14:35:34+00:00",
+    "lastModified": "2026-03-29T01:20:04+00:00",
+    "license": "CC BY-SA",
+    "provider": {
+     "acronym": "hcl",
+     "identifier": "hcl",
+     "type": "schema.org/Partner",
+     "name": "Hotelclass"
+    },
+    "source": {
+     "acronym": "hs",
+     "logo": {
+      "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+      "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+      "identifier": "img_x8_14w4",
+      "type": "schema.org/ImageObject",
+      "additionalType": "Logo",
+      "name": "HotellerieSuisse"
+     },
+     "identifier": "hs",
+     "type": "schema.org/Partner",
+     "name": "HotellerieSuisse"
+    }
+   },
+   {
+    "datasource": "st-sc",
+    "sourceId": "5fc4bdca-3b25-4105-8626-bbb1999fa748",
+    "license": "CC BY-SA",
+    "provider": {
+     "acronym": "st",
+     "identifier": "st",
+     "type": "schema.org/Partner",
+     "name": "Schweiz Tourismus"
+    },
+    "source": {
+     "acronym": "st",
+     "identifier": "st",
+     "type": "schema.org/Partner",
+     "name": "Schweiz Tourismus"
+    }
+   }
+  ],
+  "provider": {
+   "acronym": "hs",
+   "logo": {
+    "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+    "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+    "identifier": "img_x8_14w4",
+    "type": "schema.org/ImageObject",
+    "additionalType": "Logo",
+    "name": "HotellerieSuisse"
+   },
+   "identifier": "hs",
+   "type": "schema.org/Partner",
+   "name": "HotellerieSuisse"
+  },
+  "source": {
+   "acronym": "hs",
+   "logo": {
+    "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+    "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+    "identifier": "img_x8_14w4",
+    "type": "schema.org/ImageObject",
+    "additionalType": "Logo",
+    "name": "HotellerieSuisse"
+   },
+   "identifier": "hs",
+   "type": "schema.org/Partner",
+   "name": "HotellerieSuisse"
+  }
+ },
+ "lastModified": "2026-09-23T04:31:54.5755325+00:00",
+ "license": "CC BY",
+ "image": {
+  "contentUrl": "https://media-v2.discover.swiss/rawmedia/hs/00028174_m.jpg",
+  "copyrightNotice": "HotellerieSuisse",
+  "dataGovernance": {
+   "provider": {
+    "acronym": "hs",
+    "logo": {
+     "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+     "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+     "identifier": "img_x8_14w4",
+     "type": "schema.org/ImageObject",
+     "additionalType": "Logo",
+     "name": "HotellerieSuisse (hs_logo)"
+    },
+    "identifier": "hs",
+    "type": "schema.org/Partner",
+    "name": "HotellerieSuisse"
+   },
+   "source": {
+    "acronym": "hs",
+    "logo": {
+     "contentUrl": "https://cdn.discover.swiss/logos/hs.png",
+     "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_14w4",
+     "identifier": "img_x8_14w4",
+     "type": "schema.org/ImageObject",
+     "additionalType": "Logo",
+     "name": "HotellerieSuisse (hs_logo)"
+    },
+    "identifier": "hs",
+    "type": "schema.org/Partner",
+    "name": "HotellerieSuisse"
+   }
+  },
+  "@id": "https://api.discover.swiss/info/v2/imageObjects/img_x8_y2w_cibhe",
+  "identifier": "img_x8_y2w_cibhe",
+  "type": "schema.org/ImageObject",
+  "name": "Hotel Klarer (hs_img_28174)"
+ },
+ "url": "https://www.klarer-zuoz.ch",
+ "additionalType": "Hotel",
+ "link": [
+  {
+   "url": "http://www.klarer-zuoz.ch",
+   "inLanguage": "de",
+   "title": "Hotel Klarer",
+   "type": "WebHomepage"
+  },
+  {
+   "url": "https://www.myswitzerland.com/de/unterkuenfte/hotel-klarer/",
+   "inLanguage": "de",
+   "type": "MySwitzerland"
+  },
+  {
+   "url": "https://www.klarer-zuoz.ch",
+   "type": "WebHomepage"
+  }
+ ],
+ "name": "Hotel Klarer",
+ "type": "schema.org/LodgingBusiness"
+}
