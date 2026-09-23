@@ -198,7 +198,8 @@ Ground-Truth-Werte für Canaries: `Landesmuseum` ≥ 20 · `Grindelwald` ≥ 15 
 - [x] Search-`select`-Whitelist (46 Felder), `FacetRequest`-Struktur, `resultsPerPage` bis 1'000 (Restprobe b–d)
 - [x] `/vertices/{id}` für sechs Typen (5.1)
 - [x] Facetten-Namen live bestätigt (5.4); OData-Filter, Radius, Event-Datumsfilter und Gebiets-Auflösung verifiziert
-- [ ] HTML-Stripping + Entity-Auflösung als Testfall (Landesmuseum-Beschreibung als Fixture) → Bau, P1
+- [x] HTML-Stripping + Entity-Auflösung als Testfall (Landesmuseum-Beschreibung als Fixture) → gebaut in P1 (`transform.py`, `tests/test_transform.py`)
+- [x] `containedInPlace` als Query-Parameter auf den Listen-Endpoints verifiziert (`probe_open.py`, 23.09.): filtert, Zahlen deckungsgleich mit der Search-Seite, Unsinns-ID → 0. Listen-`select` um `address`, `url`, `link`, `image`, `lastModified`, `telephone` erweitert; Zählfeld ist `count`
 - [ ] **Search-Berechtigung schriftlich bestätigen lassen** (Gespräch 1 mit discover.swiss) — vorher kein Release
 - [ ] Recall-Canaries als `@pytest.mark.live` → Bau, P4
 - [x] Notion-Portfolio-Karte angelegt (17.09.); Cluster «Tourism & Leisure» in portfolio.json: Copy-ready in HOUSEKEEPING_P3.md, Commit offen
@@ -220,3 +221,4 @@ Ground-Truth-Werte für Canaries: `Landesmuseum` ≥ 20 · `Grindelwald` ≥ 15 
 13. **`geo.distance` ist ein echter Radius-Filter**, nicht nur ein Ranking — steht in der Filter-Doku, nicht in der Spec. Wer nur die OpenAPI liest, schneidet clientseitig.
 14. **Der bequeme Event-Filter lügt beim Zählen.** `scheduleStart/End` greift nach der Suche; `count` und Paging stimmen nicht mehr, sagt die Doku selbst. Der OData-Weg ist umständlicher und korrekt. *«Der Filter, der auf der Packung steht, ist nicht der, der zählt.»*
 15. **`nextOccurrence` kennt einen Sentinel: 2099-12-31.** Ein Event ohne konkreten Termin trägt das Jahr 2099 statt `null`. Ungeprüft weitergereicht empfiehlt der Assistent einen Anlass «am 31. Dezember 2099».
+16. **Zwei Gebiete heissen «Zürich».** Die Facette `containedInPlace/id` liefert `osm_1690227` (894 Objekte) und `kire_zurich` (785) unter exakt demselben Namen — das grössere steht nicht zuerst. Wer den ersten Namenstreffer nimmt, trifft eine Auswahl und meldet sie nicht. `resolve_area` nimmt deshalb das grössere, setzt aber `ambiguous` und nennt das andere im `hint`. *«Ein Ortsname ist kein Schlüssel — er ist eine Frage, die zwei Antworten haben kann.»*

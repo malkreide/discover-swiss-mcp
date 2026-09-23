@@ -180,6 +180,23 @@ async def test_list_endpoint_sends_project_top_and_select(api_mock, client) -> N
     assert "select=" in url
 
 
+def test_list_select_carries_the_measured_fields() -> None:
+    """Fifteen fields, each one answered 200 live — none of them assumed.
+
+    The last six were verified on 2026-09-23 against `/lodgingbusinesses`,
+    `/civicStructures` and `/webcams`. A field added without that check can 400
+    a whole page on one endpoint while working on another.
+    """
+    from discover_swiss_mcp.client import LIST_SELECT_FIELDS
+
+    assert len(LIST_SELECT_FIELDS) == len(set(LIST_SELECT_FIELDS)) == 15
+    for field in ("address", "url", "link", "image", "lastModified", "telephone"):
+        assert field in LIST_SELECT_FIELDS
+    # The fallback is useless without these two: a name and a coordinate is not
+    # an answer to "where is it and how do I reach it".
+    assert "address" in LIST_SELECT_FIELDS and "url" in LIST_SELECT_FIELDS
+
+
 # --------------------------------------------------------------------------
 # Detail
 # --------------------------------------------------------------------------
@@ -384,6 +401,47 @@ async def test_resolve_area_matches_the_name_exactly(api_mock, client) -> None:
     assert lookup.identifier == "ds_glarnerland"
     assert lookup.name == "Glarnerland"
     assert lookup.hint is None
+
+
+# The facet as `probes/probe_open.py` read it live on 2026-09-23: two areas
+# carry the exact name «Zürich», and the larger is not the first in the list.
+ZURICH_FACET = {
+    "count": 1,
+    "values": [{"identifier": "x"}],
+    "facets": {
+        "containedInPlace/id": {
+            "values": [
+                {"value": "osm_51701", "name": "Schweiz", "count": 1073},
+                {"value": "kire_zurich", "name": "Zürich", "count": 785},
+                {"value": "ds_kire", "name": "Kinderregion", "count": 878},
+                {"value": "osm_1690227", "name": "Zürich", "count": 894},
+            ]
+        }
+    },
+}
+
+
+async def test_two_areas_of_the_same_name_are_not_chosen_silently(api_mock, client) -> None:
+    """«Zürich» is two areas. Picking one without saying so is the move to avoid."""
+    api_mock.post("/search").mock(return_value=json_response(ZURICH_FACET))
+
+    lookup = await client.resolve_area("Zürich")
+
+    # The larger wins — a caller needs an id — but never quietly.
+    assert lookup.identifier == "osm_1690227"
+    assert lookup.ambiguous is True
+    assert [s.identifier for s in lookup.suggestions] == ["kire_zurich"]
+    assert "2 areas are named" in lookup.hint
+    assert "kire_zurich" in lookup.hint
+
+
+async def test_a_unique_name_is_not_flagged_ambiguous(api_mock, client) -> None:
+    recorded = probe_fixture("probe_verify_out", "f5_facet.json")["response"]
+    api_mock.post("/search").mock(return_value=json_response(recorded))
+
+    lookup = await client.resolve_area("Glarnerland")
+    assert lookup.ambiguous is False
+    assert lookup.suggestions == []
 
 
 async def test_resolve_area_suggests_instead_of_guessing(api_mock, client) -> None:
