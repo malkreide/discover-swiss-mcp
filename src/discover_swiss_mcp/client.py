@@ -114,12 +114,18 @@ SEARCH_SELECT_FIELDS: tuple[str, ...] = (
 )
 SEARCH_SELECT = ",".join(SEARCH_SELECT_FIELDS)
 
-# List-endpoint `select`. Exactly the nine fields the probe sent and got back on
-# every content endpoint. Shorter than the search whitelist on purpose: the list
-# endpoints each have their own response definition, so a field that is fine on
-# `/lodgingbusinesses` may 400 on `/webcams`. Adding one is a live check, not a
-# guess — and `select` matters: omitting it costs ~9.5 KB per object instead of
-# ~1 KB.
+# List-endpoint `select`. Fifteen fields, every one of them answered live rather
+# than assumed: the first nine come from the probe of 2026-09-17, the last six
+# from `probes/probe_open.py` on 2026-09-23, which asked for them on
+# `/lodgingbusinesses`, `/civicStructures` and `/webcams` — three different
+# response definitions — and got 200 from all three.
+#
+# The endpoint-by-endpoint check is not ceremony. Each list endpoint has its own
+# response definition, so a field that is fine on `/lodgingbusinesses` can 400 on
+# `/webcams`, and a 400 here fails the whole page rather than dropping the field.
+# Adding a sixteenth is the same live check again, not a guess.
+#
+# `select` is never omitted: without it a row costs ~9.5 KB instead of ~1 KB.
 LIST_SELECT_FIELDS: tuple[str, ...] = (
     "identifier",
     "name",
@@ -130,6 +136,14 @@ LIST_SELECT_FIELDS: tuple[str, ...] = (
     "dataGovernance",
     "geo",
     "containedInPlace",
+    # Measured 2026-09-23. These are what make the fallback answer a real
+    # question: without `address` and `url` a hit is a name and a coordinate.
+    "address",
+    "url",
+    "link",
+    "image",
+    "lastModified",
+    "telephone",
 )
 LIST_SELECT = ",".join(LIST_SELECT_FIELDS)
 
@@ -296,11 +310,19 @@ class AreaSuggestion(BaseModel):
 
 
 class AreaLookup(BaseModel):
-    """The result of resolving an area name to an area id."""
+    """The result of resolving an area name to an area id.
+
+    ``suggestions`` carries the alternatives in both directions: the closest
+    areas when nothing matched, and the rival areas of the same name when
+    something did and ``ambiguous`` is set.
+    """
 
     query: str
     identifier: str | None = None
     name: str | None = None
+    # True when more than one area carries exactly this name. The id is still
+    # filled — with the largest — but the caller has to say so.
+    ambiguous: bool = False
     suggestions: list[AreaSuggestion] = Field(default_factory=list)
     hint: str | None = None
     provenance: Provenance = "live_api"
@@ -394,6 +416,15 @@ def _cache_key(kind: str, lang: str, payload: Any) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _as_suggestion(value: dict[str, Any]) -> AreaSuggestion:
+    """One facet value as an area suggestion."""
+    return AreaSuggestion(
+        identifier=str(value.get("value")),
+        name=str(value.get("name")),
+        count=value.get("count") if isinstance(value.get("count"), int) else None,
+    )
+
+
 def facet_values(facets: dict[str, Any], name: str) -> list[dict[str, Any]]:
     """The value list of one facet, or ``[]`` if it is not in the answer."""
     facet = facets.get(name)
@@ -466,9 +497,12 @@ def _retry_after_seconds(payload: Any, headers: httpx.Headers | None) -> float:
 def _total_from(payload: Any) -> int | None:
     """The total from ``includeCount=true``.
 
-    The list responses call it ``count``; the field name is read tolerantly
-    anyway, because reading a number out of a live answer is cheaper than being
-    wrong about it after a release note nobody saw.
+    The list responses call it ``count`` — the spec says so and
+    `probes/probe_open.py` confirmed it on the live envelopes of
+    `/tours`, `/civicStructures`, `/lodgingbusinesses` and `/webcams`. The
+    tolerant second pass stays anyway: reading a number out of the answer that
+    arrives is cheaper than being wrong about it after a release note nobody
+    saw.
     """
     if not isinstance(payload, dict):
         return None
@@ -861,6 +895,15 @@ class DiscoverSwissClient:
         by distance client-side with :func:`filter_by_distance` and say so in
         the envelope — ``provenance: list_fallback``, ``degraded:
         search_unavailable``.
+
+        The area filter is measured, not assumed. `probes/probe_open.py`, run
+        2026-09-23: `/tours` 223 → 117 for `ds_glarnerland` and
+        `/civicStructures` 1'406 → 232 for Zurich, both matching the search
+        side exactly, and an invented area id returning 0 rather than the whole
+        collection. That last number is the one that matters here — an id this
+        client cannot resolve yields an empty page, not a silent full one, so a
+        caller must read an empty result as "unknown area", never as "nothing
+        there".
         """
         page = await self.list_endpoint(
             type_endpoint,
@@ -893,6 +936,14 @@ class DiscoverSwissClient:
         largest facet values as suggestions and no id. Picking the top hit
         would turn «Glarnerland» into «Schweiz», which is a different answer to
         a different question.
+
+        An exact match is not automatically a unique one. The live run of
+        2026-09-23 resolved «Zürich» to two areas bearing that exact name —
+        ``osm_1690227`` with 894 objects and ``kire_zurich`` with 785 — and the
+        first-hit rule would have chosen between them silently, which is the
+        move this server exists not to make. The largest still wins, because a
+        caller needs an id to work with, but ``ambiguous`` is set, the rival
+        carries in ``suggestions``, and the ``hint`` names it.
         """
         result = await self.search(
             {
@@ -906,22 +957,47 @@ class DiscoverSwissClient:
         values = facet_values(result.facets, "containedInPlace/id")
         wanted = name.strip().casefold()
 
-        for value in values:
-            if str(value.get("name", "")).strip().casefold() == wanted:
-                return AreaLookup(
+        exact = [
+            value
+            for value in values
+            if str(value.get("name", "")).strip().casefold() == wanted and value.get("value")
+        ]
+        if exact:
+            # Largest first: among areas of the same name, the one carrying more
+            # content is the one a guest question almost always means.
+            exact.sort(
+                key=lambda v: v.get("count") if isinstance(v.get("count"), int) else -1,
+                reverse=True,
+            )
+            chosen, rivals = exact[0], exact[1:]
+            hint = None
+            if rivals:
+                logger.warning(
+                    "area_name_ambiguous",
                     query=name,
-                    identifier=str(value.get("value")),
-                    name=str(value.get("name")),
-                    provenance=result.provenance,
-                    retrieved_at=result.retrieved_at,
+                    chosen=chosen.get("value"),
+                    rivals=[v.get("value") for v in rivals],
                 )
+                hint = (
+                    f"{len(exact)} areas are named «{name}». Using "
+                    f"«{chosen.get('name')}» ({chosen.get('value')}, "
+                    f"{chosen.get('count')} objects) because it holds the most; the others are "
+                    + ", ".join(f"{v.get('value')} ({v.get('count')})" for v in rivals)
+                    + "."
+                )
+            return AreaLookup(
+                query=name,
+                identifier=str(chosen.get("value")),
+                name=str(chosen.get("name")),
+                ambiguous=bool(rivals),
+                suggestions=[_as_suggestion(v) for v in rivals],
+                hint=hint,
+                provenance=result.provenance,
+                retrieved_at=result.retrieved_at,
+            )
 
         suggestions = [
-            AreaSuggestion(
-                identifier=str(value.get("value")),
-                name=str(value.get("name")),
-                count=value.get("count") if isinstance(value.get("count"), int) else None,
-            )
+            _as_suggestion(value)
             for value in values[:3]
             if value.get("value") and value.get("name")
         ]
