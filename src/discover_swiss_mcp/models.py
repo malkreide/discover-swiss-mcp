@@ -46,3 +46,8 @@ class Envelope(BaseModel):
     hint: str | None = None
     excluded_by_license: int = 0
     excluded_test_objects: int = 0
+    # Rooms and meeting rooms dropped because the caller did not ask for them.
+    # Almost half the index is one or the other (9'838 of 20'817, probe 5.2);
+    # left in, 61 double rooms of one hotel push every museum off the page.
+    # Counted rather than hidden, like the two counters above.
+    excluded_by_default_types: int = 0

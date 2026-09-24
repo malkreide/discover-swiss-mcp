@@ -1,8 +1,8 @@
-"""P0 smoke tests: the scaffold imports, and it exposes nothing yet.
+"""Smoke tests: the server imports, and it exposes exactly the P2 tools.
 
-The second assertion is the point. "No tools" is the state P0 ships, and an
-assertion on it means the first tool to appear does so in a commit that had to
-change this file — rather than sliding in unnoticed.
+The tool-list assertion is the point. The four names are the state P2 ships,
+and an assertion on them means the next tool to appear does so in a commit that
+had to change this file — rather than sliding in unnoticed.
 """
 
 from __future__ import annotations
@@ -25,9 +25,12 @@ def test_server_object_is_built() -> None:
     assert MCP_PROTOCOL_VERSION.count("-") == 2
 
 
-async def test_tool_list_is_empty() -> None:
-    """P0 registers no tools. Changing this line is the P1 gate."""
-    assert await mcp.list_tools() == []
+P2_TOOLS = {"search", "get_details", "find_accommodation", "find_tours"}
+
+
+async def test_tool_list_is_the_p2_set() -> None:
+    """P2 registers four tools. Changing this set is the P3 gate."""
+    assert {tool.name for tool in await mcp.list_tools()} == P2_TOOLS
 
 
 def test_settings_come_from_the_environment(api_key) -> None:
@@ -65,7 +68,7 @@ async def test_lifespan_logs_its_start_without_the_key() -> None:
 
     rendered = [e for e in events if e.get("event") == "Server lifespan started"]
     assert len(rendered) == 1
-    assert rendered[0]["tools"] == 0
+    assert rendered[0]["tools"] == len(P2_TOOLS)
     assert rendered[0]["api_key"] == "set"
     assert "test-key" not in str(events)
 
