@@ -1,10 +1,14 @@
 {
   "mcp_protocol_version": "2026-07-28",
-  "tool_count": 4,
+  "tool_count": 8,
   "tools": {
+    "explore_area": "4a43056e375545412db1d256890edd1d973c0390f87bd243d5b82c5d9591726f",
     "find_accommodation": "705108c5d8f2dcddc884d064488cdee24c48bb9b1c30434e6d6de38102d04361",
+    "find_events": "5137a42d4b83c1b5c608f87685c3c7b19dc45802f07c36088fbbdbf4ee9d2d0d",
     "find_tours": "d01a177128c2c26c6e344096687b193e9d238cd4de7203d7c63962f24bfe07bb",
     "get_details": "0141b70535406b60d941586c924a381f4e18ee80fb769f0a4556be43b9a78358",
-    "search": "3d55c6eadc35bd4ff9f5c181b4fd01ac528975c4d149f7cd76a1302a93c0d3f6"
+    "search": "3d55c6eadc35bd4ff9f5c181b4fd01ac528975c4d149f7cd76a1302a93c0d3f6",
+    "source_status": "cf2b868ceae124ddcb9af12ff7141f712554783ec4a170939ac231b3ac8ae176",
+    "webcams_near": "9449f44025c28354142a5f870df6598fcdd63a0b0c5b89f5c0e0a24587f6233c"
   }
 }

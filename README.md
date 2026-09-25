@@ -31,14 +31,16 @@ Two consequences, both already decided:
 
 - Written confirmation from discover.swiss is a **release gate**. No release
   before that conversation has happened.
-- The server carries a fallback. On `401`/`403` from `/search` it falls back to
-  the list endpoints with a `containedInPlace` area filter and client-side
-  distance filtering, and labels the answer `provenance: list_fallback`. The
-  fallback is deliberately narrow — no full text.
+- The server carries a fallback. On `401`/`403` from `/search`, `search` and
+  `find_accommodation` fall back to the typed list endpoints with client-side
+  locality and distance filtering, and label the answer
+  `provenance: list_fallback`, `degraded: search_unavailable`. The fallback is
+  deliberately narrow — no full text, no star/price/amenity filters, at most
+  eight list calls per tool call, and an incomplete scan says so in `hint`.
+- `source_status` reports the state of that confirmation, read from
+  `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED` (`pending` until set).
 
-Status: **P2** — four of the eight tools are registered (`search`,
-`get_details`, `find_accommodation`, `find_tours`); the other four follow in
-P3.
+Status: **P3** — all eight tools are registered.
 
 ---
 
@@ -71,7 +73,7 @@ afterwards?"*
 ## Features
 
 - **8 read-only tools** over search, detail, accommodation, tours, events,
-  webcams and area exploration — four available, four planned for P3
+  webcams, area exploration and source status
 - **Per-object attribution** — provider, licence and copyright notice travel in
   the response, not in this README
 - **Licence whitelist** on the root `license` field; everything else is counted
@@ -136,10 +138,10 @@ result in `hint`.
 | `get_details` | available | `/vertices/{id}` | Description, fees, accessibility, opening hours, amenities — trimmed to ~8 KB, HTML resolved to text; `no_derivatives` for CC BY-ND |
 | `find_accommodation` | available | Search `type=LodgingBusiness` | Stars, garni, price band, amenities, accessibility (Pro Infirmis / OK:GO), distance; no availability, no nightly prices |
 | `find_tours` | available | Search `type=Tour` | Kind, difficulty, length, ascent, season month, region, distance |
-| `find_events` | P3 | Search `type=Event` | Thin coverage by design; test objects filtered and counted |
-| `webcams_near` | P3 | Search `type=Webcam` | Live image link plus last snapshot, labelled as such |
-| `explore_area` | P3 | Search with facets | What kinds of offers exist in a region, with missing facets reported |
-| `source_status` | P3 | `/status` plus counters | Reachability, quota headroom, whether search is available |
+| `find_events` | available | Search `type=Event`, OData schedule filter | Date range (default 30 days); thin coverage stated in the description; test objects and all-rights-reserved events withheld and counted; the 2099 sentinel is reported as `date_open`, never as a date |
+| `webcams_near` | available | Search `type=Webcam` + `geo.distance` | Radius (default 25 km) or region; `live_url` for the live image, `snapshot_url` labelled as a stored still |
+| `explore_area` | available | Search with facets | Counts by type, data owner, season, price band for a region, locality or radius; short facet names mapped to OData, dropped names reported in `missing_facets` |
+| `source_status` | available | `/status`, counters, unfiltered facet count | Reachability, search availability, calls per minute, quota state, index size, coverage, entitlement state; works without a key |
 
 Tool definitions are pinned in `docs/tool-hashes.json`; after an intended
 change, run `python scripts/gen_tool_hashes.py --write` in the same PR.
@@ -156,6 +158,7 @@ change, run `python scripts/gen_tool_hashes.py --write` in the same PR.
 | `DISCOVER_SWISS_MCP_HOST` | no | `127.0.0.1` | Bind address for HTTP transport |
 | `DISCOVER_SWISS_MCP_PORT` | no | `8000` | TCP port for HTTP transport |
 | `DISCOVER_SWISS_MCP_LOG_LEVEL` | no | `INFO` | structlog level; JSON goes to stderr |
+| `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED` | no | `pending` | Date (`YYYY-MM-DD`) of discover.swiss's written search confirmation; reported by `source_status` |
 
 Data licences and the attribution rules are documented in
 [docs/LICENSES.md](docs/LICENSES.md).
@@ -172,7 +175,7 @@ discover-swiss-mcp/
 │   ├── tools.py           # the *_impl functions, input and output models
 │   ├── config.py          # settings from env; the key is a SecretStr
 │   ├── models.py          # the response envelope
-│   ├── client.py          # API client — stub with P1 markers
+│   ├── client.py          # API client: rate limit, retries, cache, list fallback
 │   └── logging_config.py  # structlog, JSON to stderr
 ├── tests/                 # unit tests; `live` marker is not run by CI
 ├── probes/                # live probe: scripts, raw responses, report

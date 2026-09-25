@@ -1,4 +1,4 @@
-"""The protocol layer: what a client sees of the four P2 tools.
+"""The protocol layer: what a client sees of the eight tools.
 
 Two things are only true at this layer and are tested here rather than in
 `test_tools.py`: the annotations and descriptions a model reads, and the path
@@ -22,8 +22,8 @@ from discover_swiss_mcp.server import MCP_PROTOCOL_VERSION, mcp
 ROOT = Path(__file__).resolve().parents[1]
 SNAPSHOT = ROOT / "docs" / "tool-hashes.json"
 
-# The sentences the P2 brief fixes verbatim. The descriptions may add to them,
-# never reword them.
+# The sentences the P2 and P3 briefs fix verbatim. The descriptions may add to
+# them, never reword them.
 VERBATIM = {
     "search": (
         "Full-text and geo search over discover.swiss open tourism data (~20k objects: hotels "
@@ -45,7 +45,40 @@ VERBATIM = {
         "text. Opening hours and prices are provider-maintained and can be outdated — say so "
         "when you present them (see `disclaimer`)."
     ),
+    "find_events": (
+        "Event coverage in this source is thin (about 20 objects, mostly Eastern Switzerland; "
+        "Zurich events are not included because their provider is not open-licensed). Treat "
+        "this tool as a supplement: if it returns nothing, name a regional event calendar "
+        "rather than concluding nothing is on."
+    ),
+    "webcams_near": (
+        "73 webcams, all in Eastern Switzerland (St. Gallen, Thurgau, Toggenburg, Heidiland, "
+        "Glarnerland, Appenzell). `live_url` opens the provider's live image; `snapshot_url` "
+        "is a stored still and may be hours old. Outside Eastern Switzerland this tool returns "
+        "nothing — say so and do not invent a webcam."
+    ),
+    "explore_area": (
+        "Overview of what exists in a region before searching: counts by object type, data "
+        "owner, season, price range. Use it to decide which tool to call next and to avoid "
+        "asking for things this source does not have. Counts are upstream counts before "
+        "licence filtering."
+    ),
+    "source_status": (
+        "Health and scope of this server. Call it first when another tool returned `degraded` "
+        "or an unexpected empty result."
+    ),
 }
+
+ALL_TOOLS = [
+    "search",
+    "get_details",
+    "find_accommodation",
+    "find_tours",
+    "find_events",
+    "webcams_near",
+    "explore_area",
+    "source_status",
+]
 
 
 def _tools() -> dict:
@@ -67,7 +100,7 @@ def _hash_script():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("name", ["search", "get_details", "find_accommodation", "find_tours"])
+@pytest.mark.parametrize("name", ALL_TOOLS)
 def test_every_tool_is_read_only_and_open_world(name: str) -> None:
     annotations = _tools()[name].annotations
     assert annotations.read_only_hint is True
@@ -97,6 +130,14 @@ def test_no_description_apologises_for_an_empty_result() -> None:
 
 def test_every_tool_has_an_output_schema() -> None:
     assert all(tool.output_schema for tool in _tools().values())
+
+
+def test_every_response_schema_carries_the_envelope() -> None:
+    """Attribution and provenance travel in the response — for all eight tools."""
+    for tool in _tools().values():
+        properties = tool.output_schema["properties"]
+        for field in ("source", "provenance", "retrieved_at", "source_freshness", "degraded"):
+            assert field in properties, (tool.name, field)
 
 
 # ---------------------------------------------------------------------------
@@ -153,3 +194,30 @@ async def test_invalid_input_is_rejected_before_any_call(api_mock) -> None:
         result = await client.call_tool("find_accommodation", {"params": {"stars_min": 3}})
     assert result.is_error is True
     assert route.call_count == 0
+
+
+async def test_source_status_works_without_a_key(monkeypatch, api_mock) -> None:
+    """The one tool that must answer when the key is missing — and say so."""
+    monkeypatch.setenv("DISCOVER_SWISS_KEY", "")
+    route = api_mock.get("/status").mock(return_value=json_response({}))
+
+    async with Client(mcp) as client:
+        result = await client.call_tool("source_status", {})
+
+    assert result.is_error is False
+    assert result.structured_content["api_key_configured"] is False
+    assert route.call_count == 0
+
+
+async def test_find_events_through_the_protocol(api_mock) -> None:
+    route = api_mock.post("/search").mock(
+        return_value=json_response({"count": 0, "values": [], "facets": {}})
+    )
+    async with Client(mcp) as client:
+        result = await client.call_tool(
+            "find_events", {"params": {"from_date": "2026-10-01", "to_date": "2026-10-31"}}
+        )
+    assert result.is_error is False
+    assert result.structured_content["hint"].startswith("No open-licensed event in range.")
+    body = json.loads(route.calls.last.request.read())
+    assert "2026-10-31T23:59:59Z" in body["filters"][0]

@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- P3: the remaining four tools, each a pure `*_impl` function plus an MCP
+  wrapper (`readOnlyHint`, `openWorldHint`):
+  - `find_events` — date range (default today + 30 days, Europe/Zurich) as the
+    OData overlap filter on `schedule` (PROBE_VERIFY 4), never
+    `scheduleStart`/`scheduleEnd`. The `nextOccurrence` sentinel 2099-12-31
+    becomes `next_occurrence: null`, `date_open: true`, `date_note` «Termin
+    offen»; a missing `nextOccurrence` falls back to the schedule. «Demo
+    Event» and all-rights-reserved Guidle events are withheld and counted.
+  - `webcams_near` — `geo.distance` radius (default 25 km) or region;
+    `live_url` from `link[]` (`WebDetail`/`WebLink`), `snapshot_url` labelled
+    as a stored still.
+  - `explore_area` — facet counts for a region, locality or radius. Short
+    facet names (`containedInPlace`, `ratingDifficulty`, `addressLocality`)
+    are mapped to their OData names before sending; a name the API drops
+    silently is reported in `missing_facets` with a hint.
+  - `source_status` — reachability, search availability, calls per minute,
+    quota state, last success, cache entries, index size (from an unfiltered
+    `explore_area`, cached 60 min), coverage and the entitlement state from
+    `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED`. Works without a key.
+- List fallback wired into `search` and `find_accommodation`: on a refused
+  `/search` they read `/places`, `/civicStructures`, `/foodEstablishments`,
+  `/localbusinesses`, `/lodgingbusinesses` (by `types`), filter by locality and
+  distance client-side, and answer `provenance: list_fallback`,
+  `degraded: search_unavailable`, with a hint naming what was ignored. At most
+  eight list calls per tool call; an incomplete scan is stated.
+- `scripts/p3_stopgate_run.py`: `explore_area` for «Glarnerland» and
+  `source_status` against the live API, key from the environment only.
+
+### Changed
+
+- `DiscoverSwissClient.search` reads its cache before refusing a call while
+  search is unavailable — a cached area lookup keeps working in fallback mode.
+- Tool hash snapshot (`docs/tool-hashes.json`) now covers eight tools.
+
 ### Fixed
 
 - **`find_tours(kind=...)` sent three tour types the index does not have**

@@ -5,9 +5,10 @@ nationwide, points of interest for Zurich, Eastern Switzerland and
 Liechtenstein, tours, webcams and events, each hit carrying its own licence and
 attribution.
 
-P2 registers the four core tools of section 7 of the probe report —
-``search``, ``get_details``, ``find_accommodation``, ``find_tours``. The logic
-lives in :mod:`discover_swiss_mcp.tools` as ``*_impl`` functions; this module
+The eight tools of section 7 of the probe report: ``search``,
+``get_details``, ``find_accommodation``, ``find_tours`` (P2) and
+``find_events``, ``webcams_near``, ``explore_area``, ``source_status`` (P3).
+The logic lives in :mod:`discover_swiss_mcp.tools` as ``*_impl`` functions; this module
 only adds the protocol layer: annotations, the description the model reads,
 the shared client from the lifespan and the masking of errors.
 
@@ -38,16 +39,27 @@ from discover_swiss_mcp.logging_config import configure_logging, get_logger, too
 from discover_swiss_mcp.tools import (
     AccommodationResponse,
     DetailResponse,
+    EventsResponse,
+    ExploreAreaInput,
+    ExploreAreaResponse,
     FindAccommodationInput,
+    FindEventsInput,
     FindToursInput,
     GetDetailsInput,
     SearchInput,
     SearchResponse,
+    SourceStatusResponse,
     ToursResponse,
+    WebcamsNearInput,
+    WebcamsResponse,
+    explore_area_impl,
     find_accommodation_impl,
+    find_events_impl,
     find_tours_impl,
     get_details_impl,
     search_impl,
+    source_status_impl,
+    webcams_near_impl,
 )
 
 # ---------------------------------------------------------------------------
@@ -273,6 +285,68 @@ async def find_tours(params: FindToursInput, ctx: Context) -> ToursResponse:
         return await find_tours_impl(client, params)
     except Exception as exc:
         _fail(exc, "find_tours", log)
+
+
+@mcp.tool(name="find_events", annotations=_annotations("Find events in a date range"))
+async def find_events(params: FindEventsInput, ctx: Context) -> EventsResponse:
+    """Find events whose schedule overlaps a date range (default: today to today + 30 days, Europe/Zurich). Event coverage in this source is thin (about 20 objects, mostly Eastern Switzerland; Zurich events are not included because their provider is not open-licensed). Treat this tool as a supplement: if it returns nothing, name a regional event calendar rather than concluding nothing is on.
+
+    An event is included when any of its dates overlaps `from_date`–`to_date` (whole days). Place: `near` (+ optional `radius_km`), `locality` (exact municipality name from the address, e.g. 'St.Gallen' and 'St. Gallen' are different values) or `region` (area name, resolved to an area id; `area` shows the result). Each hit has `next_occurrence`, and `start`/`end` from the schedule entry that overlaps the range. `date_open: true` means the provider gives no concrete date — present it with `date_note` («Termin offen»), never with a guessed date. Test records and events that are not openly licensed are withheld and counted (`excluded_test_objects`, `excluded_by_license`). Dates and prices are provider-maintained — see `disclaimer`; cite the provider from `attribution`.
+    """
+    log = tool_logger("find_events")
+    client = _client(ctx)
+    try:
+        log.info("tool_call", region=params.region, locality=params.locality)
+        return await find_events_impl(client, params)
+    except Exception as exc:
+        _fail(exc, "find_events", log)
+
+
+@mcp.tool(name="webcams_near", annotations=_annotations("Webcams near a place"))
+async def webcams_near(params: WebcamsNearInput, ctx: Context) -> WebcamsResponse:
+    """Webcams within a radius of a point (`near`, `radius_km`, default 25 km, nearest first) or in a region (`region`, area name resolved to an area id). 73 webcams, all in Eastern Switzerland (St. Gallen, Thurgau, Toggenburg, Heidiland, Glarnerland, Appenzell). `live_url` opens the provider's live image; `snapshot_url` is a stored still and may be hours old. Outside Eastern Switzerland this tool returns nothing — say so and do not invent a webcam.
+
+    Each hit carries `distance_km` when `near` is given; `upstream_count` is the number of webcams in the radius, 20 per `page`. Cite the provider from `attribution`. The webcam shows the view, not trail or road conditions.
+    """
+    log = tool_logger("webcams_near")
+    client = _client(ctx)
+    try:
+        log.info("tool_call", region=params.region, radius_km=params.radius_km)
+        return await webcams_near_impl(client, params)
+    except Exception as exc:
+        _fail(exc, "webcams_near", log)
+
+
+@mcp.tool(name="explore_area", annotations=_annotations("What exists in an area"))
+async def explore_area(params: ExploreAreaInput, ctx: Context) -> ExploreAreaResponse:
+    """Overview of what exists in a region before searching: counts by object type, data owner, season, price range. Use it to decide which tool to call next and to avoid asking for things this source does not have. Counts are upstream counts before licence filtering.
+
+    Scope: `region` (area name, resolved to an area id), `locality` (exact municipality name from the address) or `near` with `radius_km` (default 10); none of them means the whole index. `facets` takes OData names: leafType, containedInPlace/id, rating/difficulty, sourcePartner, season, priceRange, address/addressLocality, categoryTree (short forms containedInPlace, ratingDifficulty, addressLocality are mapped). Each facet lists up to 20 values as {value, label, count}; `containedInPlace/id` lists area ids with counts, and those area names are what `region` accepts elsewhere. A facet name the upstream API does not know is dropped without an error — it is reported in `missing_facets`, never silently absent.
+    """
+    log = tool_logger("explore_area")
+    client = _client(ctx)
+    try:
+        log.info("tool_call", region=params.region, facets=params.facets)
+        return await explore_area_impl(client, params)
+    except Exception as exc:
+        _fail(exc, "explore_area", log)
+
+
+@mcp.tool(name="source_status", annotations=_annotations("Health and scope of this server"))
+async def source_status(ctx: Context) -> SourceStatusResponse:
+    """Health and scope of this server. Call it first when another tool returned `degraded` or an unexpected empty result.
+
+    Reports whether discover.swiss answers (`reachable`), whether its search endpoint is usable (`search_available`; if not, `search` and `find_accommodation` answer from typed lists), calls in the last minute against a limit of 60, since when the monthly quota is exhausted, the last successful call, the index size (`index_total`), the coverage of this source and the state of the written search entitlement. Works without a subscription key and then says so.
+    """
+    log = tool_logger("source_status")
+    app: AppContext = ctx.request_context.lifespan_context
+    if app.client is None:
+        raise ToolError("Server configuration is invalid; see the server log.")
+    try:
+        log.info("tool_call")
+        return await source_status_impl(app.client)
+    except Exception as exc:
+        _fail(exc, "source_status", log)
 
 
 def main() -> None:
