@@ -293,6 +293,24 @@ async def test_search_page_of_only_withheld_hits_says_so(api_mock, client) -> No
     assert result.returned == 0
     assert result.hint and "withheld" in result.hint
     assert result.hint != SEARCH_EMPTY_HINT
+    assert "1 not openly licensed" in result.hint
+    # Room advice only when rooms were withheld: the live run of 2026-09-25
+    # showed the generic wording sending a model after `types` for museums.
+    assert "types" not in result.hint
+    assert "Later pages may still hold servable hits" in result.hint
+
+
+async def test_accommodation_page_of_only_withheld_hits_names_the_reason(api_mock, client) -> None:
+    api_mock.post("/search").mock(
+        return_value=json_response(
+            {"count": 1, "values": [all_rights_reserved_event()], "facets": {}}
+        )
+    )
+    result = await find_accommodation_impl(client, FindAccommodationInput(locality="Interlaken"))
+    assert result.hint == (
+        "All 1 hits on this page were withheld: 1 not openly licensed "
+        "(they may not be shown or described)."
+    )
 
 
 async def test_search_name_match_sends_search_fields(api_mock, client) -> None:
