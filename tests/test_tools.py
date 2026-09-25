@@ -576,7 +576,16 @@ async def test_tours_body_and_hit_fields(api_mock, client) -> None:
 
     body = _body(route)
     assert body["type"] == ["Tour"]
-    assert body["leafType"] == ["HikingTrail", "Route", "NatureTrail", "ThemeTrail"]
+    assert body["leafType"] == [
+        "HikingTrail",
+        "Route",
+        "Way",
+        "Tour",
+        "Longdistance",
+        "NatureTrail",
+        "ThemeTrail",
+    ]
+    assert "categoryTree" not in body
     assert body["filters"] == [
         "length le 10000 and elevation/ascent le 300 and rating/difficulty le 2"
     ]
@@ -589,6 +598,39 @@ async def test_tours_body_and_hit_fields(api_mock, client) -> None:
     assert hit.attribution.license == "CC BY-SA"
 
 
+@pytest.mark.parametrize(
+    ("kind", "category"),
+    [
+        ("winter", "sui_root|sui_01|sui_0110"),
+        ("cycling", "sui_root|sui_01|sui_0102"),
+        ("mtb", "sui_root|sui_01|sui_0102|sui_010205"),
+    ],
+)
+async def test_tours_category_kinds_send_the_full_path(api_mock, client, kind, category) -> None:
+    """The short code (`sui_0110`) answers 0 without an error; only the full path filters."""
+    route = api_mock.post("/search").mock(
+        return_value=json_response({"count": 1, "values": [_tour()], "facets": {}})
+    )
+    await find_tours_impl(client, FindToursInput(kind=kind))
+    body = _body(route)
+    assert body["categoryTree"] == [category]
+    assert "leafType" not in body
+
+
+def test_no_tour_kind_names_a_type_the_index_does_not_have() -> None:
+    """The first mapping sent three types with zero tours. These are the measured ones."""
+    from discover_swiss_mcp.tools import TOUR_KINDS
+
+    measured = {
+        "ThemeTrail", "Route", "NatureTrail", "Tour", "CrossCountry", "TobogganRun",
+        "ViaFerrata", "ShipTour", "SkiSlope", "HikingTrail", "TrainTour", "BikeTrail",
+        "Way", "CarTour", "GlacierTour", "HighTour", "Longdistance", "SegwayTour",
+    }  # fmt: skip
+    for mapping in TOUR_KINDS.values():
+        assert set(mapping.get("leafType", [])) <= measured
+        assert all(path.startswith("sui_root|") for path in mapping.get("categoryTree", []))
+
+
 async def test_tours_kind_all_sends_no_leaf_type(api_mock, client) -> None:
     route = api_mock.post("/search").mock(
         return_value=json_response({"count": 1, "values": [_tour()], "facets": {}})
@@ -596,6 +638,7 @@ async def test_tours_kind_all_sends_no_leaf_type(api_mock, client) -> None:
     await find_tours_impl(client, FindToursInput())
     body = _body(route)
     assert "leafType" not in body
+    assert "categoryTree" not in body
     assert "filters" not in body
 
 

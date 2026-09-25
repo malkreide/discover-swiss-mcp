@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`find_tours(kind=...)` sent three tour types the index does not have**
+  (`CyclingRoute`, `MountainBikeRoute`, `SnowshoeTrail`): `cycling` and `mtb`
+  always answered empty, `winter` missed all 23 snowshoe tours. The mapping
+  is now measured (`probes/PROBE_TOURKINDS_discover-swiss.md`): walking by
+  seven `leafType` values, winter and cycling by the full `categoryTree`
+  path — the short code answers 0 without an error.
+- `find_tours` now says that every filter only matches tours carrying the
+  value; `season_month` keeps 20 of 178 walking tours for July. The empty
+  hint says to drop it first.
+- `search` now says that with a `query`, text relevance outweighs distance
+  in the ranking (live: Hiltl at 0.58 km ranked fifth behind 3.5 km).
+
 - **Every live search hit was withheld as unlicensed.** Search hits carry no
   root `license` and no `dataGovernance.provider`, only `origin`; the P1 rule
   needed the provider and found nothing. The licence of a hit is now the one
