@@ -13,6 +13,7 @@ it, and only into the outbound HTTP header.
 from __future__ import annotations
 
 import os
+from datetime import date
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
@@ -48,6 +49,11 @@ class Settings(BaseModel):
     host: str = "127.0.0.1"
     port: int = Field(default=8000, ge=1, le=65535)
     log_level: str = "INFO"
+    # Date on which discover.swiss confirmed in writing that the Open product
+    # may use `/search`, or None while that is still pending. The probe
+    # measured the access; the documentation denies it. `source_status` reports
+    # which of the two a deployment is standing on.
+    entitlement_confirmed: date | None = None
 
     @property
     def auth_header(self) -> dict[str, str]:
@@ -63,6 +69,9 @@ class Settings(BaseModel):
             "host": self.host,
             "port": self.port,
             "log_level": self.log_level,
+            "entitlement_confirmed": (
+                self.entitlement_confirmed.isoformat() if self.entitlement_confirmed else "pending"
+            ),
             "api_key": "set" if self.api_key.get_secret_value() else "missing",
         }
 
@@ -99,6 +108,19 @@ def load_settings(require_key: bool = True) -> Settings:
             f"DISCOVER_SWISS_MCP_TRANSPORT is {transport!r}; expected 'stdio' or 'streamable-http'."
         )
 
+    confirmed_raw = _env("DISCOVER_SWISS_ENTITLEMENT_CONFIRMED", "") or ""
+    confirmed: date | None = None
+    if confirmed_raw and confirmed_raw.lower() != "pending":
+        # Loud rather than lenient: a typo here would silently report «pending»
+        # on a deployment that believes it has the confirmation on record.
+        try:
+            confirmed = date.fromisoformat(confirmed_raw)
+        except ValueError as exc:
+            raise ConfigError(
+                "DISCOVER_SWISS_ENTITLEMENT_CONFIRMED must be a date (YYYY-MM-DD) or "
+                f"'pending', not {confirmed_raw!r}."
+            ) from exc
+
     return Settings(
         api_key=SecretStr(raw_key),
         project=_env("DISCOVER_SWISS_PROJECT", DEFAULT_PROJECT) or DEFAULT_PROJECT,
@@ -107,4 +129,5 @@ def load_settings(require_key: bool = True) -> Settings:
         host=_env("DISCOVER_SWISS_MCP_HOST", "127.0.0.1") or "127.0.0.1",
         port=port,
         log_level=(_env("DISCOVER_SWISS_MCP_LOG_LEVEL", "INFO") or "INFO").upper(),
+        entitlement_confirmed=confirmed,
     )

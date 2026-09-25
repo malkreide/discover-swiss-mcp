@@ -1,4 +1,4 @@
-"""The four core tools of P2 as pure, testable ``*_impl`` functions.
+"""The eight tools as pure, testable ``*_impl`` functions (P2: the first four, P3: the rest).
 
 Each function takes the shared :class:`DiscoverSwissClient` and a validated
 input model and returns a response envelope. Nothing in here knows about MCP:
@@ -25,19 +25,25 @@ spec and the probe win (session rule: the probe is the truth):
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any, Literal
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from discover_swiss_mcp.client import (
     SEARCH_SELECT_FIELDS,
+    VERIFIED_FACETS,
     AreaLookup,
     DiscoverSwissClient,
     DiscoverSwissError,
     SearchResult,
+    SearchUnavailableError,
     UpstreamRejectedError,
     distance_km,
+    facet_values,
+    filter_by_distance,
+    odata_facet_names,
 )
 from discover_swiss_mcp.licenses import (
     Attribution,
@@ -723,6 +729,308 @@ def _paging(
 
 
 # ---------------------------------------------------------------------------
+# List fallback — the way in when `/search` is refused
+# ---------------------------------------------------------------------------
+
+FALLBACK_HINT = (
+    "Full-text search is currently unavailable upstream; results come from typed lists "
+    "filtered by area and distance."
+)
+
+FALLBACK_EMPTY_HINT = (
+    "No listed object matched the area and distance. Widen `radius_km`, or check `locality` "
+    "against the spelling in the address."
+)
+
+# The five collections that hold what `search` and `find_accommodation` serve.
+# Lodging last: it is the largest (5'275 rows), and when the call budget runs
+# out, the four POI collections are the ones a `search` caller is more likely
+# to have meant.
+FALLBACK_ENDPOINTS: tuple[str, ...] = (
+    "places",
+    "civicStructures",
+    "foodEstablishments",
+    "localbusinesses",
+    "lodgingbusinesses",
+)
+
+# leafType → the collection that holds it, from the probe's endpoint matrix
+# (PROBE_REPORT section 2). A type not listed here scans all five collections
+# and is matched client-side — slower, never silently empty.
+FALLBACK_TYPE_ENDPOINTS: dict[str, str] = {
+    "Hotel": "lodgingbusinesses",
+    "LodgingBusiness": "lodgingbusinesses",
+    "HolidayApartment": "lodgingbusinesses",
+    "Museum": "civicStructures",
+    "Theater": "civicStructures",
+    "ArtObject": "civicStructures",
+    "TouristAttraction": "civicStructures",
+    "Restaurant": "foodEstablishments",
+    "CafeOrCoffeeShop": "foodEstablishments",
+    "Winery": "foodEstablishments",
+    "Store": "localbusinesses",
+    "SportsActivityLocation": "localbusinesses",
+    "NightClub": "localbusinesses",
+    "PublicSwimmingPool": "localbusinesses",
+    "DaySpa": "localbusinesses",
+    "LocalBusiness": "localbusinesses",
+    "Place": "places",
+    "Lake": "places",
+    "Landform": "places",
+    "Waterfall": "places",
+    "Mountain": "places",
+}
+
+# `top=1000` works on the list endpoints (probe run 3) at ~1 KB per row with
+# the list `select`, and a Cosmos page cut below that is followed by token.
+FALLBACK_TOP = 1000
+# Calls one tool call may spend on the fallback. Without an area id the whole
+# collection is scanned — 5'275 lodgings are six calls — and eight keeps a
+# single question from eating a seventh of the minute's budget.
+FALLBACK_MAX_CALLS = 8
+# Radius for `near` without `radius_km`. `/search` only ranks then; a list
+# cannot rank without cutting somewhere, and the cut is reported in `applied`.
+FALLBACK_DEFAULT_RADIUS_KM = 10.0
+
+
+class _FallbackScan(BaseModel):
+    matched: list[dict[str, Any]] = Field(default_factory=list)
+    scanned: int = 0
+    collection_total: int | None = None
+    complete: bool = True
+    skipped_endpoints: list[str] = Field(default_factory=list)
+    retrieved_at: datetime
+
+
+def _leaf_types(obj: dict[str, Any]) -> set[str]:
+    return {t for t in (_short_type(obj.get("additionalType")), _short_type(obj.get("type"))) if t}
+
+
+def fallback_endpoints(types: list[str] | None) -> tuple[str, ...]:
+    """The collections to scan for ``types`` — all five when any type is unmapped."""
+    if not types or any(t not in FALLBACK_TYPE_ENDPOINTS for t in types):
+        return FALLBACK_ENDPOINTS
+    wanted = {FALLBACK_TYPE_ENDPOINTS[t] for t in types}
+    return tuple(e for e in FALLBACK_ENDPOINTS if e in wanted)
+
+
+async def _fallback_area(
+    client: DiscoverSwissClient, locality: str | None, lang: str
+) -> str | None:
+    """An area id for ``locality``, if one can be had without `/search`.
+
+    ``resolve_area`` goes through `/search`, which is exactly what is refused;
+    it only answers here from the cache. ``None`` is not an error — the scan
+    then covers the whole collection and the locality is matched client-side.
+    """
+    if not locality:
+        return None
+    try:
+        lookup = await client.resolve_area(locality, lang=lang)
+    except SearchUnavailableError:
+        return None
+    return lookup.identifier
+
+
+async def _scan_lists(
+    client: DiscoverSwissClient,
+    endpoints: tuple[str, ...],
+    *,
+    area_id: str | None,
+    near: GeoPoint | None,
+    radius_km: float,
+    locality: str | None,
+    types: list[str] | None,
+    lang: str,
+) -> _FallbackScan:
+    """Read the collections page by page, then cut by type, locality and distance."""
+    rows: list[dict[str, Any]] = []
+    total: int | None = None
+    calls = 0
+    skipped: list[str] = []
+    for endpoint in endpoints:
+        if calls >= FALLBACK_MAX_CALLS:
+            skipped.append(endpoint)
+            continue
+        token: str | None = None
+        while True:
+            page = await client.list_fallback(
+                endpoint, contained_in_place=area_id, top=FALLBACK_TOP, token=token, lang=lang
+            )
+            calls += 1
+            if token is None and page.total is not None:
+                total = (total or 0) + page.total
+            rows.extend(page.data)
+            token = page.next_token
+            if not token:
+                break
+            if calls >= FALLBACK_MAX_CALLS:
+                # Part of this collection is unread: the scan is incomplete
+                # even though the endpoint itself is not skipped.
+                skipped.append(f"{endpoint} (partly)")
+                break
+
+    matched = rows
+    if types:
+        wanted = set(types)
+        matched = [row for row in matched if _leaf_types(row) & wanted]
+    if locality:
+        target = locality.strip().casefold()
+        matched = [
+            row
+            for row in matched
+            if isinstance(row.get("address"), dict)
+            and str(row["address"].get("addressLocality") or "").strip().casefold() == target
+        ]
+    if near is not None:
+        matched = filter_by_distance(matched, near.lat, near.lon, radius_km)
+    return _FallbackScan(
+        matched=matched,
+        scanned=len(rows),
+        collection_total=total,
+        complete=not skipped,
+        skipped_endpoints=skipped,
+        retrieved_at=_now(),
+    )
+
+
+def _fallback_applied(
+    scan: _FallbackScan,
+    endpoints: tuple[str, ...],
+    area_id: str | None,
+    near: GeoPoint | None,
+    radius_km: float,
+    locality: str | None,
+    types: list[str] | None,
+) -> dict[str, Any]:
+    return {
+        "mode": "list_fallback",
+        "endpoints": list(endpoints),
+        "containedInPlace": area_id,
+        "near": near.model_dump() if near else None,
+        "radius_km": radius_km if near else None,
+        "locality": locality,
+        "types": types,
+        "rows_scanned": scan.scanned,
+        "collection_total": scan.collection_total,
+        "scan_complete": scan.complete,
+    }
+
+
+def _fallback_hint(
+    scan: _FallbackScan, ignored: str | None, returned: int, page_hint: str | None
+) -> str:
+    parts = [FALLBACK_HINT]
+    if ignored:
+        parts.append(ignored)
+    if not scan.complete:
+        parts.append(
+            f"The call budget ran out after {scan.scanned} of {scan.collection_total} listed "
+            f"rows; not read: {', '.join(scan.skipped_endpoints)}. Results may be incomplete — "
+            "do not conclude that something is absent."
+        )
+    if returned == 0 and page_hint:
+        parts.append(page_hint)
+    return " ".join(parts)
+
+
+def _slice(rows: list[dict[str, Any]], page: int, page_size: int) -> list[dict[str, Any]]:
+    start = (page - 1) * page_size
+    return rows[start : start + page_size]
+
+
+async def _search_fallback(client: DiscoverSwissClient, params: SearchInput) -> SearchResponse:
+    project = client.settings.project
+    ignored = "`query` was ignored." if params.query else None
+    if params.near is None and not params.locality:
+        return SearchResponse(
+            project=project,
+            provenance="list_fallback",
+            retrieved_at=_now(),
+            source_freshness=None,
+            degraded="search_unavailable",
+            page=params.page,
+            page_size=params.page_size,
+            applied={"mode": "list_fallback", "endpoints": []},
+            hint=" ".join(
+                p
+                for p in (
+                    FALLBACK_HINT,
+                    ignored,
+                    "Without full text the lists need `near` or `locality` to bound the area; "
+                    "nothing was fetched. Ask again with one of them.",
+                )
+                if p
+            ),
+        )
+
+    endpoints = fallback_endpoints(params.types)
+    radius = params.radius_km or FALLBACK_DEFAULT_RADIUS_KM
+    try:
+        area_id = await _fallback_area(client, params.locality, params.lang)
+        scan = await _scan_lists(
+            client,
+            endpoints,
+            area_id=area_id,
+            near=params.near,
+            radius_km=radius,
+            locality=params.locality,
+            types=params.types,
+            lang=params.lang,
+        )
+    except DiscoverSwissError as exc:
+        if exc.degraded is None:
+            raise
+        return SearchResponse(
+            project=project,
+            page=params.page,
+            page_size=params.page_size,
+            **degraded_envelope_fields(exc),
+        )
+
+    window = _slice(scan.matched, params.page, params.page_size)
+    screened = screen(window)
+    kept = screened.kept
+    excluded_default = 0
+    if params.types is None:
+        before = len(kept)
+        kept = [obj for obj in kept if not is_default_excluded(obj)]
+        excluded_default = before - len(kept)
+    hits = [Hit(**_hit_fields(obj, params.near)) for obj in kept]
+    page_hint = _paged_hint(
+        len(scan.matched),
+        len(window),
+        len(hits),
+        params.page,
+        FALLBACK_EMPTY_HINT,
+        by_license=screened.excluded_by_license,
+        test_objects=screened.excluded_test_objects,
+        default_types=excluded_default,
+    )
+    return SearchResponse(
+        provenance="list_fallback",
+        retrieved_at=scan.retrieved_at,
+        source_freshness=_freshness(kept),
+        project=project,
+        degraded="search_unavailable",
+        hint=_fallback_hint(scan, ignored, len(hits), page_hint),
+        excluded_by_license=screened.excluded_by_license,
+        excluded_test_objects=screened.excluded_test_objects,
+        excluded_by_default_types=excluded_default,
+        upstream_count=len(scan.matched),
+        fetched=len(window),
+        returned=len(hits),
+        page=params.page,
+        page_size=params.page_size,
+        has_more=params.page * params.page_size < len(scan.matched),
+        applied=_fallback_applied(
+            scan, endpoints, area_id, params.near, radius, params.locality, params.types
+        ),
+        hits=hits,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Tool 1 — search
 # ---------------------------------------------------------------------------
 
@@ -753,6 +1061,8 @@ async def search_impl(client: DiscoverSwissClient, params: SearchInput) -> Searc
     project = client.settings.project
 
     result = await _run_search(client, body, params.lang)
+    if isinstance(result, SearchUnavailableError):
+        return await _search_fallback(client, params)
     if isinstance(result, DiscoverSwissError):
         return SearchResponse(
             project=project,
@@ -944,6 +1254,8 @@ async def find_accommodation_impl(
     project = client.settings.project
 
     result = await _run_search(client, body, params.lang)
+    if isinstance(result, SearchUnavailableError):
+        return await _accommodation_fallback(client, params)
     if isinstance(result, DiscoverSwissError):
         return AccommodationResponse(
             project=project,
@@ -986,6 +1298,96 @@ async def find_accommodation_impl(
         page_size=params.page_size,
         has_more=has_more,
         applied=applied,
+        hits=hits,
+    )
+
+
+def _ignored_accommodation_filters(params: FindAccommodationInput) -> str | None:
+    """The filters a list row cannot answer: the list ``select`` has no star rating,
+    price band, amenities or accessibility partner."""
+    ignored = [
+        name
+        for name, active in (
+            ("stars_min", params.stars_min is not None),
+            ("garni", params.garni is not None),
+            ("price_range", params.price_range is not None),
+            ("amenities", bool(params.amenities)),
+            ("accessible", params.accessible),
+        )
+        if active
+    ]
+    if not ignored:
+        return None
+    return (
+        f"Ignored in this mode: {', '.join(ignored)} — the lists do not carry them, so the "
+        "hits below are not filtered by them; check each with `get_details`."
+    )
+
+
+async def _accommodation_fallback(
+    client: DiscoverSwissClient, params: FindAccommodationInput
+) -> AccommodationResponse:
+    project = client.settings.project
+    endpoints: tuple[str, ...] = ("lodgingbusinesses",)
+    radius = params.radius_km or FALLBACK_DEFAULT_RADIUS_KM
+    try:
+        area_id = await _fallback_area(client, params.locality, params.lang)
+        scan = await _scan_lists(
+            client,
+            endpoints,
+            area_id=area_id,
+            near=params.near,
+            radius_km=radius,
+            locality=params.locality,
+            types=None,
+            lang=params.lang,
+        )
+    except DiscoverSwissError as exc:
+        if exc.degraded is None:
+            raise
+        return AccommodationResponse(
+            project=project,
+            page=params.page,
+            page_size=params.page_size,
+            **degraded_envelope_fields(exc),
+        )
+
+    window = _slice(scan.matched, params.page, params.page_size)
+    screened = screen(window)
+    hits = [_accommodation_hit(obj, params.near) for obj in screened.kept]
+    freshness = _freshness(screened.kept)
+    page_hint = _paged_hint(
+        len(scan.matched),
+        len(window),
+        len(hits),
+        params.page,
+        FALLBACK_EMPTY_HINT,
+        by_license=screened.excluded_by_license,
+        test_objects=screened.excluded_test_objects,
+    )
+    return AccommodationResponse(
+        provenance="list_fallback",
+        retrieved_at=scan.retrieved_at,
+        source_freshness=freshness,
+        project=project,
+        degraded="search_unavailable",
+        disclaimer=(
+            disclaimer_b([h.attribution.provider for h in hits], freshness, params.lang)
+            if hits
+            else None
+        ),
+        hint=_fallback_hint(scan, _ignored_accommodation_filters(params), len(hits), page_hint),
+        excluded_by_license=screened.excluded_by_license,
+        excluded_test_objects=screened.excluded_test_objects,
+        upstream_count=len(scan.matched),
+        fetched=len(window),
+        returned=len(hits),
+        page=params.page,
+        page_size=params.page_size,
+        has_more=params.page * params.page_size < len(scan.matched),
+        applied=_fallback_applied(
+            scan, endpoints, area_id, params.near, radius, params.locality, None
+        ),
         hits=hits,
     )
 
@@ -1136,4 +1538,827 @@ async def find_tours_impl(client: DiscoverSwissClient, params: FindToursInput) -
         applied=applied,
         area=area,
         hits=hits,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Shared by tools 5–7: region lookup
+# ---------------------------------------------------------------------------
+
+
+def _unresolved_area_hint(lookup: AreaLookup, what: str) -> str:
+    """The hint for a region name that matched no area: never an unfiltered search."""
+    return (
+        f"{lookup.hint} Pass one of these names as `region`, or use `near` with a coordinate "
+        f"instead. No {what} was run."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Tool 5 — find_events
+# ---------------------------------------------------------------------------
+
+EVENTS_EMPTY_HINT = (
+    "No open-licensed event in range. Widen the date range; then point the user to the "
+    "regional calendar (e.g. zuerich.com/events for Zurich) — do not guess events."
+)
+
+# The index writes 2099-12-31T23:59:59 into `nextOccurrence` for an event
+# without a concrete date (Schweizer Genusswoche, f4_odata.json). Any year from
+# here on is read as «no date», never as a date.
+SENTINEL_YEAR = 2099
+
+# What `date_note` says when no concrete date exists.
+DATE_OPEN_NOTE: dict[str, str] = {
+    "de": "Termin offen",
+    "fr": "Date à confirmer",
+    "it": "Data da definire",
+    "en": "Date to be announced",
+}
+
+# The default range: the next 30 days, as the brief sets it.
+EVENTS_DEFAULT_DAYS = 30
+EVENTS_MAX_RANGE_DAYS = 366
+
+EVENT_SELECT_FIELDS: tuple[str, ...] = (
+    "identifier",
+    "name",
+    "type",
+    "additionalType",
+    "address",
+    "geo",
+    "dataGovernance",
+    "lastModified",
+    "link",
+    "nextOccurrence",
+    "schedule",
+    "organizer",
+)
+EVENT_SELECT = ",".join(EVENT_SELECT_FIELDS)
+assert set(EVENT_SELECT_FIELDS) <= set(SEARCH_SELECT_FIELDS)
+
+ZURICH = ZoneInfo("Europe/Zurich")
+
+
+def _today() -> date:
+    """Today in Switzerland — not in UTC, where it is still yesterday until 02:00."""
+    return datetime.now(ZURICH).date()
+
+
+class FindEventsInput(_PagedInput):
+    """Events in a date range, optionally bounded by place."""
+
+    near: GeoPoint | None = Field(default=None, description="Rank by distance from this point.")
+    radius_km: float | None = Field(
+        default=None, gt=0, le=200, description="Only with `near`: cut-off radius in km."
+    )
+    locality: str | None = Field(
+        default=None,
+        max_length=100,
+        description="Exact municipality name from the address (e.g. 'St.Gallen'). No fuzzy match.",
+    )
+    region: str | None = Field(
+        default=None,
+        max_length=100,
+        description="Area name, exact (e.g. 'Appenzellerland'); resolved to an area id.",
+    )
+    # A factory, not a value: a literal default would be the day the schema
+    # was built, and the tool hash would change every midnight.
+    from_date: date = Field(
+        default_factory=_today,
+        description="First day of the range, YYYY-MM-DD. Default: today (Europe/Zurich).",
+    )
+    to_date: date | None = Field(
+        default=None,
+        description=f"Last day of the range, inclusive. Default: from_date + {EVENTS_DEFAULT_DAYS} days.",
+    )
+
+    @model_validator(mode="after")
+    def _check(self) -> FindEventsInput:
+        _check_radius(self.near, self.radius_km)
+        end = self.effective_to_date
+        if end < self.from_date:
+            raise ValueError("`to_date` lies before `from_date`.")
+        if (end - self.from_date).days > EVENTS_MAX_RANGE_DAYS:
+            raise ValueError(f"The date range is limited to {EVENTS_MAX_RANGE_DAYS} days.")
+        return self
+
+    @property
+    def effective_to_date(self) -> date:
+        return self.to_date or self.from_date + timedelta(days=EVENTS_DEFAULT_DAYS)
+
+
+class EventHit(BaseModel):
+    identifier: str
+    name: str | None = None
+    # ISO timestamp of the next date, or None when there is none — the 2099
+    # sentinel included. Never a date in 2099.
+    next_occurrence: str | None = None
+    # True when the provider gives no concrete date; `date_note` then says so
+    # in the requested language («Termin offen»).
+    date_open: bool = False
+    date_note: str | None = None
+    # The schedule entry that overlaps the requested range (date, plus time
+    # where the provider gives one).
+    start: str | None = None
+    end: str | None = None
+    locality: str | None = None
+    distance_km: float | None = None
+    organizer_name: str | None = None
+    website: str | None = None
+    attribution: Attribution
+
+
+class EventsResponse(_PagedResponse):
+    area: AreaInfo | None = None
+    hits: list[EventHit] = Field(default_factory=list)
+
+
+def event_date_filter(from_date: date, to_date: date) -> str:
+    """OData overlap filter on the schedule, verified live (PROBE_VERIFY 4).
+
+    Not ``scheduleStart``/``scheduleEnd``: those apply after the search, so
+    ``count`` and paging stop being reliable (the filtering how-to says so,
+    and the probe got 7 hits where the OData form counts 18).
+    """
+    return (
+        f"schedule/any(item: item/endDate ge {from_date.isoformat()}T00:00:00Z "
+        f"and item/startDate le {to_date.isoformat()}T23:59:59Z)"
+    )
+
+
+def build_events_body(params: FindEventsInput, area_id: str | None) -> dict[str, Any]:
+    conditions = [event_date_filter(params.from_date, params.effective_to_date)]
+    if params.near is not None and params.radius_km is not None:
+        conditions.append(geo_distance_filter(params.near, params.radius_km))
+    body: dict[str, Any] = {
+        "type": ["Event"],
+        "containedInPlace": [area_id] if area_id else None,
+        "addressLocality": [params.locality] if params.locality else None,
+        "scoringReferencePoint": scoring_point(params.near) if params.near else None,
+        # One string joined with `and` — the combined form verified on tours.
+        "filters": [" and ".join(conditions)],
+        "resultsPerPage": params.page_size,
+        "currentPage": params.page,
+        "select": EVENT_SELECT,
+    }
+    return {k: v for k, v in body.items() if v is not None}
+
+
+def _is_sentinel(stamp: str | None) -> bool:
+    if not stamp or len(stamp) < 4 or not stamp[:4].isdigit():
+        return False
+    return int(stamp[:4]) >= SENTINEL_YEAR
+
+
+def _moment(day: Any, clock: Any) -> str | None:
+    """``YYYY-MM-DD`` plus ``THH:MM[:SS]`` where a time is given; None for the sentinel."""
+    if not isinstance(day, str) or len(day) < 10:
+        return None
+    stamp = day[:10]
+    if isinstance(clock, str) and clock.strip():
+        stamp = f"{stamp}T{clock.strip()}"
+    return None if _is_sentinel(stamp) else stamp
+
+
+def _schedule_entry(obj: dict[str, Any], from_date: date) -> dict[str, Any] | None:
+    """The first schedule entry still running on ``from_date``, else the first one."""
+    entries = [e for e in obj.get("schedule") or [] if isinstance(e, dict)]
+    if not entries:
+        return None
+    first_day = from_date.isoformat()
+    for entry in entries:
+        end = entry.get("endDate") or entry.get("startDate")
+        if isinstance(end, str) and end[:10] >= first_day:
+            return entry
+    return entries[0]
+
+
+def _event_hit(obj: dict[str, Any], params: FindEventsInput) -> EventHit:
+    fields = _hit_fields(obj, params.near)
+    entry = _schedule_entry(obj, params.from_date) or {}
+    start = _moment(entry.get("startDate"), entry.get("startTime"))
+    end = _moment(entry.get("endDate"), entry.get("endTime"))
+
+    raw_next = _str_or_none(obj.get("nextOccurrence"))
+    if raw_next is not None and _is_sentinel(raw_next):
+        next_occurrence = None
+    else:
+        # `nextOccurrence` is missing on some hits (probe: None for two of
+        # three); the schedule is the fallback.
+        next_occurrence = raw_next or start
+
+    organizer = obj.get("organizer") if isinstance(obj.get("organizer"), dict) else {}
+    date_open = next_occurrence is None
+    return EventHit(
+        identifier=fields["identifier"],
+        name=fields["name"],
+        next_occurrence=next_occurrence,
+        date_open=date_open,
+        date_note=DATE_OPEN_NOTE.get(params.lang, DATE_OPEN_NOTE["en"]) if date_open else None,
+        start=start,
+        end=end,
+        locality=fields["locality"],
+        distance_km=fields["distance_km"],
+        organizer_name=_str_or_none(organizer.get("name")),
+        website=fields["website"],
+        attribution=fields["attribution"],
+    )
+
+
+async def find_events_impl(client: DiscoverSwissClient, params: FindEventsInput) -> EventsResponse:
+    project = client.settings.project
+    area: AreaInfo | None = None
+    area_id: str | None = None
+
+    if params.region:
+        try:
+            lookup = await client.resolve_area(params.region, lang=params.lang)
+        except DiscoverSwissError as exc:
+            if exc.degraded is None:
+                raise
+            return EventsResponse(
+                project=project,
+                page=params.page,
+                page_size=params.page_size,
+                **degraded_envelope_fields(exc),
+            )
+        area = _area_info(lookup)
+        if lookup.identifier is None:
+            return EventsResponse(
+                project=project,
+                provenance=lookup.provenance,
+                retrieved_at=lookup.retrieved_at,
+                source_freshness=None,
+                page=params.page,
+                page_size=params.page_size,
+                area=area,
+                hint=_unresolved_area_hint(lookup, "event search"),
+            )
+        area_id = lookup.identifier
+
+    body = build_events_body(params, area_id)
+    applied = {k: v for k, v in body.items() if k != "select"}
+
+    result = await _run_search(client, body, params.lang)
+    if isinstance(result, DiscoverSwissError):
+        return EventsResponse(
+            project=project,
+            page=params.page,
+            page_size=params.page_size,
+            applied=applied,
+            area=area,
+            **degraded_envelope_fields(result),
+        )
+
+    # Both gates are mandatory here: «Demo Event» is live in the index, and
+    # Guidle events are all-rights-reserved.
+    screened = screen(result.values)
+    hits = [_event_hit(obj, params) for obj in screened.kept]
+    fetched = len(result.values)
+    upstream_count, has_more = _paging(result, params.page, params.page_size, fetched)
+    freshness = _freshness(screened.kept)
+    return EventsResponse(
+        provenance=result.provenance,
+        retrieved_at=result.retrieved_at,
+        source_freshness=freshness,
+        project=project,
+        disclaimer=(
+            disclaimer_b([h.attribution.provider for h in hits], freshness, params.lang)
+            if hits
+            else None
+        ),
+        hint=_paged_hint(
+            upstream_count,
+            fetched,
+            len(hits),
+            params.page,
+            EVENTS_EMPTY_HINT,
+            by_license=screened.excluded_by_license,
+            test_objects=screened.excluded_test_objects,
+        ),
+        excluded_by_license=screened.excluded_by_license,
+        excluded_test_objects=screened.excluded_test_objects,
+        upstream_count=upstream_count,
+        fetched=fetched,
+        returned=len(hits),
+        page=params.page,
+        page_size=params.page_size,
+        has_more=has_more,
+        applied=applied,
+        area=area,
+        hits=hits,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Tool 6 — webcams_near
+# ---------------------------------------------------------------------------
+
+WEBCAM_PAGE_SIZE = 20
+WEBCAM_DEFAULT_RADIUS_KM = 25.0
+
+# `link[].type` values that point at the provider's live image
+# (Webcam Atzmännig: `WebDetail` → sky-cam.ch/…/livebild.php).
+LIVE_LINK_TYPES = frozenset({"WebDetail", "WebLink"})
+
+SNAPSHOT_NOTE = "last stored snapshot, not live — may be hours old"
+
+WEBCAM_SELECT_FIELDS: tuple[str, ...] = (
+    "identifier",
+    "name",
+    "type",
+    "additionalType",
+    "address",
+    "geo",
+    "dataGovernance",
+    "lastModified",
+    "link",
+    "image",
+)
+WEBCAM_SELECT = ",".join(WEBCAM_SELECT_FIELDS)
+assert set(WEBCAM_SELECT_FIELDS) <= set(SEARCH_SELECT_FIELDS)
+
+
+def _webcams_empty_hint(radius_km: float | None) -> str:
+    scope = f"within {radius_km:g} km" if radius_km is not None else "in this area"
+    return (
+        f"No webcam {scope}. All webcams in this source are in Eastern Switzerland (St. Gallen, "
+        "Thurgau, Toggenburg, Heidiland, Glarnerland, Appenzell). If the point lies near that "
+        "region, widen `radius_km`; otherwise tell the user this source has no webcam there — "
+        "do not invent one."
+    )
+
+
+class WebcamsNearInput(BaseModel):
+    """Webcams around a point or in a region."""
+
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    near: GeoPoint | None = Field(
+        default=None, description="Point to search around. `near` or `region` is required."
+    )
+    region: str | None = Field(
+        default=None,
+        max_length=100,
+        description="Area name, exact (e.g. 'Toggenburg'); resolved to an area id.",
+    )
+    radius_km: float = Field(
+        default=WEBCAM_DEFAULT_RADIUS_KM,
+        gt=0,
+        le=200,
+        description="Only with `near`: hard cut-off radius in km. Default 25.",
+    )
+    page: int = Field(default=1, ge=1, le=100, description="1-based page of 20 webcams.")
+    lang: Lang = Field(default="de", description="Language of names (de, fr, it, en).")
+
+    @model_validator(mode="after")
+    def _place_required(self) -> WebcamsNearInput:
+        if self.near is None and not self.region:
+            raise ValueError("Give `near` or `region`: webcams are always looked up by place.")
+        return self
+
+
+class WebcamHit(BaseModel):
+    identifier: str
+    name: str | None = None
+    locality: str | None = None
+    distance_km: float | None = None
+    # The provider's live image page.
+    live_url: str | None = None
+    # A stored still on media-v2.discover.swiss — not live.
+    snapshot_url: str | None = None
+    snapshot_note: str | None = None
+    attribution: Attribution
+
+
+class WebcamsResponse(_PagedResponse):
+    area: AreaInfo | None = None
+    hits: list[WebcamHit] = Field(default_factory=list)
+
+
+def build_webcams_body(params: WebcamsNearInput, area_id: str | None) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "type": ["Webcam"],
+        "containedInPlace": [area_id] if area_id else None,
+        "filters": (
+            [geo_distance_filter(params.near, params.radius_km)]
+            if params.near is not None
+            else None
+        ),
+        "scoringReferencePoint": scoring_point(params.near) if params.near else None,
+        "resultsPerPage": WEBCAM_PAGE_SIZE,
+        "currentPage": params.page,
+        "select": WEBCAM_SELECT,
+    }
+    return {k: v for k, v in body.items() if v is not None}
+
+
+def _live_url(obj: dict[str, Any]) -> str | None:
+    links = obj.get("link")
+    if not isinstance(links, list):
+        return None
+    for link in links:
+        if isinstance(link, dict) and link.get("type") in LIVE_LINK_TYPES:
+            url = _str_or_none(link.get("url"))
+            if url:
+                return url
+    return None
+
+
+def _webcam_hit(obj: dict[str, Any], near: GeoPoint | None) -> WebcamHit:
+    fields = _hit_fields(obj, near)
+    snapshot = _image_url(obj)
+    return WebcamHit(
+        identifier=fields["identifier"],
+        name=fields["name"],
+        locality=fields["locality"],
+        distance_km=fields["distance_km"],
+        live_url=_live_url(obj),
+        snapshot_url=snapshot,
+        snapshot_note=SNAPSHOT_NOTE if snapshot else None,
+        attribution=fields["attribution"],
+    )
+
+
+async def webcams_near_impl(
+    client: DiscoverSwissClient, params: WebcamsNearInput
+) -> WebcamsResponse:
+    project = client.settings.project
+    area: AreaInfo | None = None
+    area_id: str | None = None
+
+    if params.region:
+        try:
+            lookup = await client.resolve_area(params.region, lang=params.lang)
+        except DiscoverSwissError as exc:
+            if exc.degraded is None:
+                raise
+            return WebcamsResponse(
+                project=project,
+                page=params.page,
+                page_size=WEBCAM_PAGE_SIZE,
+                **degraded_envelope_fields(exc),
+            )
+        area = _area_info(lookup)
+        if lookup.identifier is None:
+            return WebcamsResponse(
+                project=project,
+                provenance=lookup.provenance,
+                retrieved_at=lookup.retrieved_at,
+                source_freshness=None,
+                page=params.page,
+                page_size=WEBCAM_PAGE_SIZE,
+                area=area,
+                hint=_unresolved_area_hint(lookup, "webcam search"),
+            )
+        area_id = lookup.identifier
+
+    body = build_webcams_body(params, area_id)
+    applied = {k: v for k, v in body.items() if k != "select"}
+
+    result = await _run_search(client, body, params.lang)
+    if isinstance(result, DiscoverSwissError):
+        return WebcamsResponse(
+            project=project,
+            page=params.page,
+            page_size=WEBCAM_PAGE_SIZE,
+            applied=applied,
+            area=area,
+            **degraded_envelope_fields(result),
+        )
+
+    screened = screen(result.values)
+    hits = [_webcam_hit(obj, params.near) for obj in screened.kept]
+    fetched = len(result.values)
+    upstream_count, has_more = _paging(result, params.page, WEBCAM_PAGE_SIZE, fetched)
+    return WebcamsResponse(
+        provenance=result.provenance,
+        retrieved_at=result.retrieved_at,
+        source_freshness=_freshness(screened.kept),
+        project=project,
+        hint=_paged_hint(
+            upstream_count,
+            fetched,
+            len(hits),
+            params.page,
+            _webcams_empty_hint(params.radius_km if params.near else None),
+            by_license=screened.excluded_by_license,
+            test_objects=screened.excluded_test_objects,
+        ),
+        excluded_by_license=screened.excluded_by_license,
+        excluded_test_objects=screened.excluded_test_objects,
+        upstream_count=upstream_count,
+        fetched=fetched,
+        returned=len(hits),
+        page=params.page,
+        page_size=WEBCAM_PAGE_SIZE,
+        has_more=has_more,
+        applied=applied,
+        area=area,
+        hits=hits,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Tool 7 — explore_area
+# ---------------------------------------------------------------------------
+
+DEFAULT_EXPLORE_FACETS: tuple[str, ...] = ("leafType", "sourcePartner", "season", "priceRange")
+
+# Values per facet. Twenty keeps `containedInPlace/id` useful as an area
+# index while a response stays a few kilobytes.
+EXPLORE_FACET_VALUES = 20
+EXPLORE_DEFAULT_RADIUS_KM = 10.0
+
+MISSING_FACETS_HINT = (
+    "Facet(s) {names} were silently dropped by the upstream API — the name is probably wrong; "
+    "valid names are leafType, containedInPlace/id, rating/difficulty, sourcePartner, season, "
+    "priceRange, address/addressLocality, categoryTree."
+)
+
+EXPLORE_EMPTY_HINT = (
+    "Nothing in this scope. Check `locality` against the address spelling or widen "
+    "`radius_km`. Points of interest are covered for Zurich, Eastern Switzerland, "
+    "Liechtenstein and Engadin; hotels nationwide."
+)
+
+# The eight names are verified; the tool must agree with the client on them.
+assert set(VERIFIED_FACETS) == {
+    "leafType",
+    "containedInPlace/id",
+    "rating/difficulty",
+    "sourcePartner",
+    "season",
+    "priceRange",
+    "address/addressLocality",
+    "categoryTree",
+}
+
+
+class ExploreAreaInput(BaseModel):
+    """Facet counts for a scope — what exists before anything is searched."""
+
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    region: str | None = Field(
+        default=None,
+        max_length=100,
+        description="Area name, exact (e.g. 'Glarnerland'); resolved to an area id.",
+    )
+    locality: str | None = Field(
+        default=None, max_length=100, description="Exact municipality name from the address."
+    )
+    near: GeoPoint | None = Field(default=None, description="Centre of a radius scope.")
+    radius_km: float | None = Field(
+        default=None,
+        gt=0,
+        le=200,
+        description=f"Only with `near`: radius in km. Default {EXPLORE_DEFAULT_RADIUS_KM:g}.",
+    )
+    facets: list[str] = Field(
+        default=list(DEFAULT_EXPLORE_FACETS),
+        min_length=1,
+        max_length=12,
+        description=(
+            "Facet names (OData spelling): leafType, containedInPlace/id, rating/difficulty, "
+            "sourcePartner, season, priceRange, address/addressLocality, categoryTree. The "
+            "short forms containedInPlace, ratingDifficulty and addressLocality are mapped."
+        ),
+    )
+    lang: Lang = Field(default="de", description="Language of facet labels (de, fr, it, en).")
+
+    @model_validator(mode="after")
+    def _radius_needs_near(self) -> ExploreAreaInput:
+        _check_radius(self.near, self.radius_km)
+        return self
+
+
+class FacetValue(BaseModel):
+    value: str
+    label: str | None = None
+    count: int | None = None
+
+
+class ExploreAreaResponse(Envelope):
+    # Upstream count for the scope, before the licence gate.
+    total: int | None = None
+    facets: dict[str, list[FacetValue]] = Field(default_factory=dict)
+    # The names sent upstream, after mapping short forms.
+    requested_facets: list[str] = Field(default_factory=list)
+    # Sent, and not in the answer: the upstream API drops unknown names quietly.
+    missing_facets: list[str] = Field(default_factory=list)
+    area: AreaInfo | None = None
+    applied: dict[str, Any] = Field(default_factory=dict)
+
+
+def build_explore_body(
+    params: ExploreAreaInput, area_id: str | None, facet_names: list[str]
+) -> dict[str, Any]:
+    radius = params.radius_km or EXPLORE_DEFAULT_RADIUS_KM
+    body: dict[str, Any] = {
+        "containedInPlace": [area_id] if area_id else None,
+        "addressLocality": [params.locality] if params.locality else None,
+        "filters": [geo_distance_filter(params.near, radius)] if params.near is not None else None,
+        "resultsPerPage": 1,
+        "select": "identifier",
+        "facets": [{"name": name, "count": EXPLORE_FACET_VALUES} for name in facet_names],
+    }
+    return {k: v for k, v in body.items() if v is not None}
+
+
+def _facet_list(facets: dict[str, Any], name: str) -> list[FacetValue]:
+    values: list[FacetValue] = []
+    for raw in facet_values(facets, name):
+        value = raw.get("value")
+        if value is None:
+            continue
+        label = raw.get("name")
+        count = raw.get("count")
+        values.append(
+            FacetValue(
+                value=str(value),
+                label=str(label) if label is not None else None,
+                count=count if isinstance(count, int) and not isinstance(count, bool) else None,
+            )
+        )
+    return values
+
+
+async def explore_area_impl(
+    client: DiscoverSwissClient, params: ExploreAreaInput
+) -> ExploreAreaResponse:
+    project = client.settings.project
+    facet_names = odata_facet_names(params.facets)
+    area: AreaInfo | None = None
+    area_id: str | None = None
+
+    if params.region:
+        try:
+            lookup = await client.resolve_area(params.region, lang=params.lang)
+        except DiscoverSwissError as exc:
+            if exc.degraded is None:
+                raise
+            return ExploreAreaResponse(
+                project=project, requested_facets=facet_names, **degraded_envelope_fields(exc)
+            )
+        area = _area_info(lookup)
+        if lookup.identifier is None:
+            return ExploreAreaResponse(
+                project=project,
+                provenance=lookup.provenance,
+                retrieved_at=lookup.retrieved_at,
+                source_freshness=None,
+                requested_facets=facet_names,
+                area=area,
+                hint=_unresolved_area_hint(lookup, "facet count"),
+            )
+        area_id = lookup.identifier
+
+    body = build_explore_body(params, area_id, facet_names)
+    applied = {k: v for k, v in body.items() if k not in ("select", "facets")}
+
+    result = await _run_search(client, body, params.lang)
+    if isinstance(result, DiscoverSwissError):
+        return ExploreAreaResponse(
+            project=project,
+            requested_facets=facet_names,
+            area=area,
+            applied=applied,
+            **degraded_envelope_fields(result),
+        )
+
+    facets = {
+        name: _facet_list(result.facets, name)
+        for name in facet_names
+        if name in result.facets and name not in result.missing_facets
+    }
+    hints: list[str] = []
+    if result.missing_facets:
+        hints.append(MISSING_FACETS_HINT.format(names=", ".join(result.missing_facets)))
+    if result.count == 0:
+        hints.append(EXPLORE_EMPTY_HINT)
+    return ExploreAreaResponse(
+        provenance=result.provenance,
+        retrieved_at=result.retrieved_at,
+        # Facet counts are an aggregate over the scope, not one object with a
+        # modification date.
+        source_freshness=None,
+        project=project,
+        total=result.count,
+        facets=facets,
+        requested_facets=facet_names,
+        missing_facets=list(result.missing_facets),
+        area=area,
+        applied=applied,
+        hint=" ".join(hints) if hints else None,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Tool 8 — source_status
+# ---------------------------------------------------------------------------
+
+COVERAGE_NOTE = (
+    "Hotels and other lodging nationwide (5'275). Points of interest, tours and webcams for "
+    "Zurich, Eastern Switzerland, Liechtenstein and Engadin Scuol. Events thin (about 20). "
+    "No points of interest for the Bernese Oberland, Central Switzerland, Valais, Ticino or "
+    "the Romandie."
+)
+
+ENTITLEMENT_NOTE = (
+    "Search access on the Infocenter Open product is used as observed live; written "
+    "confirmation from discover.swiss: {state}"
+)
+
+STATUS_HINTS: dict[str, str] = {
+    "no_key": (
+        "DISCOVER_SWISS_KEY is not set; no call was made. Every other tool fails until it is."
+    ),
+    "quota_exhausted": DEGRADED_HINTS["quota_exhausted"],
+    "upstream_unreachable": (
+        "discover.swiss did not answer its status endpoint. Results from other tools are not "
+        "evidence about the data until it does."
+    ),
+    "search_unavailable": (
+        "discover.swiss refuses its search endpoint. `search` and `find_accommodation` answer "
+        "from typed lists (provenance list_fallback, no full text); find_tours, find_events, "
+        "webcams_near and explore_area answer degraded. Search is tried again after 10 minutes."
+    ),
+}
+
+
+class SourceStatusResponse(Envelope):
+    api_key_configured: bool
+    reachable: bool
+    search_available: bool
+    base_url: str
+    calls_last_minute: int
+    monthly_quota_exhausted_since: datetime | None = None
+    last_success: datetime | None = None
+    cache_entries: int = 0
+    # Objects in the whole index, from an unfiltered explore_area (60 min cache).
+    index_total: int | None = None
+    coverage: str = COVERAGE_NOTE
+    entitlement_note: str
+
+
+def _entitlement_note(client: DiscoverSwissClient) -> str:
+    confirmed = client.settings.entitlement_confirmed
+    state = f"confirmed {confirmed.isoformat()}" if confirmed else "pending"
+    return ENTITLEMENT_NOTE.format(state=state)
+
+
+async def source_status_impl(client: DiscoverSwissClient) -> SourceStatusResponse:
+    settings = client.settings
+    key_set = bool(settings.api_key.get_secret_value())
+
+    if not key_set:
+        return SourceStatusResponse(
+            provenance="live_api",
+            retrieved_at=_now(),
+            source_freshness=None,
+            project=settings.project,
+            api_key_configured=False,
+            reachable=False,
+            search_available=client.search_available,
+            base_url=settings.base_url,
+            calls_last_minute=0,
+            entitlement_note=_entitlement_note(client),
+            hint=STATUS_HINTS["no_key"],
+        )
+
+    state = await client.status()
+    index_total: int | None = None
+    if state["reachable"] and state["search_available"]:
+        explored = await explore_area_impl(client, ExploreAreaInput(facets=["leafType"]))
+        index_total = explored.total
+
+    # Re-read after the explore call: a refused `/search` flips it.
+    search_available = client.search_available
+    degraded: str | None = None
+    if state["quota_exhausted_since"] is not None:
+        degraded = "quota_exhausted"
+    elif not state["reachable"]:
+        degraded = "upstream_unreachable"
+    elif not search_available:
+        degraded = "search_unavailable"
+
+    return SourceStatusResponse(
+        provenance="live_api",
+        retrieved_at=_now(),
+        source_freshness=None,
+        project=state["project"],
+        degraded=degraded,
+        hint=STATUS_HINTS.get(degraded) if degraded else None,
+        api_key_configured=True,
+        reachable=state["reachable"],
+        search_available=search_available,
+        base_url=state["base_url"],
+        calls_last_minute=client.calls_last_minute,
+        monthly_quota_exhausted_since=state["quota_exhausted_since"],
+        last_success=client.last_success,
+        cache_entries=client.cache.live_entries(),
+        index_total=index_total,
+        entitlement_note=_entitlement_note(client),
     )

@@ -29,14 +29,17 @@ Zwei Konsequenzen, beide bereits entschieden:
 
 - Die schriftliche Bestätigung durch discover.swiss ist ein **Release-Gate**.
   Kein Release, bevor dieses Gespräch stattgefunden hat.
-- Der Server trägt einen Fallback. Bei `401`/`403` auf `/search` weicht er auf
-  die Listen-Endpoints mit Gebietsfilter (`containedInPlace`) und
-  clientseitiger Distanzberechnung aus und kennzeichnet die Antwort als
-  `provenance: list_fallback`. Der Fallback ist bewusst schmal — kein Volltext.
+- Der Server trägt einen Fallback. Bei `401`/`403` auf `/search` weichen
+  `search` und `find_accommodation` auf die typisierten Listen-Endpoints mit
+  clientseitigem Orts- und Distanzfilter aus und kennzeichnen die Antwort als
+  `provenance: list_fallback`, `degraded: search_unavailable`. Der Fallback ist
+  bewusst schmal — kein Volltext, keine Sterne-, Preis- oder
+  Ausstattungsfilter, höchstens acht Listenaufrufe pro Tool-Aufruf, und ein
+  unvollständiger Durchlauf sagt das im `hint`.
+- `source_status` meldet den Stand dieser Bestätigung aus
+  `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED` (`pending`, solange nicht gesetzt).
 
-Stand: **P2** — vier der acht Tools sind registriert (`search`,
-`get_details`, `find_accommodation`, `find_tours`); die übrigen vier folgen in
-P3.
+Stand: **P3** — alle acht Tools sind registriert.
 
 ---
 
@@ -68,7 +71,7 @@ Gehdistanz zum HB, und wo esse ich danach vegetarisch?»*
 ## Funktionen
 
 - **8 Read-only-Tools** für Suche, Detail, Unterkunft, Touren, Veranstaltungen,
-  Webcams und Gebietsübersicht — vier verfügbar, vier geplant für P3
+  Webcams, Gebietsübersicht und Quellenstatus
 - **Attribution pro Objekt** — Anbieter, Lizenz und Copyright-Vermerk stehen in
   der Response, nicht in diesem README
 - **Lizenz-Whitelist** auf dem root-`license`-Feld; alles andere wird in
@@ -134,10 +137,10 @@ Leermenge im `hint`.
 | `get_details` | verfügbar | `/vertices/{id}` | Beschreibung, Preise, Barrierefreiheit, Öffnungszeiten, Ausstattung — auf ~8 KB gekürzt, HTML als Text; `no_derivatives` bei CC BY-ND |
 | `find_accommodation` | verfügbar | Search `type=LodgingBusiness` | Sterne, Garni, Preisspanne, Ausstattung, Barrierefreiheit (Pro Infirmis / OK:GO), Distanz; keine Verfügbarkeit, keine Preise pro Nacht |
 | `find_tours` | verfügbar | Search `type=Tour` | Art, Schwierigkeit, Länge, Aufstieg, Saisonmonat, Region, Distanz |
-| `find_events` | P3 | Search `type=Event` | Dünne Abdeckung als Scope benannt; Testobjekte gefiltert und gezählt |
-| `webcams_near` | P3 | Search `type=Webcam` | Link aufs Livebild plus letzter Snapshot, so beschriftet |
-| `explore_area` | P3 | Search mit Facetten | Welche Angebote es in einer Region gibt; fehlende Facetten werden gemeldet |
-| `source_status` | P3 | `/status` und Zähler | Erreichbarkeit, Quota-Rest, ob Search verfügbar ist |
+| `find_events` | verfügbar | Search `type=Event`, OData-Filter auf `schedule` | Zeitraum (Default 30 Tage); dünne Abdeckung in der Description benannt; Testobjekte und All-Rights-Reserved-Events zurückgehalten und gezählt; der Sentinel 2099 erscheint als `date_open` («Termin offen»), nie als Datum |
+| `webcams_near` | verfügbar | Search `type=Webcam` + `geo.distance` | Radius (Default 25 km) oder Region; `live_url` fürs Livebild, `snapshot_url` als gespeichertes Standbild beschriftet |
+| `explore_area` | verfügbar | Search mit Facetten | Zähler nach Typ, Dateninhaber, Saison, Preisspanne für Region, Ort oder Radius; Kurznamen auf OData gemappt, verworfene Namen in `missing_facets` |
+| `source_status` | verfügbar | `/status`, Zähler, ungefilterte Facettenzählung | Erreichbarkeit, Search verfügbar, Calls pro Minute, Quota-Zustand, Indexgrösse, Abdeckung, Stand der Search-Bestätigung; funktioniert ohne Key |
 
 Die Tool-Definitionen sind in `docs/tool-hashes.json` festgehalten; nach einer
 gewollten Änderung im selben PR `python scripts/gen_tool_hashes.py --write`
@@ -155,6 +158,7 @@ ausführen.
 | `DISCOVER_SWISS_MCP_HOST` | nein | `127.0.0.1` | Bind-Adresse für den HTTP-Transport |
 | `DISCOVER_SWISS_MCP_PORT` | nein | `8000` | TCP-Port für den HTTP-Transport |
 | `DISCOVER_SWISS_MCP_LOG_LEVEL` | nein | `INFO` | structlog-Level; JSON geht nach stderr |
+| `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED` | nein | `pending` | Datum (`YYYY-MM-DD`) der schriftlichen Search-Bestätigung durch discover.swiss; von `source_status` gemeldet |
 
 Datenlizenzen und Attributionsregeln stehen in
 [docs/LICENSES.md](docs/LICENSES.md).
@@ -171,7 +175,7 @@ discover-swiss-mcp/
 │   ├── tools.py           # die *_impl-Funktionen, Ein- und Ausgabemodelle
 │   ├── config.py          # Settings aus ENV; der Key ist ein SecretStr
 │   ├── models.py          # der Response-Envelope
-│   ├── client.py          # API-Client — Stub mit P1-Markern
+│   ├── client.py          # API-Client: Rate-Limit, Retries, Cache, Listen-Fallback
 │   └── logging_config.py  # structlog, JSON nach stderr
 ├── tests/                 # Unit-Tests; der `live`-Marker läuft nicht in der CI
 ├── probes/                # Live-Probe: Skripte, Rohdaten, Report

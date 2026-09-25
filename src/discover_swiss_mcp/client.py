@@ -170,6 +170,47 @@ LIST_ENDPOINTS: frozenset[str] = frozenset(
     }
 )
 
+# Facet names the index answers under, verified live (PROBE_VERIFY section 1,
+# 2026-09-17): all eight came back under exactly these keys.
+VERIFIED_FACETS: tuple[str, ...] = (
+    "leafType",
+    "containedInPlace/id",
+    "rating/difficulty",
+    "sourcePartner",
+    "season",
+    "priceRange",
+    "address/addressLocality",
+    "categoryTree",
+)
+
+# The `filterPropertyName` spellings of the same facets. The spec says they are
+# equivalent («rating/condition and ratingCondition returns same facet»); live,
+# `containedInPlace` and `ratingDifficulty` produced no facet and no error. So
+# they are rewritten before they leave, rather than sent to be dropped.
+FACET_ALIASES: dict[str, str] = {
+    "containedInPlace": "containedInPlace/id",
+    "ratingDifficulty": "rating/difficulty",
+    "addressLocality": "address/addressLocality",
+}
+
+
+def odata_facet_names(names: list[str]) -> list[str]:
+    """Map short facet names to their OData names; keep everything else as given.
+
+    Names outside :data:`VERIFIED_FACETS` are passed on, not refused: the index
+    knows 31 facets and eight are verified. Whether an unverified one exists is
+    for the response to say — :meth:`DiscoverSwissClient.search` compares the
+    answer against the request and reports the difference as
+    ``missing_facets``.
+    """
+    mapped: list[str] = []
+    for name in names:
+        candidate = FACET_ALIASES.get(name.strip(), name.strip())
+        if candidate and candidate not in mapped:
+            mapped.append(candidate)
+    return mapped
+
+
 # Identifiers look like `civ_px9-s28_bggg` or
 # `tou_s9t_acfeirar-ficg-ejes-qatg-crjfhetqhvev`. The pattern is a gate, not a
 # parser: it keeps `../` and a stray `%2f` out of the URL path.
@@ -403,6 +444,11 @@ class TTLCache:
     def clear(self) -> None:
         self._entries.clear()
 
+    def live_entries(self) -> int:
+        """Entries that have not expired — what ``source_status`` reports."""
+        now = time.monotonic()
+        return sum(1 for expires_at, _ in self._entries.values() if expires_at > now)
+
     def __len__(self) -> int:  # pragma: no cover - diagnostics
         return len(self._entries)
 
@@ -567,6 +613,14 @@ class DiscoverSwissClient:
     @property
     def cache(self) -> TTLCache:
         return self._cache
+
+    @property
+    def calls_last_minute(self) -> int:
+        return self._bucket.calls_last_minute
+
+    @property
+    def last_success(self) -> datetime | None:
+        return self._last_success
 
     @property
     def search_available(self) -> bool:
@@ -751,12 +805,11 @@ class DiscoverSwissClient:
         ``project`` is added here and always as an array — without it the
         endpoint answers 401, and that is the one parameter no caller may
         forget. ``select`` defaults to the verified 46-field whitelist.
-        """
-        if not self.search_available:
-            raise SearchUnavailableError(
-                "discover.swiss refused /search recently; the list fallback is the way in."
-            )
 
+        The cache is read before the availability check: an answer fetched
+        while search still worked is as valid as it was a minute ago, and it
+        is what lets an area lookup survive the switch to the list fallback.
+        """
         request: dict[str, Any] = {
             "project": [self._settings.project],
             "select": SEARCH_SELECT,
@@ -774,6 +827,11 @@ class DiscoverSwissClient:
         cached = self._cache.get(key)
         if cached is not None:
             return cached.model_copy(update={"provenance": "cached"})
+
+        if not self.search_available:
+            raise SearchUnavailableError(
+                "discover.swiss refused /search recently; the list fallback is the way in."
+            )
 
         payload = await self._call(
             "POST", "/search", json_body=request, lang=lang, search_endpoint=True
@@ -1041,9 +1099,12 @@ class DiscoverSwissClient:
         return {
             "reachable": reachable,
             "search_available": self.search_available,
+            "project": self._settings.project,
+            "base_url": self._settings.base_url,
             "calls_last_minute": self._bucket.calls_last_minute,
             "quota_exhausted_since": self._quota_exhausted_since,
             "last_success": self._last_success,
+            "cache_entries": self._cache.live_entries(),
         }
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
