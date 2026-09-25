@@ -613,22 +613,37 @@ def _paged_hint(
     returned: int,
     page: int,
     empty_hint: str,
+    *,
+    by_license: int = 0,
+    test_objects: int = 0,
+    default_types: int = 0,
 ) -> str | None:
     """The hint for a page that came back short of hits.
 
     Three different empties, three different messages: nothing matched at all,
     the page is past the end, and everything on the page was withheld. Folding
     them into one would tell the model to relax filters when the answer is
-    «go to the next page».
+    something else. The withheld case names each reason with its count, and
+    only suggests `types` when rooms are actually among them — advice that
+    does not fit the page sends a model paging through the whole index.
     """
     if returned > 0:
         return None
     if fetched > 0:
-        return (
-            f"All {fetched} hits on this page were withheld (licence, test data or rooms/"
-            "meeting rooms — see the excluded_* counters). Request the next page, or pass "
-            "`types` explicitly if rooms are what you want."
+        reasons = []
+        if by_license:
+            reasons.append(f"{by_license} not openly licensed (they may not be shown or described)")
+        if test_objects:
+            reasons.append(f"{test_objects} test records")
+        if default_types:
+            reasons.append(f"{default_types} rooms/meeting rooms (pass `types` to include them)")
+        detail = "; ".join(reasons) if reasons else "see the excluded_* counters"
+        more = (
+            " Later pages may still hold servable hits."
+            if upstream_count is not None and upstream_count > fetched * page
+            else ""
         )
+        return f"All {fetched} hits on this page were withheld: {detail}.{more}"
     if upstream_count and page > 1:
         return (
             f"Page {page} is past the end: {upstream_count} hits in total. Request an earlier page."
@@ -726,7 +741,16 @@ async def search_impl(client: DiscoverSwissClient, params: SearchInput) -> Searc
         retrieved_at=result.retrieved_at,
         source_freshness=_freshness(kept),
         project=project,
-        hint=_paged_hint(upstream_count, fetched, len(hits), params.page, SEARCH_EMPTY_HINT),
+        hint=_paged_hint(
+            upstream_count,
+            fetched,
+            len(hits),
+            params.page,
+            SEARCH_EMPTY_HINT,
+            by_license=screened.excluded_by_license,
+            test_objects=screened.excluded_test_objects,
+            default_types=excluded_default,
+        ),
         excluded_by_license=screened.excluded_by_license,
         excluded_test_objects=screened.excluded_test_objects,
         excluded_by_default_types=excluded_default,
@@ -907,7 +931,15 @@ async def find_accommodation_impl(
             if hits
             else None
         ),
-        hint=_paged_hint(upstream_count, fetched, len(hits), params.page, ACCOMMODATION_EMPTY_HINT),
+        hint=_paged_hint(
+            upstream_count,
+            fetched,
+            len(hits),
+            params.page,
+            ACCOMMODATION_EMPTY_HINT,
+            by_license=screened.excluded_by_license,
+            test_objects=screened.excluded_test_objects,
+        ),
         excluded_by_license=screened.excluded_by_license,
         excluded_test_objects=screened.excluded_test_objects,
         upstream_count=upstream_count,
@@ -1047,7 +1079,15 @@ async def find_tours_impl(client: DiscoverSwissClient, params: FindToursInput) -
         retrieved_at=result.retrieved_at,
         source_freshness=_freshness(screened.kept),
         project=project,
-        hint=_paged_hint(upstream_count, fetched, len(hits), params.page, TOURS_EMPTY_HINT),
+        hint=_paged_hint(
+            upstream_count,
+            fetched,
+            len(hits),
+            params.page,
+            TOURS_EMPTY_HINT,
+            by_license=screened.excluded_by_license,
+            test_objects=screened.excluded_test_objects,
+        ),
         excluded_by_license=screened.excluded_by_license,
         excluded_test_objects=screened.excluded_test_objects,
         upstream_count=upstream_count,

@@ -72,18 +72,94 @@ def test_detail_objects_use_their_root_licence() -> None:
     assert is_servable(landesmuseum) and is_servable(hotel)
 
 
-def test_a_search_hit_without_a_root_licence_derives_it_from_its_provider() -> None:
-    """`IndexResponse` has no `license` field, so `/search` can never send one.
+def test_a_search_hit_without_a_root_licence_takes_the_first_origin() -> None:
+    """`IndexResponse` has no `license` and no `dataGovernance.provider`.
 
-    The provider's own origin decides — not the first one in the list, which
-    for the Landesmuseum is Guidle with all rights reserved.
+    The shape below is a live search hit (Musée Visionnaire, 2026-09-25): the
+    governance holds only `origin`, and Guidle's all-rights-reserved sub-data
+    sits behind Zürich Tourismus. The first origin decides.
     """
-    landesmuseum = probe_fixture("probe_detail_out", "detail_civic_landesmuseum.json")
-    as_search_hit = {k: v for k, v in landesmuseum.items() if k != "license"}
-    assert license_of(as_search_hit) == "CC BY-SA"
+    hit = {
+        "identifier": "civ_px9-s28_bhbi",
+        "name": "Musée Visionnaire",
+        "dataGovernance": {
+            "origin": [
+                {
+                    "datasource": "zht-cms",
+                    "license": "CC BY-SA",
+                    "provider": {"acronym": "zht", "name": "Zürich Tourismus"},
+                },
+                {
+                    "datasource": "gdl",
+                    "license": "C-All-Rights-Reserved",
+                    "provider": {"acronym": "gdl", "name": "Guidle"},
+                },
+                {
+                    "datasource": "gin",
+                    "license": "CC BY-SA",
+                    "provider": {"acronym": "gin", "name": "Ginto"},
+                },
+            ]
+        },
+    }
+    assert license_of(hit) == "CC BY-SA"
+    assert is_servable(hit) is True
+    assert attribution(hit).provider == "Zürich Tourismus"
 
-    origins = as_search_hit["dataGovernance"]["origin"]
-    assert any(o.get("license") == "C-All-Rights-Reserved" for o in origins)
+
+def test_a_closed_first_origin_withholds_the_hit() -> None:
+    hit = {
+        "name": "Konzert",
+        "dataGovernance": {"origin": [{"datasource": "gdl", "license": "C-All-Rights-Reserved"}]},
+    }
+    assert license_of(hit) == "C-All-Rights-Reserved"
+    assert is_servable(hit) is False
+
+
+def test_contentdesk_is_matched_by_provider_not_by_datasource_prefix() -> None:
+    """Provider `tso-ctd`, datasource `ctd-tht`: a prefix rule never matches."""
+    tour = {
+        "dataGovernance": {
+            "provider": {"acronym": "tso-ctd", "name": "contentdesk.io by TSO AG"},
+            "origin": [
+                {
+                    "datasource": "ctd-tht",
+                    "license": "CC BY-SA",
+                    "provider": {"acronym": "tso-ctd"},
+                }
+            ],
+        }
+    }
+    assert license_of(tour) == "CC BY-SA"
+
+
+def test_first_origin_equals_the_root_licence_in_every_recorded_object() -> None:
+    """The measurement behind the rule, re-run on every object in `probes/`."""
+    import json
+    from pathlib import Path
+
+    def objects(node):
+        if isinstance(node, dict):
+            governance = node.get("dataGovernance")
+            if (
+                isinstance(node.get("license"), str)
+                and isinstance(governance, dict)
+                and governance.get("origin")
+            ):
+                yield node
+            for value in node.values():
+                yield from objects(value)
+        elif isinstance(node, list):
+            for value in node:
+                yield from objects(value)
+
+    checked = 0
+    for path in (Path(__file__).resolve().parent.parent / "probes").rglob("*.json"):
+        for obj in objects(json.loads(path.read_text(encoding="utf-8"))):
+            without_root = {k: v for k, v in obj.items() if k != "license"}
+            assert license_of(without_root) == obj["license"], (path.name, obj.get("identifier"))
+            checked += 1
+    assert checked >= 100
 
 
 def test_an_object_whose_provider_has_no_origin_is_not_guessed_open() -> None:
@@ -91,7 +167,7 @@ def test_an_object_whose_provider_has_no_origin_is_not_guessed_open() -> None:
         "name": "Hotelgruppe",
         "dataGovernance": {
             "provider": {"acronym": "hs", "name": "HotellerieSuisse"},
-            "origin": [{"datasource": "osm", "license": "ODbL"}],
+            "origin": [{"datasource": "osm", "license": "ODbL", "provider": {"acronym": "osm"}}],
         },
     }
     assert license_of(obj) is None

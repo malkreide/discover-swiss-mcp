@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Every live search hit was withheld as unlicensed.** Search hits carry no
+  root `license` and no `dataGovernance.provider`, only `origin`; the P1 rule
+  needed the provider and found nothing. The licence of a hit is now the one
+  of its first origin — measured against the detail objects' root licence:
+  15 of 15 live hits, 105 of 105 recorded objects
+  (`probes/PROBE_LICENSE_discover-swiss.md`). The same change fixes
+  contentdesk tours and webcams, whose provider `tso-ctd` never matched its
+  datasources `ctd-*` by prefix.
+- The hint for a page whose hits were all withheld now names each reason with
+  its count and suggests `types` only when rooms were among them.
+
 ### Added
 
 - P2: the four core tools `search`, `get_details`, `find_accommodation` and

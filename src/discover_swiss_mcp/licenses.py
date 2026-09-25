@@ -15,13 +15,21 @@ the shape that invites an invented answer.
 **Where the licence comes from.** Detail objects (``/vertices/{id}``) and list
 rows carry a root ``license``. Search hits do not: ``IndexResponse`` has 48
 fields and ``license`` is not among them, so ``/search`` can never return one.
-There the licence is derived from ``dataGovernance``: the origin whose
-``datasource`` belongs to the object's own provider. Verified against both
-detail fixtures — Landesmuseum (provider ``zht``, origin ``zht-cms`` → CC BY-SA,
-matching its root licence) and Hotel Du Nord (provider ``hs``, origins ``hs``,
-``hs-my``, ``hs-d365`` → CC BY, matching its root licence). The other origins of
-those objects carry ``CC BY-NC-SA`` and ``C-All-Rights-Reserved`` for merged
-sub-data, which is exactly why "first origin wins" would be the wrong rule.
+Search hits also carry no ``dataGovernance.provider`` — only the ``origin``
+list (live check, 2026-09-25). There the licence is the one of the **first
+origin**.
+
+That rule is measured, not assumed (``probes/PROBE_LICENSE_discover-swiss.md``):
+the first origin's licence equals the root licence of the detail object for
+15 of 15 live search hits across museums, hotels, tours, webcams and rooms,
+and for 105 of 105 recorded objects in ``probes/``. The obvious alternatives
+fail: the hit's own ``datasource`` field lists *every* origin (10 of 15), and
+matching origins by datasource prefix misses contentdesk entirely, whose
+provider is ``tso-ctd`` while its datasources are ``ctd-tht``, ``ctd-hlt``.
+
+The other origins carry merged sub-data — Guidle events with
+``C-All-Rights-Reserved``, Schweiz Tourismus with ``CC BY-NC-SA``, Ginto
+accessibility data — and never decide the object's own licence.
 """
 
 from __future__ import annotations
@@ -75,50 +83,48 @@ def normalize_license(value: Any) -> str:
     return " ".join(value.upper().replace("-", " ").split())
 
 
+def _origins(obj: dict[str, Any]) -> list[dict[str, Any]]:
+    governance = obj.get("dataGovernance")
+    if not isinstance(governance, dict):
+        return []
+    origins = governance.get("origin")
+    if not isinstance(origins, list):
+        return []
+    return [origin for origin in origins if isinstance(origin, dict)]
+
+
+def _acronym(partner: Any) -> str | None:
+    if not isinstance(partner, dict):
+        return None
+    value = partner.get("acronym") or partner.get("identifier")
+    return value.lower() if isinstance(value, str) and value else None
+
+
 def license_of(obj: dict[str, Any]) -> str | None:
     """The licence that governs this object, or ``None`` if it has none.
 
-    Root ``license`` first; falling back to the ``dataGovernance`` origin that
-    belongs to the object's own provider (see the module docstring).
+    Root ``license`` first; otherwise the licence of the first
+    ``dataGovernance`` origin (see the module docstring for the measurement).
+
+    One guard stays: an object that names its provider but has no origin from
+    that provider does not say which licence governs *it*, and is not guessed
+    open from an unrelated origin.
     """
     root = obj.get("license")
     if isinstance(root, str) and root.strip():
         return root.strip()
 
+    origins = _origins(obj)
+    if not origins:
+        return None
+
     governance = obj.get("dataGovernance")
-    if not isinstance(governance, dict):
-        return None
-    origins = governance.get("origin")
-    if not isinstance(origins, list):
+    owner = _acronym(governance.get("provider")) if isinstance(governance, dict) else None
+    if owner and not any(_acronym(origin.get("provider")) == owner for origin in origins):
         return None
 
-    provider = governance.get("provider")
-    acronym = None
-    if isinstance(provider, dict):
-        acronym = provider.get("acronym") or provider.get("identifier")
-
-    def _origin_license(origin: Any) -> str | None:
-        if isinstance(origin, dict):
-            value = origin.get("license")
-            if isinstance(value, str) and value.strip():
-                return value.strip()
-        return None
-
-    if isinstance(acronym, str) and acronym:
-        prefix = acronym.lower()
-        for origin in origins:
-            if not isinstance(origin, dict):
-                continue
-            datasource = str(origin.get("datasource") or "").lower()
-            if datasource == prefix or datasource.startswith(f"{prefix}-"):
-                found = _origin_license(origin)
-                if found:
-                    return found
-
-    # No provider, or no origin belonging to it: the object does not say which
-    # licence governs *it*. Guessing from an unrelated origin is how
-    # all-rights-reserved sub-data gets relabelled as open.
-    return None
+    value = origins[0].get("license")
+    return value.strip() if isinstance(value, str) and value.strip() else None
 
 
 def is_allowed_license(value: Any) -> bool:
@@ -159,14 +165,23 @@ def attribution(obj: dict[str, Any]) -> Attribution:
     Attribution belongs in the response, not in the README: the providers and
     licences differ per hit, and a note covering "the data" covers none of them.
     """
+    # The object's own provider where it names one (detail objects, list rows);
+    # search hits carry none, and there the first origin's provider is the one
+    # whose licence applies.
     governance = obj.get("dataGovernance")
-    provider_name = "unknown"
+    candidates: list[Any] = []
     if isinstance(governance, dict):
-        provider = governance.get("provider")
+        candidates.append(governance.get("provider"))
+    origins = _origins(obj)
+    if origins:
+        candidates.append(origins[0].get("provider"))
+    provider_name = "unknown"
+    for provider in candidates:
         if isinstance(provider, dict):
             candidate = provider.get("name") or provider.get("identifier")
             if isinstance(candidate, str) and candidate.strip():
                 provider_name = candidate.strip()
+                break
 
     notice = obj.get("copyrightNotice")
     return Attribution(
