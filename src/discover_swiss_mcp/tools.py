@@ -108,13 +108,38 @@ STAR_VALUES: tuple[float, ...] = tuple(x / 2 for x in range(2, 11))
 
 TourKind = Literal["hiking", "cycling", "mtb", "winter", "theme", "all"]
 
-# `kind` → leafType values (`leafType` holds additionalType, else type).
-TOUR_KINDS: dict[str, list[str]] = {
-    "hiking": ["HikingTrail", "Route", "NatureTrail", "ThemeTrail"],
-    "cycling": ["CyclingRoute"],
-    "mtb": ["MountainBikeRoute"],
-    "winter": ["CrossCountry", "TobogganRun", "SnowshoeTrail"],
-    "theme": ["ThemeTrail", "NatureTrail"],
+# `kind` → body filter, measured live on 2026-09-25
+# (`probes/PROBE_TOURKINDS_discover-swiss.md`). The first mapping guessed
+# `CyclingRoute`, `MountainBikeRoute` and `SnowshoeTrail` — none of them exists
+# in the index, so three kinds answered with a silent empty set.
+#
+# Two sources, used where each is complete enough:
+# * `leafType` for walking: 178 of 223 tours fall under these seven types.
+# * `categoryTree` for winter and cycling, where the types do not separate:
+#   the 23 snowshoe tours are filed as `Route`. Only the **full path** filters;
+#   the short code (`sui_0110`) answers 0 without an error.
+#
+# `leafType` and `categoryTree` are ANDed upstream (hiking types AND winter
+# category: 25), so a kind cannot be one field OR the other.
+HIKING_LEAF_TYPES: list[str] = [
+    "HikingTrail",
+    "Route",
+    "Way",
+    "Tour",
+    "Longdistance",
+    "NatureTrail",
+    "ThemeTrail",
+]
+CATEGORY_WINTER = "sui_root|sui_01|sui_0110"
+CATEGORY_CYCLING = "sui_root|sui_01|sui_0102"
+CATEGORY_MTB = "sui_root|sui_01|sui_0102|sui_010205"
+
+TOUR_KINDS: dict[str, dict[str, list[str]]] = {
+    "hiking": {"leafType": HIKING_LEAF_TYPES},
+    "cycling": {"categoryTree": [CATEGORY_CYCLING]},
+    "mtb": {"categoryTree": [CATEGORY_MTB]},
+    "winter": {"categoryTree": [CATEGORY_WINTER]},
+    "theme": {"leafType": ["ThemeTrail", "NatureTrail"]},
 }
 
 # Facet values of `season` (search_facets.json).
@@ -158,7 +183,8 @@ TOURS_EMPTY_HINT = (
     "tours in total. There are NO tours for Bernese Oberland, Valais, Ticino or Central "
     "Switzerland in this source; say that, and point to SchweizMobil (schweizmobil.ch) or "
     "the swiss-tourism-mcp server for federal route data. Relax `difficulty_max`/"
-    "`length_km_max` before concluding."
+    "`length_km_max` before concluding. Drop `season_month` first: it keeps only tours "
+    "that declare seasons (20 of 178 walking tours for July)."
 )
 
 UNKNOWN_IDENTIFIER_HINT = (
@@ -375,8 +401,10 @@ class FindToursInput(_PagedInput):
     kind: TourKind = Field(
         default="all",
         description=(
-            "hiking (hiking trails, routes, nature and theme trails), cycling, mtb, "
-            "winter (cross-country, toboggan runs, snowshoe trails), theme, or all."
+            "hiking: walking types (hiking trails, routes, ways, nature and theme trails; "
+            "includes snowshoe routes the provider files as routes). winter: snowshoe, "
+            "cross-country, sledging by category. cycling / mtb: by category (2 tours). "
+            "theme: theme and nature trails. all: no restriction."
         ),
     )
     difficulty_max: int | None = Field(
@@ -387,7 +415,13 @@ class FindToursInput(_PagedInput):
         default=None, ge=0, le=10000, description="Maximum ascent in metres."
     )
     season_month: int | None = Field(
-        default=None, ge=1, le=12, description="Month the tour is recommended for (1–12)."
+        default=None,
+        ge=1,
+        le=12,
+        description=(
+            "Month the tour is recommended for (1–12). Only tours that declare seasons can "
+            "match — most do not."
+        ),
     )
 
     @model_validator(mode="after")
@@ -980,7 +1014,7 @@ def build_tours_body(params: FindToursInput, area_id: str | None) -> dict[str, A
     conditions = tour_filters(params)
     body: dict[str, Any] = {
         "type": ["Tour"],
-        "leafType": TOUR_KINDS.get(params.kind),
+        **TOUR_KINDS.get(params.kind, {}),
         "containedInPlace": [area_id] if area_id else None,
         "addressLocality": [params.locality] if params.locality else None,
         "scoringReferencePoint": scoring_point(params.near) if params.near else None,
