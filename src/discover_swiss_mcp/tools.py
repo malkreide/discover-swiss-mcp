@@ -265,7 +265,10 @@ class SearchInput(_PagedInput):
     )
     near: GeoPoint | None = Field(
         default=None,
-        description="Rank hits by distance from this point; each hit then carries distance_km.",
+        description=(
+            "Rank hits by distance from this point; each hit then carries distance_km. "
+            "With `query`, text relevance outweighs distance in the ranking."
+        ),
     )
     radius_km: float | None = Field(
         default=None,
