@@ -1,0 +1,20 @@
+{
+  "id": "OPS-003",
+  "status": "fail",
+  "category": "OPS",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:170-179 — all 8 tools annotated readOnlyHint=True, destructiveHint=False",
+    "tests/test_server.py:103-108 — test asserts read_only_hint True / destructive_hint False for every tool",
+    "grep -rnE 'destructiveHint.*True' src/ -> no hit"
+  ],
+  "gaps": [
+    "No phase declaration: grep -iE 'phase|roadmap|read.only.first' over README.md, README.de.md, CHANGELOG.md, docs/*.md -> no hit (control 'Phase 1' matches). The P1-P4 labels in commits/CHANGELOG are build milestones, not OPS-003 phases",
+    "No roadmap file (find for *phase*/*roadmap* outside .venv -> none)",
+    "No documented phase-transition prerequisites (audit run, ISDS, DSG record)",
+    "Phase transitions not recorded in CHANGELOG"
+  ],
+  "evaluator_notes": "1 of 5 criteria met: the server is de facto Phase 1 (read-only, verified), but the phase is not declared and there is no roadmap or gate.",
+  "remediation": "Add a '## Phase' section to both READMEs ('Phase 1: read-only wrapper' with status table) and docs/roadmap.md listing Phase 1 completion items and Phase 2/3 prerequisites; note the declaration in CHANGELOG.",
+  "effort": "S"
+}

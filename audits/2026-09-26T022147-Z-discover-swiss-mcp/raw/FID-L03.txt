@@ -1,0 +1,21 @@
+{
+  "id": "FID-L03",
+  "status": "partial",
+  "category": "FID",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/licenses.py:57-63, 195-226 — detection rules: name word-boundary demo|test|beispiel|muster|placeholder, placeholder street/PLZ/Ort, example.ch/.com mail",
+    "src/discover_swiss_mcp/licenses.py:253-255 — screen() counts excluded_test_objects; applied in all search-based tools and both fallbacks (tools.py:992, 1075, 1268, 1356, 1512, 1816, 2031)",
+    "tests/test_licenses.py:220-271 — demo event recognised; counter-probe: 'Demokratie-Forum', 'Protestmarsch' etc. stay in",
+    "tests/test_tools_p3.py:82-99, 206-217 — recorded f4_odata.json with Demo Event: excluded_test_objects == 1",
+    "tests/test_live.py:323-340 — live canary excluded_test_objects >= 1, skip at 0 (unexecuted)",
+    "Runtime probe (scratchpad, respx): get_details on a Demo Event object (name 'Demo Event', Strasse 1/PLZ/Ort) -> detail served, excluded_test_objects=0"
+  ],
+  "gaps": [
+    "get_details (tools.py:1156) applies only is_servable, not is_test_object: a test record fetched by identifier is delivered in full and not counted",
+    "is_test_object checks obj.email and address.email but not organizer.email, where the recorded Demo Event carries mail@example.ch (tests/test_licenses.py:226) — detection there relies on the name alone"
+  ],
+  "evaluator_notes": "Filter and counter work on every list-shaped tool and are tested with the recorded object; the detail tool is the exception.",
+  "remediation": "In get_details_impl, after the licence gate, return a withheld envelope with excluded_test_objects=1 and a hint when is_test_object(obj); also check organizer.email; add a unit test.",
+  "effort": "S"
+}

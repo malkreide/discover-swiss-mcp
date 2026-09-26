@@ -1,0 +1,19 @@
+{
+  "id": "SCALE-010",
+  "status": "partial",
+  "category": "SCALE",
+  "severity": "medium",
+  "evidence": [
+    "src/ — grep 'resources/(un)?subscribe|subscriptions/listen|subscriptionId|toolsListChanged|notifications/progress|report_progress|ctx\\.info|list_changed' → no hit (control fires on 3 control lines)",
+    "runtime (audit): initialize (2025-11-25) response capabilities tools.listChanged=false, prompts.listChanged=false, resources.listChanged=false, resources.subscribe=false",
+    "runtime (audit): resources/subscribe → -32601 Method not found",
+    "runtime (audit): GET /mcp with MCP-Protocol-Version 2026-07-28 → 405, Allow: POST"
+  ],
+  "gaps": [
+    "README does not state that the server emits no change notifications (criterion 1 requires one sentence, not silence)",
+    "The SDK's backward-compatible 2025-11-25 session path still serves a server-initiated GET stream: after a legacy initialize, GET /mcp with mcp-session-id → 200 text/event-stream (runtime). Modern GET is 405; the legacy stream is SDK compat behaviour, not server code"
+  ],
+  "evaluator_notes": "The server has no notification or subscription mechanism (code grep with control, capabilities, Method-not-found) and the modern GET answers 405. The README is silent on notifications and the legacy-era GET stream remains reachable for 2025-11-25 clients → partial.",
+  "remediation": "Add one README sentence under the protocol/transport section: 'This server sends no list-changed or resource notifications; tools are static.' Optionally note that legacy (2025-11-25) sessions still get the SDK's GET stream, or disable legacy protocol support if only 2026-07-28 clients are targeted.",
+  "effort": "S"
+}

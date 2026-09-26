@@ -1,0 +1,17 @@
+{
+  "id": "ARCH-019",
+  "status": "pass",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "grep roots/list|RootsCapability|list_roots|ListRootsRequest src/ → 0 (control: hits .venv/.../mcp/shared/peer.py)",
+    "grep sampling/createMessage|create_message|CreateMessageRequest|ctx.sample src/ → 0 (control: hits .venv/.../mcp/shared/peer.py)",
+    "grep logging/setLevel|LoggingCapability|notifications/message|ctx.info/debug/warning/error src/ → 0 (control: hits .venv/.../mcp/server/connection.py and mcpserver/context.py)",
+    "src/discover_swiss_mcp/logging_config.py:32,48 — application logging as structlog JSON to sys.stderr",
+    "runtime: server/discover capabilities list only prompts/resources/tools (no logging); logging/setLevel → -32601 Method not found"
+  ],
+  "gaps": [],
+  "evaluator_notes": "No use of Roots, Sampling or the logging protocol feature; application logging goes to stderr as the spec recommends. Date/target-state criteria are not applicable.",
+  "remediation": "",
+  "effort": ""
+}

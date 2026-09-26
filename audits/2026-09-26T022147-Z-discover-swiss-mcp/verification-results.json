@@ -1,0 +1,1655 @@
+{
+  "audit_meta": {
+    "server_name": "discover-swiss-mcp",
+    "audit_date": "2026-09-26",
+    "skill_version": "2.3.0",
+    "catalog_version": "2bbded9079fd",
+    "applies_when_dsl_version": "1.0",
+    "policy": "fail-or-partial"
+  },
+  "results": {
+    "ARCH-001": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:230,245,260,275,290,305,320,335 — all eight tools registered with explicit name= in snake_case: search, get_details, find_accommodation, find_tours, find_events, webcams_near, explore_area, source_status",
+        "runtime: tools/list over streamable-http returned exactly these 8 names; none contain spaces, dots, brackets or non-ASCII",
+        "src/discover_swiss_mcp/server.py:232-234 — search description gives scope, coverage, parameter semantics and follow-up tool (get_details); all eight descriptions are 573–1531 chars after whitespace normalisation",
+        "src/discover_swiss_mcp/server.py:322 — explore_area description states when to use it ('Use it to decide which tool to call next')"
+      ],
+      "gaps": [],
+      "evaluator_notes": "One consistent convention (snake_case, acceptable per criteria), no forbidden characters, descriptions carry context and use guidance, not just function.",
+      "remediation": "",
+      "effort": ""
+    },
+    "ARCH-002": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "runtime (mcp.list_tools, whitespace-normalised): description lengths search 1531, get_details 819, find_accommodation 991, find_tours 1346, find_events 1160, webcams_near 666, explore_area 1042, source_status 573 — median 1016.5, min 573",
+        "src/discover_swiss_mcp/server.py:262 — find_accommodation carries caveats ('NO availability and NO nightly prices — never state that a room is free')",
+        "src/discover_swiss_mcp/server.py:292 — find_events: 'Treat this tool as a supplement: if it returns nothing, name a regional event calendar'",
+        "src/discover_swiss_mcp/server.py:322 and :337 — explore_area / source_status carry explicit when-to-use sentences",
+        "grep '<use_case>|<important_notes>|<example>' src/ → 0 hits (negative control: same pattern hits ARCH-002.md:19-20)"
+      ],
+      "gaps": [
+        "No structured use-case marker (<use_case> or equivalent section) in any tool; explicit 'when to use' statements exist for only ~3 of 8 tools (explore_area, source_status, find_events) — below the 80% criterion",
+        "search vs find_accommodation (both can return hotels) are not explicitly differentiated in either description"
+      ],
+      "evaluator_notes": "Length and caveats are strong (median ~1000 chars, many limitations stated). The use-case-tag criterion (≥80% of tools) and the differentiation of overlapping tools are not met.",
+      "remediation": "Add a short, uniformly placed use-case lead (e.g. 'Use when …' / 'Not for …') to each description, and state in search/find_accommodation which one to prefer for lodging questions; regenerate docs/tool-hashes.json.",
+      "effort": "S"
+    },
+    "ARCH-003": {
+      "status": "fail",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/tools.py:171-177 — SEARCH_EMPTY_HINT: actionable next steps (match='all', drop types, near instead of locality, call explore_area)",
+        "src/discover_swiss_mcp/tools.py:664-694 — _paged_hint distinguishes nothing-matched / past-the-end / all-withheld",
+        "tests/test_tools.py:273-281 — empty search asserts hint == SEARCH_EMPTY_HINT (return value only, no route counter)",
+        "src/discover_swiss_mcp/models.py:33-53 — Envelope has no match_type field; grep 'match_type|suggest' src/discover_swiss_mcp/tools.py → only a docstring hit at :670"
+      ],
+      "gaps": [
+        "No match_type (exact/fuzzy/none) field in any response",
+        "No suggestions derived from the caller's own term; the hint is generic advice",
+        "The empty response does not state that the server did not broaden the query (searched once, unchanged term)",
+        "Mode-3 test pair missing: no respx test asserting route.call_count == 1 and unchanged searchText on an empty result, and no suggestion-half test; no Gegenprobe"
+      ],
+      "evaluator_notes": "Empty results are never bare — the hint is actionable and names other tools, which covers criteria 1 and 3. But of the applicable criteria (1,2,3,5,6,9,10,11; 4,7,8 n/a for public data without fuzzy arm) only two are met; per the check a server without the counter test pair has not shown the property.",
+      "remediation": "Add match_type ('exact'|'none') to the paged envelope; on returned==0 add a sentence 'searched once with your term, not broadened'; add term-derived suggestions (shorter variants ≥4 chars) in a separate field; add the two respx tests (suggestions appear; route.call_count==1 with unchanged searchText) and run the counter once against a mutated version that searches its suggestions.",
+      "effort": "S"
+    },
+    "ARCH-004": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:182-197 — tool handlers reach shared state only via ctx.request_context.lifespan_context; no request/headers/stdin access (grep of handlers 230-349)",
+        "src/discover_swiss_mcp/config.py:40-56,84-133 — frozen pydantic Settings built from DISCOVER_SWISS_* env vars, transport Literal['stdio','streamable-http'] (config.py:48,105-109)",
+        "src/discover_swiss_mcp/server.py:352-370 — main() selects stdio (mcp.run()) or streamable-http (uvicorn) from settings.transport; __main__.py:8-10 uses the same main()",
+        "src/discover_swiss_mcp/server.py:103-140,160 — one lifespan for both transports; runtime: 'Server lifespan started' logged on both stdio and HTTP start",
+        "runtime: source_status called via stdio and via streamable-http (same env) — structuredContent identical after removing retrieved_at"
+      ],
+      "gaps": [],
+      "evaluator_notes": "Handlers are transport-agnostic, configuration is a settings object from env, transport selectable, shared lifespan, and outputs matched across transports at runtime.",
+      "remediation": "",
+      "effort": ""
+    },
+    "ARCH-005": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "critical",
+      "evidence": [
+        "src/discover_swiss_mcp/config.py:45,91,125 — api_key is SecretStr read from DISCOVER_SWISS_KEY with empty default (no real key as fallback)",
+        "src/discover_swiss_mcp/config.py:58-76 and server.py:129-134 — only safe_summary() is logged ('api_key': 'set'|'missing'); runtime startup log line shows \"api_key\": \"set\"",
+        ".gitignore:15-16 — .env and .env.* ignored",
+        "grep secret pattern (api_key|password|secret|token = '16+ chars') over src/ → 0 hits (negative control: fires on a scratch file with api_key = \"abcdefghijklmnopqrstuvwx\"); AKIA/connection-string patterns → 0 hits; git grep over tracked files shows the key only as env reads in probes/*.py (e.g. probes/probe_detail.py:28)",
+        "attempted gitleaks/trufflehog: neither installed in this environment (which → not found); history grep for 32-hex subscription-key values → no hits"
+      ],
+      "gaps": [
+        ".env.example with placeholders does not exist (and .gitignore:16 '.env.*' would also ignore it — no '!.env.example' exception)",
+        "No gitleaks/trufflehog (or equivalent) secret-scan step in .github/workflows/ci.yml or publish.yml",
+        "Settings are hand-rolled from os.environ rather than pydantic-settings (accepted as 'o.ä.', noted only)"
+      ],
+      "evaluator_notes": "No secret in code or history found; key handling (SecretStr, masked summary, env only) is exemplary. Two of eight criteria (.env.example, CI secret scan) are unmet, so not a pass on a critical check; no leak evidence, gitleaks not runnable here.",
+      "remediation": "Add .env.example with DISCOVER_SWISS_KEY=replace-with-your-key and '!.env.example' in .gitignore; add a gitleaks-action job (SHA-pinned) on push/pull_request.",
+      "effort": "S"
+    },
+    "ARCH-006": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:230-349 — 8 tools (≤12); runtime tools/list returned 8",
+        "README.md:199-204 — seven of eight tools are use-case views on /search (not one tool per endpoint); /projects, /areas, /status etc. are not exposed as tools",
+        "docs/DEMO.md:37-41,59-63,84-87 — anchor queries answered in-server with search+search (Q1; get_details optional), find_tours+webcams_near (Q2), find_accommodation(+get_details) (Q3), i.e. ≤2 calls per sub-question",
+        "src/discover_swiss_mcp/tools.py:2106-2161 — explore_area aggregates facet counts so a model can scope before searching"
+      ],
+      "gaps": [
+        "Tool latency (<5 s) not measured (live API not called); normal path is one upstream call, retry path can take up to 25 s (client.py:248)"
+      ],
+      "evaluator_notes": "Use-case-oriented tool set within budget; no CRUD/endpoint mapping. Anchor Q1 is listed as a 3-step chain in DEMO.md, but the museum and restaurant sub-questions are each one call; get_details is optional depth.",
+      "remediation": "",
+      "effort": ""
+    },
+    "ARCH-007": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/tools.py:480-513 — search/accommodation/tours responses carry complete hits (name, attribution, distance_km, counts, has_more), not IDs only",
+        "src/discover_swiss_mcp/tools.py:1469,1776,1993,2211 — region names are resolved to area ids internally (resolve_area) before the search, one tool call for the model",
+        "src/discover_swiss_mcp/server.py:279 — find_tours description states the internal resolution ('region … resolved to an area id; `area` in the response shows what it resolved to')",
+        "src/discover_swiss_mcp/tools.py:846-871 — list fallback aggregates up to FALLBACK_MAX_CALLS list pages internally"
+      ],
+      "gaps": [
+        "No asyncio.gather anywhere in src/ (negative control: pattern hits .venv/.../uvicorn/_compat.py); the fallback scan over several endpoints is sequential — defensible given the 55/min client bucket and token paging, but not documented as a deliberate choice"
+      ],
+      "evaluator_notes": "Tools are atomic from the model's view and return usable results; internal chaining (area resolution, fallback paging) is encapsulated. Parallelism is not used where calls are dependent or rate-bound.",
+      "remediation": "",
+      "effort": ""
+    },
+    "ARCH-008": {
+      "status": "fail",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "grep '@mcp.resource|@mcp.prompt|.resource(|.prompt(' src/ → 0 hits (tools only)",
+        "grep -iE 'resources|prompts|primitive' README.md README.de.md → 0 hits (negative control: same pattern hits ARCH-008.md:3)",
+        "runtime: resources/list, prompts/list, resources/templates/list return empty lists, while server/discover advertises capabilities prompts{listChanged:true} and resources{listChanged:true, subscribe:true}"
+      ],
+      "gaps": [
+        "Only one primitive (tools) and no README rationale for tools-only",
+        "No documented review of read-only tools (get_details by identifier, source_status) as resource candidates",
+        "Capabilities advertise prompts/resources (incl. resources.subscribe) that the server does not provide (SDK default)"
+      ],
+      "evaluator_notes": "Neither alternative of criterion 1/2 is met: no second primitive and no documented justification.",
+      "remediation": "Add a 'MCP primitives' paragraph to README.md and README.de.md explaining tools-only (e.g. identifiers only come from searches; read-only tools are needed for provenance envelopes), or expose get_details as a resource template (discover-swiss://object/{identifier}); consider not advertising unused capabilities.",
+      "effort": "S"
+    },
+    "ARCH-009": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:170-179 — _READ_ONLY sets readOnlyHint True, destructiveHint False, idempotentHint True, openWorldHint True; every decorator at :230,245,260,275,290,305,320,335 passes annotations=_annotations(...)",
+        "runtime tools/list: annotations {destructiveHint:false, idempotentHint:true, openWorldHint:true, readOnlyHint:true, title:…} on the tools",
+        "tests/test_server.py:103-108 — parametrised over all tools, asserts read_only_hint True, open_world_hint True, destructive_hint False",
+        "README.md:155 — 'All eight tools are read-only (readOnlyHint: true, openWorldHint: true)'; CHANGELOG.md:15-16 repeats it"
+      ],
+      "gaps": [
+        "README policy line omits destructiveHint/idempotentHint (no four-column table) — minor"
+      ],
+      "evaluator_notes": "All tools carry explicit, behaviour-consistent annotations (pure reads against an external API), tested; policy documented in README.",
+      "remediation": "",
+      "effort": ""
+    },
+    "ARCH-011": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "top level: README.md, README.de.md, CHANGELOG.md, LICENSE, pyproject.toml all present; src/, tests/, .github/workflows/ (ci.yml, publish.yml) present",
+        "pyproject.toml:66-67 — [tool.hatch.build.targets.wheel] packages = ['src/discover_swiss_mcp'] (src layout)",
+        ".github/workflows/ci.yml:66-67 — pytest -m \"not live\"; .github/workflows/publish.yml present",
+        "README.md vs README.de.md '^## ' headings: 20 each, same order, semantically matching (e.g. Anchor demo queries/Anker-Abfragen, Known limitations/Bekannte Einschränkungen)",
+        "src/discover_swiss_mcp/tools.py (2384 lines) holds all eight *_impl; src/discover_swiss_mcp/server.py is 374 lines; no tools/ package",
+        "README.md:254-274 — Project Structure lists tools.py but gives no reason for deviating from a tools/ package"
+      ],
+      "gaps": [
+        ">5 tools but no tools/ directory with file-per-group split; tools.py is 2384 lines and server.py 374 lines (>200)",
+        "Deviation from the standard layout is not justified in README.md or README.de.md",
+        "CI workflow is named ci.yml instead of test.yml (functionally equivalent; noted only)"
+      ],
+      "evaluator_notes": "Files, directories, src layout, CI and bilingual parity are fine; the tool-module split and the README justification for the deviation are missing (5 of 7 criteria).",
+      "remediation": "Either split tools.py into src/discover_swiss_mcp/tools/ (search.py, lodging.py, tours.py, events.py, webcams.py, area.py, status.py) or add a sentence in README.md and README.de.md 'Project Structure' explaining why a single tools.py was kept.",
+      "effort": "M"
+    },
+    "ARCH-012": {
+      "status": "fail",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:73 — MCP_PROTOCOL_VERSION = \"2026-07-28\"; used only in the startup log (:131) and tests/test_server.py:152 (snapshot equality), never passed to MCPServer or compared with _meta",
+        "src/discover_swiss_mcp/server.py:69-72 — comment claims 'a test holds the constant against the SDK's own LATEST_PROTOCOL_VERSION'; grep LATEST_PROTOCOL_VERSION tests/ scripts/ → 0 hits (negative control: hits .venv/.../mcp_types/version.py:50) — the test does not exist",
+        "runtime (streamable-http): tools/list with _meta protocolVersion 2030-01-01 → error -32022 data.supported ['2026-07-28'] (SDK mcp_types/version.py:41 MODERN_PROTOCOL_VERSIONS); server/discover supportedVersions ['2026-07-28']",
+        "runtime: legacy initialize with protocolVersion 2025-06-18 → 200, negotiated 2025-06-18 — the pinned constant does not constrain what the server speaks",
+        "CHANGELOG.md:1-8 — Keep a Changelog header; CHANGELOG.md:63-64 says 'pinned protocol version' without naming it",
+        "grep -iE 'breaking|spec.version|protocol.version|migration' README.md README.de.md → 0 hits (negative control: 27 hits in ARCH-012.md)",
+        ".github/dependabot.yml — only package-ecosystem github-actions, no pip"
+      ],
+      "gaps": [
+        "Pinned constant is decorative: the per-request check and -32022 come from the SDK's own list, not from MCP_PROTOCOL_VERSION; legacy handshake versions (2024-11-05..2025-11-25) are still accepted",
+        "Code comment asserts a guard test that does not exist",
+        "CHANGELOG does not name the spec version",
+        "README has no 'MCP Protocol Version' section and no update/breaking-change policy",
+        "No Dependabot/Renovate for pip (SDK updates are not proposed)"
+      ],
+      "evaluator_notes": "Met: CHANGELOG format; -32022 and discover list consistent (via SDK). Not met: an enforced server-side pin, CHANGELOG spec references, README section, update policy, SDK update automation. Fewer than half.",
+      "remediation": "Add the promised test (MCP_PROTOCOL_VERSION in mcp_types.MODERN_PROTOCOL_VERSIONS and == server/discover supportedVersions); decide whether legacy handshake eras should be served (stateless_http / legacy off) and document it; add README/README.de 'MCP Protocol Version' section with update policy; name '2026-07-28' in CHANGELOG; add a pip ecosystem to .github/dependabot.yml grouping mcp.",
+      "effort": "S"
+    },
+    "ARCH-013": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "Path enumeration (grep streamable_http_app|sse_app|http_app|mcp.run|uvicorn.run in src/): server.py:364-368 uvicorn.run(mcp.streamable_http_app(host=settings.host), host=settings.host, port=settings.port) and server.py:370 mcp.run() (stdio) — no SSE app, no factory",
+        "Deployment manifests: no Dockerfile/railway.toml/render.yaml/Procfile/docker-compose; pyproject.toml:58-59 console script → discover_swiss_mcp.server:main (same main as __main__.py:8-10)",
+        ".venv/.../mcp/server/lowlevel/server.py:741-747 — SDK enables DNS-rebinding protection with allowed_hosts 127.0.0.1:*, localhost:*, [::1]:* (port wildcard, so the port need not travel) when host is loopback",
+        "runtime: POST /mcp with Host: evil.example.com → 421, with Host: 127.0.0.1:8768 → 200; GET /mcp → 400 (no server-initiated GET stream)"
+      ],
+      "gaps": [
+        "No test exercises the seam main() → streamable_http_app(host=…) (grep tests/ for streamable_http_app/transport/main → none); no mutation Gegenprobe",
+        "Host-allow-list protection is armed only when DISCOVER_SWISS_MCP_HOST is loopback; a non-loopback bind silently runs without transport_security (documented only as 'localhost only' default, README.md:142)"
+      ],
+      "evaluator_notes": "Only one network path exists and it carries the SDK host allow-list, verified at runtime. The per-path seam test and the counter-proof are missing, which blocks pass on a high check.",
+      "remediation": "Add a test that calls main() with DISCOVER_SWISS_MCP_TRANSPORT=streamable-http (uvicorn.run monkeypatched) and asserts the app rejects Host: evil.example.com with 421; run it once with host= removed to see it fail; pass explicit transport_security for non-loopback hosts or refuse them.",
+      "effort": "S"
+    },
+    "ARCH-014": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/client.py:707-807 — single retry loop in _call (hand-read); httpx.AsyncClient at :648 without transport= (retries 0); grep HTTPTransport|max_retries|Retry( src/ → 0 (negative control: hits .venv/.../httpx/_client.py:731)",
+        "client.py:805-807 + tests/test_client.py:298-305 — other 4xx raise UpstreamRejectedError immediately, 1 call, no sleep",
+        "client.py:731-747 + tests/test_client.py:258-262 — httpx.RequestError (network, timeouts) retried on the same ladder",
+        "client.py:241 + tests/test_client.py:239-246 — fixed ladder 2/4/8 s, asserted exactly",
+        "client.py:531-549,762-774 + tests/test_client.py:272-295 — 429 wait read from body ('Try again in N seconds') then Retry-After header, one retry, >30 s (RATE_LIMIT_MAX_WAIT :257) fails immediately",
+        "client.py:248,703,716 — TOTAL_BUDGET 25 s as wall-clock deadline enforced with asyncio.timeout(remaining)",
+        "client.py:776-781 — 403 quota is a state, never retried; exhaustion raises UpstreamUnavailableError mapped to degraded envelope (tools.py:697-705)"
+      ],
+      "gaps": [
+        "No jitter: client.py:236-241 deliberately deterministic (rationale: single-process client behind token bucket) — criterion unmet",
+        "Retry-After only on 429 and only as integer seconds; 503 Retry-After ignored, HTTP-date form not parsed (client.py:546-548)",
+        "Budget not bounded below the client timeout on all paths: a 429 extends the deadline by up to 30 s (client.py:772) → up to ~55 s; bucket.acquire() (client.py:714, 409-420, up to ~60 s) runs before asyncio.timeout and outside the deadline",
+        "No test binds the wall-clock budget (no real-time slow-response test)"
+      ],
+      "evaluator_notes": "Retry exists and is well-scoped (what is retried, one layer, wall-clock deadline, 4xx abort). Jitter, full Retry-After handling and a hard total bound under the 30 s client timeout are missing.",
+      "remediation": "Add jitter after capping order (delay = min(base*2**n*(0.5+random()), MAX)); parse Retry-After on 503 and HTTP-date; move bucket.acquire inside the deadline or count it; cap deadline extension so total stays < 30 s; add a real-time test with a slow respx side effect and total_budget small.",
+      "effort": "S"
+    },
+    "ARCH-015": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "grep 'initialize|notifications/initialized|InitializeResult|InitializationOptions' src/ → 0; grep 'mcp-session-id|session_manager|SessionManager|sessionId' src/ → 0 (negative controls: 10 and 9 hits in .venv/.../mcp/server/lowlevel/server.py)",
+        "runtime: request with _meta protocolVersion 2030-01-01 → -32022 'Unsupported protocol version' (per-request version check by SDK)",
+        "module-level container grep '^_?[A-Z_]+ … = {}|[]' src/ → 0 (control fires on scratch file); broader scan shows only constants (client.py:190, tools.py:101…); instance state client.py:612-614 is source state (quota, last success, search availability), client.py:387-445 rate bucket and TTL cache are source-derived",
+        "runtime: tools/list order identical across 3 fresh processes with PYTHONHASHSEED=random; tools registered at import (server.py:230-335)"
+      ],
+      "gaps": [
+        "SDK serves the legacy era: POST initialize with protocolVersion 2025-06-18 over HTTP returns 200 and sets an mcp-session-id header — the server still issues session ids although it pins 2026-07-28 (streamable_http_app called without stateless_http, server.py:365)",
+        "No order-independence test and no Gegenprobe against a stateful variant"
+      ],
+      "evaluator_notes": "Own code is stateless and version/caps are read per request by the SDK; the remaining gaps are the SDK's dual-era session issuance on HTTP and the missing test with counter-proof.",
+      "remediation": "Pass stateless_http=True (or otherwise disable the legacy handshake) in mcp.streamable_http_app and document it; add a test that interleaves two tool calls in different order across two Client sessions and assert identical results, and run it once against a deliberately stateful variant.",
+      "effort": "S"
+    },
+    "ARCH-016": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:84 — CACHE_HINTS includes 'server/discover'; handler supplied by SDK (.venv/.../mcp/server/lowlevel/server.py:449,661-675), mcp 2.2.0 installed, pyproject.toml:34 mcp>=2,<3",
+        "runtime HTTP: server/discover → supportedVersions ['2026-07-28'], capabilities {prompts, resources, tools}, instructions, resultType complete, ttlMs 300000, cacheScope public",
+        "runtime stdio: same server/discover response via python -m discover_swiss_mcp",
+        "runtime: _meta io.modelcontextprotocol/serverInfo = {name: 'discover_swiss_mcp', version: ''}"
+      ],
+      "gaps": [
+        "Identity version is empty: MCPServer(...) at server.py:147-161 passes no version=; SDK default version '' (.venv/.../mcp/server/mcpserver/server.py:166) — package metadata version 0.1.0 is not used",
+        "No test calls server/discover and checks versions, capabilities and identity separately (grep tests/ → 0); no Gegenprobe",
+        "Capabilities advertise resources.subscribe/prompts although none exist (SDK default)",
+        "Whether mcp 2.0.0 (the pinned lower bound) already ships server/discover and cache_hints was not verifiable offline"
+      ],
+      "evaluator_notes": "RPC answers on both transports with a version list and capabilities; identity version is blank and no test holds the three parts.",
+      "remediation": "Pass version=__version__ (from package metadata) to MCPServer; add a test via mcp.Client asserting supportedVersions == ['2026-07-28'], 'tools' in capabilities, serverInfo.version == importlib.metadata.version('discover-swiss-mcp'); raise the lower bound to the first mcp 2.x that has cache_hints.",
+      "effort": "S"
+    },
+    "ARCH-017": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/tools.py:263 — paging is a plain 'page: int' (1..1000) re-sent upstream as currentPage; tests/test_tools.py:202 asserts currentPage — stateless re-query, no server-held cursor",
+        "src/discover_swiss_mcp/tools.py:855-866 — upstream nextPageToken is local to one tool call (fallback scan), never exposed or stored",
+        "grep module-level mutable containers in src/ → none (control fires on scratch file); client.py:612-614 instance fields hold source state only (quota, last success, search availability), not caller state",
+        "deployment is local single-process (profile), auth_model API-Key upstream only — no replica / identity binding needed"
+      ],
+      "gaps": [],
+      "evaluator_notes": "The server holds no caller-related cross-call state, so no handles are needed; paging is a stateless page number over the source. Criteria 2-7 are not applicable.",
+      "remediation": "",
+      "effort": ""
+    },
+    "ARCH-018": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "runtime HTTP tools/call search without key (error path): result.isError true, resultType 'complete'",
+        "runtime stdio tools/call source_status (success path): resultType 'complete', structuredContent present",
+        "runtime: tools/list, server/discover, resources/list, prompts/list, resources/templates/list all carry resultType 'complete'",
+        "grep resultType|result_type src/ → 0: field set by SDK (mcp 2.2.0); pyproject.toml:34 mcp>=2,<3"
+      ],
+      "gaps": [
+        "No test checks resultType on the wire (grep tests/ → 0); it rests entirely on SDK behaviour"
+      ],
+      "evaluator_notes": "Field present on success and error paths via the SDK, value 'complete', no MRTR. Only the wire-format regression test is missing.",
+      "remediation": "Add a test using mcp.Client (or raw JSON-RPC over stdio) that asserts resultType == 'complete' on a successful and an isError tool result.",
+      "effort": "S"
+    },
+    "ARCH-019": {
+      "status": "pass",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "grep roots/list|RootsCapability|list_roots|ListRootsRequest src/ → 0 (control: hits .venv/.../mcp/shared/peer.py)",
+        "grep sampling/createMessage|create_message|CreateMessageRequest|ctx.sample src/ → 0 (control: hits .venv/.../mcp/shared/peer.py)",
+        "grep logging/setLevel|LoggingCapability|notifications/message|ctx.info/debug/warning/error src/ → 0 (control: hits .venv/.../mcp/server/connection.py and mcpserver/context.py)",
+        "src/discover_swiss_mcp/logging_config.py:32,48 — application logging as structlog JSON to sys.stderr",
+        "runtime: server/discover capabilities list only prompts/resources/tools (no logging); logging/setLevel → -32601 Method not found"
+      ],
+      "gaps": [],
+      "evaluator_notes": "No use of Roots, Sampling or the logging protocol feature; application logging goes to stderr as the spec recommends. Date/target-state criteria are not applicable.",
+      "remediation": "",
+      "effort": ""
+    },
+    "ARCH-020": {
+      "status": "fail",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:75-85 — CACHE_HINTS tools/list and server/discover ttl_ms 300000, scope 'public', with rationale comment",
+        "runtime tools/list: ttlMs 300000, cacheScope 'public'; prompts/list, resources/list, resources/templates/list: ttlMs 0, cacheScope 'private' (SDK defaults); all scopes within {public, private}",
+        "runtime: tools/list order identical across 3 fresh processes with PYTHONHASHSEED=random (negative control: a set of the same names changed order in each of 3 runs)",
+        "grep orderBy|order_by|sort src/discover_swiss_mcp/*.py → 0: paged search results carry no explicit/total sort key",
+        "grep tests/ for ttl|cacheScope|two-page overlap → 0"
+      ],
+      "gaps": [
+        "tools/list order comes from decorator registration order, not an explicit sort",
+        "prompts/list, resources/list, resources/templates/list are served with ttlMs 0 (unjustified)",
+        "Paged query results (page parameter) have no total sort key; relevance/distance ties decided upstream per call",
+        "No two-page test (empty intersection + full union) and no Gegenprobe tests (set iteration, cacheScope 'session')"
+      ],
+      "evaluator_notes": "Fields and values are present and valid, and order is stable across processes; the explicit sort, justified ttl on all served list methods, total sort key and the paging/counter-proof tests are missing (4 of 9 applicable).",
+      "remediation": "Sort tools explicitly by name (or add a test pinning the order across fresh processes), set cache hints for prompts/list and resources lists (or stop advertising them), send a total order to /search where supported (e.g. relevance then identifier) and add a two-page overlap test against a recorded result set.",
+      "effort": "S"
+    },
+    "ARCH-021": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "grep 'io.modelcontextprotocol/|extensions' src/ → only src/discover_swiss_mcp/net.py:144 (httpx request extensions={'sni_hostname': host}, not MCP) (control: hits .venv/.../mcp/shared/subscriptions.py)",
+        "grep 'tasks/(get|update|result|list)|TaskHandle|task_id' src/ → 0 (control: hits .venv/.../mcp_types/_v2025_11_25/__init__.py)",
+        "runtime server/discover capabilities: no extensions declared — declaration matches code in both directions"
+      ],
+      "gaps": [
+        "README.md / README.de.md do not state that the server carries no extensions (grep -i extension → 0; control: 21 hits in ARCH-021.md)"
+      ],
+      "evaluator_notes": "No extensions, no Tasks, no own namespace under io.modelcontextprotocol; only the one-sentence README statement is missing.",
+      "remediation": "Add to README.md and README.de.md (e.g. in a 'MCP Protocol Version' section): 'This server speaks 2026-07-28 and carries no extensions.'",
+      "effort": "S"
+    },
+    "ARCH-022": {
+      "status": "partial",
+      "category": "ARCH",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/__init__.py:13-18 — __version__ from importlib.metadata in the package root; root imports only stdlib (importlib.metadata), no submodules",
+        "src/discover_swiss_mcp/client.py:46 — 'from discover_swiss_mcp import __version__, net' (submodule reads version from the root); used in USER_AGENT client.py:52",
+        "ls src/discover_swiss_mcp/_version.py → not present",
+        "KALT (fresh interpreter, cwd /tmp): python -c 'import discover_swiss_mcp.client' → ok, USER_AGENT discover-swiss-mcp/0.1.0, kalt_exit=0",
+        "WARM (fresh interpreter): import discover_swiss_mcp; import discover_swiss_mcp.client → ok, 0.1.0, warm_exit=0",
+        "pyproject.toml:58-59 console script discover_swiss_mcp.server:main; fresh-interpreter import of discover_swiss_mcp.server → ok, script_exit=0"
+      ],
+      "gaps": [
+        "No leaf _version.py; client.py reads __version__ from the package root",
+        "Root computes the version itself instead of importing it from a leaf module"
+      ],
+      "evaluator_notes": "Both measurements pass and today there is no cycle because __init__.py imports no submodule; but the structure the check asks for (leaf version module, no submodule reading the root) is absent — adding 'from .server import mcp' to __init__ would create the i14y-style cycle.",
+      "remediation": "Create src/discover_swiss_mcp/_version.py (stdlib-only) with the metadata lookup; import __version__ from it in __init__.py and client.py.",
+      "effort": "S"
+    },
+    "CH-004": {
+      "status": "pass",
+      "category": "CH",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/models.py:33-38 — Envelope.source on every tool response ('discover.swiss Infocenter Open — data by the providers named per hit; see attribution[]')",
+        "src/discover_swiss_mcp/licenses.py:66-76,162-192 — per-object Attribution(provider, license, copyright_notice, source_url) built from each record; tools.py:458,523,1669,1932 — attribution on every hit type (per-record provenance)",
+        "src/discover_swiss_mcp/licenses.py:42-47 — licence whitelist {CC0, CC BY, CC BY-SA, CC BY-ND, ODbL}; CC BY-NC-* deliberately excluded; non-listed objects counted in excluded_by_license, never served",
+        "README.md:176-193 — Attribution section naming providers and mixed licences, CC BY-SA stays CC BY-SA, CC BY-ND quote-only; docs/LICENSES.md:3-9 — licence table",
+        "tests/test_licenses.py:193-200 — attribution built from the object (provider, CC BY-SA, copyright notice, source URL); tests/test_licenses.py:56 — NC not served"
+      ],
+      "gaps": [
+        "Attribution carries the licence name but no licence URI/link as CC BY 4.0 §3(a)(1)(C) asks 'to the extent reasonably practicable' — low",
+        "explore_area returns aggregate facet counts without per-source breakdown (aggregate statistics, not redistributed records) — low"
+      ],
+      "evaluator_notes": "Source and licence travel per record, the README and docs document sources and licences, NC and all-rights-reserved content is filtered out, and ND/SA obligations are signalled. Remaining gaps are minor.",
+      "remediation": "",
+      "effort": ""
+    },
+    "DEP-001": {
+      "status": "partial",
+      "category": "DEP",
+      "severity": "high",
+      "evidence": [
+        "pyproject.toml:29-42 (mode 1 script): OK mcp>=2,<3; OK structlog>=24.1.0,<27; OFFEN httpx>=0.27.0; OFFEN pydantic>=2; OFFEN tzdata (win32 only); dev: OFFEN pytest/pytest-asyncio/respx, ruff==0.16.4 (dev extra only)",
+        "imports (mode 2): httpx at client.py:43 and net.py:30; pydantic BaseModel subclassing in config.py:19, models.py:26, licenses.py:40, tools.py:32, client.py:44; uvicorn imported at server.py:359 but not declared (only transitively via mcp 'uvicorn>=0.31.1', no upper bound)",
+        "mode 4a: installed mcp 2.2.0 and structlog 26.1.0 (highest under caps per fresh resolve) — pytest -m 'not live' → 215 passed",
+        "mode 4b / mode 3: fresh venv, pip --dry-run --no-cache-dir 'mcp>=2' 'structlog>=24.1.0' 'pydantic>=2' 'httpx>=0.27.0' uvicorn → mcp 2.2.0, structlog 26.1.0, pydantic 2.13.5, httpx 0.28.1, uvicorn 0.54.0: no next major exists today, so both caps are 'Wirkung ungeprüft'; no lockfile in repo to compare",
+        ".github/dependabot.yml — only github-actions ecosystem, no pip"
+      ],
+      "gaps": [
+        "pydantic>=2 uncapped although the server subclasses its BaseModel across five modules (framework dependency per question 2)",
+        "httpx>=0.27.0 uncapped although imported in two modules (client.py, net.py) with exception types and AsyncClient — not behind one adapter, no written rationale",
+        "uvicorn imported directly (server.py:359) but not declared as a dependency — no bound of its own",
+        "No automated cap-raising process for Python deps (Dependabot pip ecosystem missing)",
+        "Caps on mcp (<3) and structlog (<27) currently have no measurable effect (next major not yet on the index)"
+      ],
+      "evaluator_notes": "SDK and structlog are capped and measured; pydantic, httpx and the undeclared uvicorn are open ranges on import-bearing dependencies, and no pip update automation exists. SDK-006 (mcp major) is judged separately and passes.",
+      "remediation": "Set 'pydantic>=2,<3', 'httpx>=0.27.0,<1' (after 4a/4b measurement), declare 'uvicorn>=0.31.1,<1'; add a pip entry to .github/dependabot.yml; republish.",
+      "effort": "S"
+    },
+    "DRIFT-001": {
+      "status": "pass",
+      "category": "DRIFT",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/config.py:23 — API_BASE_URL module constant",
+        "src/discover_swiss_mcp/client.py:698 — the only URL construction: f\"{self._settings.base_url}{path}\"",
+        "src/discover_swiss_mcp/client.py:846, 889, 946, 1101 — each resource path built once (/search, /vertices/{quote(id)}, /{name} from LIST_ENDPOINTS, /status)",
+        "src/discover_swiss_mcp/client.py:760, 791, 807 — error messages quote the same `path` variable that was fetched",
+        "src/discover_swiss_mcp/client.py:150-153, 223-226, 879-889 — rules documented: collections as frozenset, identifier gate, quote(safe='')",
+        "tests/conftest.py:36 — mocks bound to PINNED_BASE derived from API_BASE_URL, not a repeated literal"
+      ],
+      "gaps": [
+        "Host is held a second time in net.EGRESS_ALLOWLIST (net.py:34) — deliberate security allow-list, low risk",
+        "_call has no docstring line on URL rules; envelope carries no data_source_url (provenance coupling not applicable)"
+      ],
+      "evaluator_notes": "One construction point for all upstream URLs, error messages use the fetched path, base URL is a constant.",
+      "remediation": "",
+      "effort": ""
+    },
+    "DRIFT-002": {
+      "status": "partial",
+      "category": "DRIFT",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/client.py:1035-1092 — resolve_area: exact name only; no exact match -> no id + suggestions; several exact matches -> largest with ambiguous=True and rivals in hint",
+        "src/discover_swiss_mcp/tools.py:1480-1495, 1787-1797, 2004-2014, 2222-2232 — unresolved region: no search is run",
+        "src/discover_swiss_mcp/tools.py:942-965 — search fallback without near/locality fetches nothing",
+        "src/discover_swiss_mcp/tools.py:1013-1016, 1370-1379 — fallback responses carry provenance=list_fallback, degraded=search_unavailable fields; ignored query/filters named in hint prose",
+        "src/discover_swiss_mcp/tools.py:1305-1324 — accommodation fallback ignores stars_min, garni, price_range, amenities, accessible",
+        "tests/test_tools.py:670-681, tests/test_tools_p3.py:659 — tests that the non-find is not a substitution",
+        "src/discover_swiss_mcp/client.py:966-981 — list_fallback docstring: 'Deliberately narrow, and deliberately not to be widened'"
+      ],
+      "gaps": [
+        "Fallbacks widen the answer set: search fallback drops `query` (returns everything near the point), accommodation fallback returns hotels regardless of stars/amenities/accessibility",
+        "Which inputs were ignored is stated only in the hint string; `applied` (tools.py:897-917) has no field for ignored query/filters",
+        "_accommodation_fallback and _ignored_accommodation_filters have no test (no test references them)",
+        "tools.py:1724-1734 _schedule_entry falls back to entries[0] when no entry runs on from_date, which the event hit then reports as the overlapping entry; webcams live_url accepts link type 'WebLink' (tools.py:1863), only 'WebDetail' is verified as a live image"
+      ],
+      "evaluator_notes": "Area resolution escalates correctly and is tested. The search-refused fallback is declared (degraded/provenance fields) but widens semantics with the specifics in prose only, and its accommodation branch is untested.",
+      "remediation": "Add applied['ignored'] = ['query', 'stars_min', ...] to both fallbacks; add a test for _accommodation_fallback asserting the ignored list; make _schedule_entry return None when no entry overlaps; restrict LIVE_LINK_TYPES to verified types.",
+      "effort": "S"
+    },
+    "DRIFT-003": {
+      "status": "pass",
+      "category": "DRIFT",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/models.py:44 — structured degraded field (quota_exhausted | upstream_unreachable | search_unavailable)",
+        "tests/test_live.py:113-119 — every live canary calls _assert_live (degraded must be None) before reading counts",
+        "tests/test_tools.py:207-218 — success assertions on values only a success yields (upstream_count 53, identifier civ_px9-s28_bggg, teaser text); degraded envelopes have hits=[] and upstream_count=None",
+        "tests/test_tools.py:384-405, 476-503, 562; tests/test_tools_p3.py:169, 302-311, 397-402, 490-502 — success-path test for each of the 8 tools",
+        "tests/test_tools.py:337, 503; tests/test_tools_p3.py:311 — range assertions bound to a specific identifier",
+        "tests/test_tools.py:367, 375; tests/test_client.py:240, 322, 353 — degraded paths asserted separately",
+        "grep match=|assertRaisesRegex in tests/ — only keyword args match='name'/'all', no regex assertions (Modus 3 not applicable)"
+      ],
+      "gaps": [
+        "Unit success tests do not explicitly assert degraded is None first (low: their assertions cannot be met by a degraded envelope)",
+        "No tool-level counter-probe for upstream_unreachable (5xx/timeout) showing success values are absent"
+      ],
+      "evaluator_notes": "Degradation is a structured field, live tests exclude it explicitly, and unit assertions check success-only values.",
+      "remediation": "",
+      "effort": ""
+    },
+    "DRIFT-004": {
+      "status": "fail",
+      "category": "DRIFT",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/config.py:23 and client.py:154-171 — endpoint inventory: /search, /vertices/{id}, /status, 14 list collections (5 used by the fallback, tools.py:749-755)",
+        "tests/test_live.py:127-340 — live tests cover /search (via all search tools) and /vertices (test_detail_description_is_plain_text); none covers /status or any list endpoint",
+        "probes/PROBE_OPEN_discover-swiss.md:16-27 — the 15-field LIST_SELECT was verified on /lodgingbusinesses, /civicStructures, /webcams only; fallback also reads /places, /foodEstablishments, /localbusinesses",
+        "src/discover_swiss_mcp/client.py:123-126 — own comment: 'a field that is fine on /lodgingbusinesses can 400 on /webcams, and a 400 here fails the whole page'",
+        "tests/conftest.py:36 — mocks registered against the constant-derived PINNED_BASE"
+      ],
+      "gaps": [
+        "List endpoints (the whole fallback path) and /status are not covered by any live test; /places, /foodEstablishments, /localbusinesses have never been called with the current select",
+        "The live tests that exist have never been executed",
+        "Live tests do not explicitly separate 404 (endpoint gone) from 5xx (transient)",
+        "scripts/p3_stopgate_run.py and probes/probe_open.py are one-shot scripts, not a probe manifest run on a schedule"
+      ],
+      "evaluator_notes": "Mocks are bound to the constant (criterion 2 met), but coverage is incomplete (fallback endpoints, /status), three fallback endpoints were never checked with the current select, and nothing live has run.",
+      "remediation": "Add a parametrised @pytest.mark.live contract canary over /status and each FALLBACK_ENDPOINTS entry with top=1 and LIST_SELECT, asserting status != 404 (fail) and 5xx (xfail/skip), and run it once now.",
+      "effort": "S"
+    },
+    "DRIFT-005": {
+      "status": "fail",
+      "category": "DRIFT",
+      "severity": "medium",
+      "evidence": [
+        ".github/workflows/ci.yml:67 — the only pytest step: `pytest -m \"not live\"`",
+        "grep schedule|cron in .github/workflows/*.yml — no hit (negative control: pattern fires on a sample 'schedule:/cron:' block); publish.yml has no pytest step",
+        "README.md:287-299 — live canaries documented as local-only ('never in CI'), no cadence, no owner",
+        "tests/test_live.py:1-10 — module docstring: 'CI ... never sees them; locally they run with a key'"
+      ],
+      "gaps": [
+        "No scheduled live run and no external auditor reference",
+        "No failure signal (issue/notification)",
+        "No workflow_dispatch entry point for the live suite",
+        "README/CONTRIBUTING name neither cadence nor responsible person"
+      ],
+      "evaluator_notes": "Only the 'PR run stays not live' criterion is met; the live suite runs nowhere.",
+      "remediation": "Add .github/workflows/live-tests.yml (weekly cron + workflow_dispatch, DISCOVER_SWISS_KEY from repository secrets, `pytest -m live -rA`, issue on failure) and a README paragraph with cadence and owner.",
+      "effort": "S"
+    },
+    "DRIFT-006": {
+      "status": "partial",
+      "category": "DRIFT",
+      "severity": "medium",
+      "evidence": [
+        "CHANGELOG.md:78-79 — '[Unreleased] Added: Audit audits/AUDIT_2026-09-26.md ... and its run directory' — file absent; `git ls-files audits` returns 0 files at bd0e371 (audits/ is untracked)",
+        "CHANGELOG.md:67-70 — 'recall floors ... for all eight tool paths' vs tests/test_live.py:127-247: floors for 6 tools (search, find_accommodation, find_tours, webcams_near, explore_area, find_events) + a client.search partner check; none for get_details or source_status",
+        "README.md:232 — 'Unknown facet names are dropped silently' vs src/discover_swiss_mcp/client.py:210-214 and CHANGELOG.md:109-112/169-171 — an invented name answers HTTP 400; only filterPropertyName spellings are dropped",
+        "src/discover_swiss_mcp/client.py:117-127 — comment 'Fifteen fields, every one of them answered live' vs probes/PROBE_OPEN_discover-swiss.md:16-27 — six of them verified on 3 of the 5 fallback endpoints",
+        "src/discover_swiss_mcp/client.py:534-535 — docstring states the gateway's 429 wording as fact vs probes/PROBE_OPEN_discover-swiss.md:33-35 '(4) Der echte 429-Body — Nicht gemessen'",
+        "Verified as true against code: FALLBACK_MAX_CALLS=8 (tools.py:790), cache TTLs 15/60/1440 min (client.py:263-265), cache-before-availability (client.py:836-843), 8 verified facets only (client.py:207-220), tzdata on win32 (pyproject.toml:41), tool-hash snapshot test (tests/test_server.py:23,89-91), SHA-pinned actions (ci.yml, publish.yml), docs/DEMO.md, docs/LICENSES.md, scripts/*.py present",
+        "grep of intent vocabulary (not yet|noch nicht|planned|todo|coming soon...) over CHANGELOG/README/docs/src — no hits (negative control fired)"
+      ],
+      "gaps": [
+        "CHANGELOG claims an audit report that is not in the repository",
+        "CHANGELOG overstates live-canary coverage ('all eight tool paths')",
+        "README Known limitation #8 describes the pre-stop-gate behaviour the code comment itself refutes",
+        "Two code comments present unmeasured facts as measured (list select on all fallback endpoints; 429 body wording)"
+      ],
+      "evaluator_notes": "Mode 1 done claim by claim for [Unreleased] and README Known limitations. No stale 'pending' sentences, but four statements claim more than the repo holds. Note: the caller asked for CHANGELOG-vs-code under DRIFT-008; in the catalogue that is DRIFT-006, so it is judged here.",
+      "remediation": "Remove or reword the audit bullet until the report is committed; change 'all eight tool paths' to the six tools actually covered; rewrite README #8 ('filterPropertyName spellings are dropped silently, invented names answer 400; only verified names are sent'); qualify the two client.py comments with what was measured.",
+      "effort": "S"
+    },
+    "DRIFT-008": {
+      "status": "fail",
+      "category": "DRIFT",
+      "severity": "high",
+      "evidence": [
+        "tests/conftest.py:41-72 — three autouse fixtures: api_key (setenv test-key), _clean_env, _pin_dns (patches net._resolve to 203.0.113.10)",
+        "tests/test_live.py:84-96 — live module overrides api_key and _pin_dns by name",
+        "pytest --fixtures-per-test (run in this audit): all 18 live tests use _pin_dns from tests/test_live.py:94 and api_key from tests/test_live.py:85; negative control: tests/test_client.py uses _pin_dns from tests/conftest.py:66 (34 tests)",
+        "src/discover_swiss_mcp/client.py:275-279 — waits go through client._sleep, not a patched stdlib function",
+        "grep request.keywords|pytest_runtest_call|item.keywords|getaddrinfo|_REAL_ in tests/ — no hit (negative control: pattern fires on 'if \"live\" in request.keywords:')"
+      ],
+      "gaps": [
+        "No suite-wide guard hook that fails a live test whose resolver/env is stubbed; protection rests on per-module override by fixture name",
+        "Stubbing fixtures do not self-exempt via `if 'live' in request.keywords`; a live test added in any other module would run against 203.0.113.10 with key 'test-key'",
+        "No reference value captured at import and no counter-probe",
+        "Live tests have never run, so reaching the source is not demonstrated"
+      ],
+      "evaluator_notes": "The concrete trap of the Belegfall is avoided today (fixtures overridden, verified with --fixtures-per-test), and the DNS stub is on an own seam (net._resolve) rather than socket. Only 1 of the applicable criteria is met; guard, hook, reference value and counter-probe are absent. Advisory check. (Caller's note 'CHANGELOG against code' belongs to DRIFT-006 in the catalogue and is judged there.)",
+      "remediation": "Add `if 'live' in request.keywords: return` to api_key and _pin_dns in conftest.py; add a pytest_runtest_call hook in conftest.py that fails a live test when net._resolve is not the original captured at import or DISCOVER_SWISS_KEY == 'test-key'; add a counter-probe test file.",
+      "effort": "S"
+    },
+    "FID-001": {
+      "status": "partial",
+      "category": "FID",
+      "severity": "critical",
+      "evidence": [
+        "probes/PROBE_REPORT_discover-swiss-mcp.md:70-89 — Default-Matrix (top, project list/search, Accept-Language, categoryVersion, select, datasource, updatedSince, deleted, resultsPerPage, facets[].name, searchFields) with measured values (top 10/5/1000, resultsPerPage default 10, searchFields 53/7/15)",
+        "src/discover_swiss_mcp/client.py:822-830 — /search always sends project as array and select; project re-imposed after caller body",
+        "src/discover_swiss_mcp/client.py:932-944 — list endpoints always send project, top=200 (overridden to 1000 by fallback), select, includeCount on first page",
+        "src/discover_swiss_mcp/client.py:660-666 — Accept-Language and categoryVersion always explicit",
+        "src/discover_swiss_mcp/tools.py:1050-1052, 1212-1214, 1425-1427 — resultsPerPage/currentPage explicit on every search body",
+        "src/discover_swiss_mcp/tools.py:492, 1059-1060 — `applied` field in every paged response carries the scope actually sent (incl. default_type_exclusion)",
+        "tests/test_client.py:45-64, tests/test_tools.py:195-205, tests/test_tools_p3.py:630-631, tests/test_client.py:163-166 — regression tests hold project, resultsPerPage, select, top=1000, includeCount",
+        "Spec extraction (probes/probe_out/openapi.json, run in this audit) — optional params of POST /search FacetRequest (count, scope default 'current', project), /vertices/{id} includeAllPhotos ('otherwise images with low confidence will be skipped'), Accept-Timezone header are not in the matrix"
+      ],
+      "gaps": [
+        "Default-Matrix is hand-written, not derived from the spec: FacetRequest members (count/scope/project), includeAllPhotos on /vertices, Accept-Timezone are missing; completeness over all optional params of the used endpoints is not shown",
+        "Recall delta for list `project` (undocumented partner default) was not measured, only 'works without'",
+        "resolve_area requests the containedInPlace/id facet with count=30 (client.py:1028); an exact area name ranked beyond the top 30 is reported as 'No area is named exactly' (client.py:1079) — the truncation is not visible in the result",
+        "Live canaries (tests/test_live.py) that would re-measure recall have never been executed; empirical evidence is the 2026-09-17 probe only",
+        "Accept-Language header is not regression-tested"
+      ],
+      "evaluator_notes": "Every restricting default the probe found (top, project, resultsPerPage, select, facet names) is sent explicitly and pinned by unit tests; the sent scope is exposed in `applied`. The matrix is not shown to be complete against the spec, one deliberate truncation (area facet count 30) is invisible, and no live re-measurement has run. Criterion 6 (scope-widening fallback) not applicable: no vocabulary-based widening.",
+      "remediation": "Generate the Default-Matrix from probes/probe_out/openapi.json for /search (incl. FacetRequest), /vertices/{id} and the list endpoints and add the missing rows; when resolve_area finds no exact match among the 30 facet values, say in the hint that only the top 30 areas by content were compared (or page the facet); add a test for Accept-Language; run tests/test_live.py once with a key and record the values.",
+      "effort": "S"
+    },
+    "FID-002": {
+      "status": "partial",
+      "category": "FID",
+      "severity": "high",
+      "evidence": [
+        "probes/PROBE_REPORT_discover-swiss-mcp.md:128-135 — Ground truth zuerich.com 1'481 vs API datasource=zht-cms 1'596, delta +8 % explained (curated categories, region, camping)",
+        "probes/PROBE_REPORT_discover-swiss-mcp.md:93-98, 193 — reference counts Landesmuseum 53, Grindelwald 37, Wanderung 529, hotels 3'093, tours 223, webcams 73",
+        "probes/PROBE_OPEN_discover-swiss.md:9-12 — list vs search cross-check: /tours Glarnerland 117 = 117, /civicStructures Zürich 232 = 232",
+        "tests/test_live.py:127-247 — recall floors (about half of measured) under pytestmark live (test_live.py:60) for search, find_accommodation, find_tours, webcams_near, explore_area, find_events, sourcePartner=zht",
+        "tests/test_live.py:116 — _assert_live refuses a degraded answer as a measurement"
+      ],
+      "gaps": [
+        "The only web-UI comparison (zuerich.com) was made against list endpoints (datasource=zht-cms), not against the /search query endpoint the tools use",
+        "Reference queries (Landesmuseum, Grindelwald, Wanderung) have API counts only; no UI count at the same time, so no per-query delta exists",
+        "Live recall canaries exist but have never been executed (no key in CI, not run locally per task brief) — per §2.6 this is todo, not evidence",
+        "No canary for the zht-cms ground-truth total (probe report line 135 proposes 'datasource=zht-cms gesamt >= 1200'; test_live.py:225-236 uses sourcePartner facet >= 600 instead)"
+      ],
+      "evaluator_notes": "3-5 reference queries with floors at half the measured value exist and cover query endpoints; one UI ground truth with an explained delta exists but on list endpoints. The query-level UI comparison and any execution of the canaries are missing.",
+      "remediation": "Measure 3 reference queries on the discover.swiss/zuerich.com UI and via search_impl on the same day, record the delta table in README Known limitations, and run `pytest -m live -rA` once; keep the output with the audit.",
+      "effort": "S"
+    },
+    "FID-003": {
+      "status": "partial",
+      "category": "FID",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/tools.py:171-199 — per-tool empty hints with concrete next steps (match='all', drop types, near instead of locality, explore_area; 'Do not conclude a place is absent from one empty result')",
+        "src/discover_swiss_mcp/tools.py:653-694 — _paged_hint separates nothing-matched / past-the-end / all-withheld (with per-reason counts)",
+        "src/discover_swiss_mcp/tools.py:208-222, 697-705 — degraded states carry their own hint ('This says nothing about whether matching objects exist'), not the empty-set hint",
+        "src/discover_swiss_mcp/server.py:211-222 — AuthorizationError/UpstreamRejectedError/NotFoundError become ToolError ('not an empty result — do not conclude anything about the data')",
+        "src/discover_swiss_mcp/server.py:157-158 — server instructions: 'An empty result carries a hint — follow it before concluding that something does not exist'",
+        "Registered description webcams_near (server.py:307): 'Outside Eastern Switzerland this tool returns nothing — say so and do not invent a webcam.'",
+        "Runtime probe (scratchpad, respx): GET /vertices/eve_400 answering HTTP 400 -> get_details returns detail=None with hint 'Unknown identifier...' (tools.py:1127-1130 catches UpstreamRejectedError, which client.py:807 raises for every non-auth 4xx and client.py:896-899 for a non-object payload)"
+      ],
+      "gaps": [
+        "get_details masks an upstream 4xx rejection (and a non-object payload) as 'Unknown identifier' — a failure reaches the model as a statement about the data (tools.py:1127-1130)",
+        "5xx/timeouts/429 and a refused /search end as well-formed results with returned=0 and `degraded` set, not in the error channel (tools.py:1066-1073 etc.); mitigated by the degraded field and its own hint, but the criterion asks for the error channel",
+        "webcams_near description (server.py:307) licenses a conclusion from an empty result ('returns nothing — say so') instead of pointing to the hint/retry",
+        "Only search's description has an explicit 'follow the hint before concluding'; get_details, find_accommodation, find_tours, explore_area descriptions do not say that no guessed answer may replace a missing hit"
+      ],
+      "evaluator_notes": "Empty-result diagnostics are strong and specific; transport failures carry a separate degraded marker. The concrete defect is get_details turning any non-auth 4xx into 'Unknown identifier', plus one description that pre-explains an empty result. MRTR/input_required criteria not applicable (grep for input_required in src/ empty; server does not return it).",
+      "remediation": "In get_details catch UpstreamRejectedError only for the local identifier-pattern gate (raise a distinct exception there) and let upstream 4xx propagate to _fail; move the empty-result sentence of webcams_near into _webcams_empty_hint and replace it with 'Empty result: follow the hint'; add a one-line 'do not substitute a guess for a missing hit' to every data tool description.",
+      "effort": "S"
+    },
+    "FID-004": {
+      "status": "partial",
+      "category": "FID",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/tools.py:1041 — match='name' sends searchFields=name; match='all' sends nothing and relies on the index default",
+        "probes/PROBE_REPORT_discover-swiss-mcp.md:89 — narrowing measured live: 'vegetarisch' 136 all / 0 name; 'Landesmuseum' 53 / 7 / 15",
+        "tests/test_live.py:255-272 — live canary asserts name < all and name >= 3",
+        "tests/test_tools.py:204 — unit test pins that searchFields is not sent for match='all'",
+        "src/discover_swiss_mcp/server.py:232 — description names the default explicitly: 'matches whole words in name AND descriptions by default (match=\\'all\\')'",
+        "src/discover_swiss_mcp/tools.py:130-149 — tour `kind` mapping from measured leafType/categoryTree sets (PROBE_TOURKINDS)"
+      ],
+      "gaps": [
+        "match='all' is expressed by omitting searchFields, i.e. inheriting the upstream default rather than sending the full field set; a change of that default would narrow silently",
+        "The live canary proving the narrowing has never been executed; only the 2026-09-17 probe measured the effect"
+      ],
+      "evaluator_notes": "No multi-flag parameter group (Field.* style) exists; the closest is searchFields, whose narrowing effect is measured and documented. Remaining gaps are reliance on the API default for 'all' and an unexecuted live check.",
+      "remediation": "Send an explicit searchFields list for match='all' (the measured searchable fields) or keep the omission but add the upstream default to the Default-Matrix with a live canary that runs; run test_match_name_narrows_the_search once.",
+      "effort": "S"
+    },
+    "FID-005": {
+      "status": "fail",
+      "category": "FID",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/tools.py:285-286 — query field: 'Whole words only: \\'Landesmuseum\\' matches, \\'Landesmus\\' and parts of compounds do not.'",
+        "Registered search description (list_tools, whitespace-normalised): '...matches whole words in name AND descriptions... Compounds are not found by their parts.' — granularity stated in the tool, not only README",
+        "Registered descriptions scanned with /lucene|wildcard|\\*|fuzzy|operator|syntax/ (negative control fired on 'Lucene syntax: * wildcard'): search has no query-language or operator mention (only hit '*' is 'excluded_*', 'fuzzy' is 'No fuzzy match' for locality)",
+        "Registered find_events description (server.py:292): 'if it returns nothing, name a regional event calendar rather than concluding nothing is on'",
+        "Registered webcams_near description (server.py:307): 'Outside Eastern Switzerland this tool returns nothing — say so and do not invent a webcam.'",
+        "grep probes/*.md probes/*.py for wildcard|lucene|searchMode|prefix — no probe of query syntax; 'Landesmus' appears only in tools.py:285 (claim unmeasured)"
+      ],
+      "gaps": [
+        "The query language of searchText is not named, and it is not stated whether operators (*, ?, ~, quotes, AND/OR) work or are ignored; the probe never tested it",
+        "The whole-word/compound claim is not backed by a probe measurement and has no concrete German compound example with a working alternative",
+        "No live test for wildcard/prefix behaviour; no documentation of escaping or invalid-syntax behaviour",
+        "Session rule violated: two tool descriptions (find_events, webcams_near) explain/handle an empty result set, which belongs in the hint"
+      ],
+      "evaluator_notes": "Matching granularity is in the tool description (criteria 3 and 6 met), but the query syntax is neither named nor probed, operators are unknown, and two descriptions carry empty-result explanations. 2 of 6 criteria met.",
+      "remediation": "Probe /search searchText with 'Landesmus*', 'Landesmus', '\"Landesmuseum Zürich\"', 'Landesmuseum~' and record counts; state the outcome in the search/query description (e.g. 'plain words, no wildcard' or 'Lucene: * ? ~ work'); add a live test; move the empty-result sentences of find_events and webcams_near into EVENTS_EMPTY_HINT/_webcams_empty_hint.",
+      "effort": "S"
+    },
+    "FID-006": {
+      "status": "fail",
+      "category": "FID",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/client.py:848-850 — `payload = payload if isinstance(payload, dict) else {}`; facets likewise default to {}",
+        "src/discover_swiss_mcp/client.py:858-861 — `values` defaults to [] when the key is missing or not a list",
+        "src/discover_swiss_mcp/client.py:947-950 — list endpoints: `data` defaults to [] silently",
+        "src/discover_swiss_mcp/client.py:483-490 — facet_values returns [] for an absent facet",
+        "grep SchemaError|UpstreamSchema|UnexpectedPayload|StructureError in src/ — no hits (negative control: pattern fires on 'class UpstreamSchemaError')",
+        "Runtime probe (scratchpad, respx): /search answering {'count':53,'value':[...]} (root key shifted) -> search_impl returns returned=0, upstream_count=53, degraded=None, hint 'No hit. Try: ...' (the FID-003 empty hint); control with 'values' returns 1 hit",
+        "src/discover_swiss_mcp/client.py:896-899 — get_vertex does reject a non-object payload (only confirmation present)"
+      ],
+      "gaps": [
+        "Root paths (values, data, facets) are not confirmed; a structural change becomes a valid empty result with the wildcard-style empty hint",
+        "Fields read from hits (identifier, name, dataGovernance.origin, address.addressLocality, geo, lastModified) are never confirmed on the first entry",
+        "No structure error type; error messages cannot name the keys that actually arrived",
+        "No test holds structure/field names against a real response (live canaries unexecuted; unit fixtures come from recorded probes, which pin the 2026-09 shape but not today's)"
+      ],
+      "evaluator_notes": "The recorded-probe fixtures are good, but the reader silently defaults on every root path; the runtime probe shows a shifted payload surfacing as 'No hit' with upstream_count 53. Criterion 5 (only what is touched) and case normalisation are moot since nothing is confirmed. Advisory check.",
+      "remediation": "Add UpstreamSchemaError; in search()/list_endpoint() require 'values'/'data' (and 'facets' when facets were requested) and confirm identifier+name on values[0], raising with sorted(payload) keys; map it to a ToolError in server._fail; add a unit test with a shifted payload and a live structure canary.",
+      "effort": "S"
+    },
+    "FID-007": {
+      "status": "partial",
+      "category": "FID",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/tools.py:546-553 — _int_or_none: non-integers become None, never 0",
+        "src/discover_swiss_mcp/tools.py:1240-1242, 1439-1443 — stars and length converted only when numeric, else None",
+        "src/discover_swiss_mcp/tools.py:2195 and client.py:479 — facet counts: int or None, not 0",
+        "src/discover_swiss_mcp/client.py:552-571 — totals read only when int",
+        "src/discover_swiss_mcp/client.py:519-523 — filter_by_distance: `except (KeyError, TypeError, ValueError): continue` drops rows with non-numeric coordinates, uncounted"
+      ],
+      "gaps": [
+        "List fallback with `near`: rows whose geo is missing/non-numeric are dropped without a counter; upstream_count (tools.py:1020) is computed after the drop, so the result cannot say how many were excluded or in which direction the count deviates (the 'except ValueError: continue' anti-pattern)",
+        "No live test of which non-numeric values the source actually uses in numeric fields"
+      ],
+      "evaluator_notes": "The server computes no sums of source values, and every numeric conversion maps non-numbers to None rather than 0. The only silent exclusion is the fallback distance filter. Criteria on suppression-marker lists and the counter-probe are not applicable (the source has no suppression markers). Advisory check.",
+      "remediation": "Count rows dropped for missing/invalid coordinates in _scan_lists and expose it (e.g. applied['rows_without_coordinates']) with a hint that they are not in the result.",
+      "effort": "S"
+    },
+    "HITL-006": {
+      "status": "pass",
+      "category": "HITL",
+      "severity": "high",
+      "evidence": [
+        "src/ — grep 'sampling/createMessage|create_message|elicitation/create|elicit|roots/list|list_roots' → no hit (control fires on 3/3 lines); no server-initiated requests",
+        "src/ — grep 'input_required|inputRequests|inputResponses|requestState' → no hit (control fires); no tool returns input_required, so no pre-question side effects exist",
+        "src/discover_swiss_mcp/server.py:170-179 — all 8 tools readOnlyHint=True, destructiveHint=False, idempotentHint=True; write_capable false — the Modus-4 retry test is not mandatory",
+        "src/discover_swiss_mcp/tools.py:327-330, 384+, 433+ — missing inputs (e.g. radius without near, accommodation without near/locality) are ordinary validation errors (tests/test_tools.py:510-512), not input_required — criterion 7 respected",
+        "src/discover_swiss_mcp/server.py:200-222 — failures surface as ToolError (isError), not as input requests"
+      ],
+      "gaps": [
+        "Criteria on inputResponses validation, requestState correlation and idempotency tests are not applicable (MRTR not used; read-only)"
+      ],
+      "evaluator_notes": "The server uses neither the removed server-initiated flows nor MRTR, and all tools are read-only and idempotent, so a retry cannot duplicate side effects. Evidence: two verified-negative greps with controls, read-only annotations, and validation-error handling for missing input.",
+      "remediation": "",
+      "effort": ""
+    },
+    "IDENT-001": {
+      "status": "not_verified",
+      "category": "IDENT",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/client.py:52 — USER_AGENT = f\"discover-swiss-mcp/{__version__} (+https://github.com/...)\"",
+        "src/discover_swiss_mcp/client.py:46 — __version__ imported from the package root (importlib.metadata, see IDENT-002)",
+        "src/discover_swiss_mcp/client.py:648, 662 — the single httpx.AsyncClient; USER_AGENT is the only UA source (grep AsyncClient|User-Agent|USER_AGENT over src/)",
+        "Normalised literal search grep -rniE 'discover[-_]?swiss[-_]?mcp/[0-9]+\\.[0-9]' src/ -> no hit (exit 1); control multi-line 'DiscoverSwissMCP/0.1.0' matches",
+        "Runtime (checkout install): DiscoverSwissClient.request_headers()['User-Agent'] == 'discover-swiss-mcp/0.1.0 (+...)', installed version 0.1.0",
+        "Supplementary: wheel built from HEAD, installed with --no-cache-dir into an empty venv -> USER_AGENT 'discover-swiss-mcp/0.1.0 (+...)'"
+      ],
+      "gaps": [
+        "Not measurable on the index artefact: https://pypi.org/pypi/discover-swiss-mcp/json -> 404 (control swiss-culture-mcp -> 200); the check requires resolution from the index-installed package, a clean repository is explicitly not evidence"
+      ],
+      "evaluator_notes": "Source side meets every source criterion (f-string from __version__, single client, normalised literal search with control, multi-strategy: literal search + module attribute + locally built wheel). The primary mode needs a published distribution, which does not exist (pre-release) — per the check's probe table that is not_verified.",
+      "remediation": "After the first release: install discover-swiss-mcp==<version> from PyPI into an empty venv and read the UA (published_probe.py).",
+      "effort": "S"
+    },
+    "IDENT-002": {
+      "status": "partial",
+      "category": "IDENT",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/__init__.py:9-18 — __version__ = importlib.metadata.version('discover-swiss-mcp'), PackageNotFoundError fallback '0.0.0+source'",
+        "grep -rnE '__version__\\s*=\\s*\"[0-9]+\\.[0-9]' src/ | grep -v '+' -> no hit; control '__version__ = \"0.1.0\"' matches",
+        "grep -rnE '__version__\\s*==\\s*\"[0-9]+\\.[0-9]|==\\s*\"v?[0-9]+\\.[0-9]+\\.[0-9]+\"' tests/ -> no hit; control 'assert __version__ == \"0.3.0\"' matches",
+        "src/discover_swiss_mcp/__init__.py — imports no submodule, so no circular-import ordering risk",
+        "Runtime: import discover_swiss_mcp -> __version__ 0.1.0 == pyproject.toml:7"
+      ],
+      "gaps": [
+        "No version invariant test: tests/test_smoke.py:18-20 only asserts __version__ is a non-empty string; nothing compares __version__ with server.json or pyproject.toml",
+        "Consequently no detuned-server.json counter-test, no editable-install hint in a failure message, no skip-without-install behaviour",
+        "Observation outside the criteria: src/discover_swiss_mcp/server.py:147-161 builds MCPServer without version=__version__; serverInfo.version on the wire is '' (stdio initialize from the wheel-installed entry point returned {'name': 'discover_swiss_mcp', 'version': ''})"
+      ],
+      "evaluator_notes": "5 of 10 criteria met: derivation is correct and literal-free, but no test holds the invariant, so the check's own counter-test cannot exist.",
+      "remediation": "Add tests/test_version.py: assert __version__ == json.loads(server.json)['version'] and == tomllib pyproject version (skip on '+source'), message mentions re-running pip install -e .; detune server.json once to see it fail. Pass version=__version__ to MCPServer.",
+      "effort": "S"
+    },
+    "IDENT-003": {
+      "status": "partial",
+      "category": "IDENT",
+      "severity": "medium",
+      "evidence": [
+        "server.json:5 version 0.1.0 and server.json:15 packages[0].version 0.1.0 == pyproject.toml:7 0.1.0 (IDENT-003 Modus-1 script: both OK)",
+        "scripts/validate_repo.py:394-402 — CI (ci.yml:70-71) raises ERROR on pyproject vs server.json top-level version drift; stdlib-only script (imports ast/json/re/subprocess/sys/pathlib)",
+        "Counter-test in scratch copy: server.json version -> 9.9.9 gives '[A4] Versionsdrift' and exit 1",
+        "scripts/check_release_artifacts.py:124-143 + publish.yml:38-42 — release gate compares server.json/pyproject and tag vs built version; a workflow_dispatch from a branch makes tag 'main' != version and stops the release",
+        "grep -n \"sed -i|jq '\\.|yq -i|::set-output|GITHUB_REF_NAME\" .github/workflows/ -> only publish.yml:42 (passes the tag to the checker); publish.yml overwrites no committed value"
+      ],
+      "gaps": [
+        "packages[*].version is not enforced by CI: counter-test with packages[0].version = 9.9.9 -> validate_repo.py '0 ERROR, 0 WARN', exit 0 (check_release_artifacts.py:124-128 also compares only the top-level version)",
+        "Published side cannot be read back: nothing published to PyPI or the MCP registry yet, and publish.yml has no registry step, so server.json is not shipped by the pipeline"
+      ],
+      "evaluator_notes": "Pipeline overwrites nothing, so the 'overwritten value' criteria are vacuous; committed values agree and the top-level field is CI-enforced. The package-entry version is exactly the half-bump case the check warns about and is unguarded.",
+      "remediation": "Extend check_server_json in validate_repo.py (and check_release_artifacts.py) to loop over data.get('packages', []) and error on any packages[i].version != pyproject version.",
+      "effort": "S"
+    },
+    "IDENT-004": {
+      "status": "partial",
+      "category": "IDENT",
+      "severity": "low",
+      "evidence": [
+        "README.md:7 and README.de.md:5 — shields badge version-0.1.0 == pyproject.toml:7 (check script: both OK; control pattern extracts 0.0.9 from a test badge)"
+      ],
+      "gaps": [
+        "No CI enforcement against pyproject: validate_repo.py C8 compares against the CHANGELOG release heading, is WARN-only, and returns silently when there is none (scripts/validate_repo.py:566-576); counter-test with README.de.md badge 0.0.9 -> '0 ERROR, 0 WARN', exit 0",
+        "Hence no counter-test where a reverted badge breaks the check with exit 1"
+      ],
+      "evaluator_notes": "2 of 4 criteria met: both badges are currently correct and both READMEs were checked, but nothing enforces it; pre-release the existing gate cannot fire.",
+      "remediation": "Compare README badges against pyproject version inside check_server_json (same run as the server.json check) and report ERROR; verify with a reverted badge.",
+      "effort": "XS"
+    },
+    "IDENT-005": {
+      "status": "pass",
+      "category": "IDENT",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/__init__.py:14-18 — except PackageNotFoundError: __version__ = \"0.0.0+source\" (PEP 440 local segment)",
+        "src/discover_swiss_mcp/__init__.py:15-17 — comment explains why no plausible-looking number is used"
+      ],
+      "gaps": [],
+      "evaluator_notes": "Marker matches the portfolio convention exactly. The drift-check criterion and '# pragma: no cover' do not apply: the repo has no src version-literal drift check and no coverage gate.",
+      "remediation": "",
+      "effort": ""
+    },
+    "IDENT-006": {
+      "status": "partial",
+      "category": "IDENT",
+      "severity": "high",
+      "evidence": [
+        "https://pypi.org/pypi/discover-swiss-mcp/json -> 404, control https://pypi.org/pypi/swiss-culture-mcp/json -> 200 (comparison took place: code NOT_ON_INDEX)",
+        "git tag --list -> 0 tags; git ls-remote --tags origin -> none: no tag missing from the index",
+        "pyproject.toml:7 version 0.1.0; README.md:21-27 'pre-release ... Release | none; version 0.1.0 is not published'; README.md:36-38 release gate = written search confirmation from discover.swiss",
+        "CHANGELOG.md:8-11 — [Unreleased] 'Not released. Release gate: ...' describes exactly the unreleased state",
+        ".github/workflows/publish.yml:5-9 — publish pipeline exists (tag push v*, workflow_dispatch)",
+        "IDENT-007 answered separately (not_verified)"
+      ],
+      "gaps": [
+        "Never published (NOT_ON_INDEX): no index version and no release tag",
+        "User-facing work has been unreleased for more than 7 days: 'P1: complete client layer' committed 2026-09-18 (8 days), followed by P2/P3 feature commits",
+        "Release procedure (bump, tag vX.Y.Z, pypi environment approval) is not described in README or CONTRIBUTING; only the release gate condition is"
+      ],
+      "evaluator_notes": "4 of 7 criteria met. The gap is deliberate and documented (release held until discover.swiss confirms the search entitlement), and the release process is set up rather than missing, so this is NOT_ON_INDEX by design, not a forgotten publish. It stays a finding until the first release.",
+      "remediation": "Document the release steps (bump pyproject/server.json, CHANGELOG section, tag v0.1.0, approve the pypi environment, verify from the index) in CONTRIBUTING.md; publish as soon as the entitlement gate clears.",
+      "effort": "S"
+    },
+    "IDENT-007": {
+      "status": "not_verified",
+      "category": "IDENT",
+      "severity": "high",
+      "evidence": [
+        "https://pypi.org/pypi/discover-swiss-mcp/json -> 404 (control swiss-culture-mcp -> 200): no published distribution; per the check, the probe reports not_applicable and IDENT-006 NOT_ON_INDEX is the relevant question",
+        "Supplementary, not a substitute: wheel built from HEAD installed with --no-cache-dir into an empty venv -> import ok (0.1.0); resolved mcp==2.2.0, httpx==0.28.1, pydantic==2.13.5, structlog==26.1.0; entry point discover-swiss-mcp answered initialize, tools/list (8 tools) and tools/call source_status (isError=false, api_key_configured=false)",
+        "pyproject.toml:34-37 — mcp>=2,<3 and structlog<27 upper bounds (the DEP-001 cause of this failure class is closed)"
+      ],
+      "gaps": [
+        "Index artefact cannot be installed or started: nothing on PyPI",
+        "No recurring scheduled run that installs and starts the published package: no workflow with 'schedule:' in .github/workflows/"
+      ],
+      "evaluator_notes": "The check applies only to a published artefact; none exists. A locally built wheel installs and runs in an empty venv, which is evidence about the build, not about the index.",
+      "remediation": "After the first release run shipped_probe.py (or the four manual steps) against the PyPI artefact and add a scheduled workflow that repeats it.",
+      "effort": "S"
+    },
+    "OBS-001": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:200-222 — _fail() logs the original, re-raises a masked ToolError; SDK turns ToolError into CallToolResult isError=true",
+        "src/discover_swiss_mcp/server.py:236-242 — every tool body wrapped in try/except Exception -> _fail (same pattern at 251-257, 266-272, 281-287, 296-302, 311-317, 326-332, 341-349)",
+        "src/discover_swiss_mcp/tools.py:697-705,708-716 — operational states (quota_exhausted, upstream_unreachable, search_unavailable) returned as structured result with degraded+hint, never as JSON-RPC error",
+        "src/discover_swiss_mcp/tools.py:387, 275, 1641-1643 — input validators raise ValueError naming the field; arrive as execution errors",
+        "runtime (in-memory Client, mcp 2.2.0): search params.page=-5 -> is_error=True, text names 'params.page' and 'greater than or equal to 1'; find_accommodation without near/locality -> is_error=True, 'Give `near` or `locality`'",
+        "runtime (real stdio, python -m discover_swiss_mcp): tools/call no_such_tool -> result isError=true 'Unknown tool: no_such_tool', NOT a JSON-RPC error object",
+        "tests/test_server.py:179-188 — missing key: execution-error path tested (is_error True, message names DISCOVER_SWISS_KEY)",
+        "tests/test_server.py:191-196 — invalid argument returns is_error True and makes no upstream call",
+        "grep -rnE '-320[2-9][0-9]|-3200[0-9]|-3201[0-9]|-32002' src/ -> no hit (exit 1); control 'code=-32021' matches -> no custom codes in the reserved range"
+      ],
+      "gaps": [
+        "Unknown tool is answered as a tool result with isError=true instead of a JSON-RPC protocol error (-32601); this is mcp 2.2.0 MCPServer behaviour (exceptions.py docstring: SDK raises ToolError for unknown tool names), but the server does not override it — pass criterion 'standardised codes for protocol-level errors' not met",
+        "No test covers the protocol-error path (unknown tool); grep for no_such_tool/unknown tool/-32601 in tests/ returns nothing",
+        "Upstream-unreachable/quota states are returned as isError=false results with degraded+hint rather than isError=true; model-actionable, but deviates from the check's table (API down -> isError:true)"
+      ],
+      "evaluator_notes": "7 of 9 criteria met. Classification of execution vs validation errors is correct and tested (SEP-1303 satisfied). The protocol-error side is missing: unknown tool comes back as isError result (SDK default) and no test pins the protocol-error path.",
+      "remediation": "Add a test that calls an unknown tool and asserts the observed contract; if the target is spec conformance, map unknown-tool to a JSON-RPC -32601 (e.g. raise MCPError in a call_tool override) or document the SDK behaviour as accepted. Optionally set isError=true alongside degraded for upstream_unreachable/quota states.",
+      "effort": "S"
+    },
+    "OBS-002": {
+      "status": "pass",
+      "category": "OBS",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:210 — log.exception('tool_execution_failed') keeps the original with traceback in the server log only",
+        "src/discover_swiss_mcp/server.py:211-222 — client-facing message is one of four fixed sentences; generic 'An unexpected internal error occurred; the details are in the server log.'",
+        ".venv mcp 2.2.0 mcp/server/mcpserver/tools/base.py:158,210 — SDK masks any non-ToolError crash to 'Error executing tool <name>' (structural equivalent of mask_error_details=True)",
+        "runtime: search_impl patched to raise RuntimeError('psycopg: relation /var/secret/db.sqlite failed; key=...') -> tool result text 'Error executing tool search: search: An unexpected internal error occurred; the details are in the server log.' (path/secret absent); original only in stderr log event tool_execution_failed",
+        "src/discover_swiss_mcp/config.py:297, 311-313, 315-328 — key held as SecretStr, unwrapped only into the outbound header; safe_summary() logs 'set'/'missing'",
+        "tests/test_smoke.py:60-68, 71-84 — key absent from repr/str/model_dump/log events",
+        "grep -rnE 'traceback|format_exc|exc_info' src/ -> only logging_config.py:44 format_exc_info (log renderer) and a comment at client.py:1120; no traceback in tool returns"
+      ],
+      "gaps": [],
+      "evaluator_notes": "All five criteria met. Masking is done twice (server _fail + SDK UnexpectedToolError); originals only in the stderr log; key cannot reach logs via Settings. Validation errors echo the caller's own input_value (pydantic text), which is not server internals.",
+      "remediation": "",
+      "effort": ""
+    },
+    "OBS-003": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "medium",
+      "evidence": [
+        "pyproject.toml:37 — structlog>=24.1.0,<27 in [project].dependencies",
+        "src/discover_swiss_mcp/logging_config.py:68-82 — structlog JSONRenderer, add_log_level, ISO timestamp",
+        "src/discover_swiss_mcp/logging_config.py:93-95 — tool_logger binds tool name and a fresh correlation_id per call; used at server.py:236,251,266,281,296,311,326,341",
+        "grep of logger/log calls in src/: info (12), warning (6), error (4), exception (1); no debug",
+        "grep -rnE '\\bprint\\(|sys\\.stdout' src/ -> no hit (exit 1); control 'print(\"hi\")' matches",
+        "runtime: stderr lines are single JSON objects with event/level/timestamp fields (server start)"
+      ],
+      "gaps": [
+        "Only three distinct severities in use (info, warning, error/exception); debug is never emitted — criterion 'at least 4 levels (debug, info, warning, error)' not met",
+        "Bound context has tool + correlation_id but no session_id / client identity"
+      ],
+      "evaluator_notes": "3 of 5 criteria fully met (structured logger dep, JSON output, no print); level coverage and session binding short.",
+      "remediation": "Add debug-level events at useful points (cache hit/miss, request params after sanitisation) and bind the MCP session/request id from ctx in tool_logger.",
+      "effort": "S"
+    },
+    "OBS-004": {
+      "status": "pass",
+      "category": "OBS",
+      "severity": "critical",
+      "evidence": [
+        "src/discover_swiss_mcp/logging_config.py:62 — logging.basicConfig(stream=sys.stderr, ...)",
+        "src/discover_swiss_mcp/logging_config.py:78 — structlog logger_factory=structlog.PrintLoggerFactory(file=sys.stderr) (stderr-bound equivalent of WriteLoggerFactory)",
+        "src/discover_swiss_mcp/server.py:354-356 — configure_logging() runs in main() before the transport branch: same config for stdio and streamable-http",
+        "grep -rnE '\\bprint\\(|sys\\.stdout' src/ --include='*.py' -> no hit (exit 1); negative control 'print(\"hi\")' matches (exit 0)",
+        "runtime: real stdio session (initialize, notifications/initialized, tools/list, 2x tools/call) against python -m discover_swiss_mcp -> 4 stdout lines, every line parses as JSON-RPC; control: a junk line 'hello' raises JSONDecodeError in the same parser",
+        "runtime: 6 s start with stdin held open -> stdout 0 bytes, stderr carries JSON log lines"
+      ],
+      "gaps": [],
+      "evaluator_notes": "Inspector-equivalent check done with a real stdio handshake instead of npx inspector. All criteria met.",
+      "remediation": "",
+      "effort": ""
+    },
+    "OBS-007": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/client.py:735-743 — network failure after retries: UpstreamUnavailableError(f'discover.swiss is not reachable ({type(exc).__name__}).') from exc — type named, cause chained, no str(exc)",
+        "src/discover_swiss_mcp/client.py:725-728 — total-budget timeout message names the budget, chained from exc",
+        "src/discover_swiss_mcp/client.py:745, 801 — retry log events carry path, reason=type(exc).__name__ / status, delay",
+        "runtime (respx, side_effect ConnectTimeout(''), ReadTimeout(''), ConnectError('')): messages 'discover.swiss is not reachable (ConnectTimeout).' etc., __cause__ is the original type; 5xx exhaustion -> 'discover.swiss answered HTTP 503.'",
+        "src/discover_swiss_mcp/tools.py:208-222, 697-705 — outward direction masked: the model sees fixed DEGRADED_HINTS, not the exception text"
+      ],
+      "gaps": [
+        "Messages after exhausted retries do not state the number of attempts (client.py:737, 743, 796, 800)",
+        "Unreachable/5xx messages name the service ('discover.swiss') but not the endpoint path; path is only in the per-retry log events",
+        "No test pins the message for str(exc)=='' — tests/test_client.py:258-269 use ConnectError('no route')/ReadTimeout('slow') and only assert 'discover.swiss' in the message"
+      ],
+      "evaluator_notes": "5 of 7 criteria met. The dangerous pattern (f'...: {exc}') is absent; type and cause survive empty httpx messages (verified at runtime). Missing: attempt count, endpoint in final message, and a test holding the text.",
+      "remediation": "Include attempts and path in the final message, e.g. f'discover.swiss not reachable after {retry_index+1} attempts: {type(exc).__name__} (path={path})', and add a respx test with httpx.ConnectTimeout('') asserting type name, path, attempt count and __cause__.",
+      "effort": "S"
+    },
+    "OBS-008": {
+      "status": "partial",
+      "category": "OBS",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:117-134 — settings load, client construction and server.list_tools() happen before logger.info('Server lifespan started', ...); explanatory data in separate fields",
+        "runtime: stdin held open (sleep 8 | timeout 6 python -m discover_swiss_mcp) -> exit 124, stderr: {\"...\", \"event\": \"Server lifespan started\", \"level\": \"info\", \"timestamp\": ...}; stdout 0 bytes",
+        "runtime: stdin=/dev/null -> marker line, then 'Server lifespan stopped', exit 0 (clean EOF shutdown, not a crash)",
+        "negative control: DISCOVER_SWISS_MCP_TRANSPORT=bogus and DISCOVER_SWISS_MCP_PORT=abc -> ConfigError traceback on stderr (measurement setup lets output through)",
+        "tests/test_smoke.py:71-84 — exact equality on event == 'Server lifespan started' asserted",
+        "No SDK banner on stderr; marker has no timestamp/PID/port inside the event field"
+      ],
+      "gaps": [
+        "Marker is not documented in README.md/README.de.md: grep -niE 'marker|bereitschaft|ready|lifespan started' finds only unrelated hits (README.md:231, 269) — criterion 'documented in README in the compared spelling' not met",
+        "With closed stdin the process exits 0 after the marker instead of staying up (check expects exit 124); marker still appears within 6 s"
+      ],
+      "evaluator_notes": "8 of 9 criteria met; the ready marker is correct in form and position and pinned by an exact-equality test, but it is not a documented contract.",
+      "remediation": "Add one line to both READMEs: 'Ready marker (stderr, JSON field `event`): `Server lifespan started`'.",
+      "effort": "S"
+    },
+    "OPS-001": {
+      "status": "fail",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "tests/conftest.py:24, 87-96 — respx router bound to the pinned base URL for all unit tests",
+        "tests/test_live.py:60 — pytestmark = pytest.mark.live",
+        "pyproject.toml:72-75 — 'live' marker registered",
+        ".github/workflows/ci.yml:66-67 — pytest -m \"not live\"",
+        "runtime: pytest -m 'not live' -> 215 passed, 18 deselected; unit call sites per tool >= 5 (search 21, get_details 9, find_accommodation 6, find_tours 8, find_events 9, webcams_near 5 tests, explore_area 8, source_status 7)",
+        "tests/test_live.py:135-323 — 18 live canaries covering 7 of 8 tools"
+      ],
+      "gaps": [
+        "No live test for source_status (grep over tests/test_live.py: no source_status)",
+        "No separate nightly or manual live-test workflow: .github/workflows contains only ci.yml and publish.yml",
+        "No test-specific credential: live suite reads DISCOVER_SWISS_KEY from the environment (test_live.py:84-90); no LIVE_TEST secret",
+        "No live workflow, hence no timeout-minutes bound for it",
+        "Live suite builds a fresh DiscoverSwissClient per test (function-scoped fixture tests/test_live.py:99-104): cache unused, retry ladder repeated per test on outage",
+        "Live suite uses production timeouts (REQUEST_TIMEOUT 20 s, TOTAL_BUDGET 25 s, client.py:235,248); no tighter test values"
+      ],
+      "evaluator_notes": "5 of 11 criteria met (< half). Unit side is solid (respx, marker, CI exclusion); the live side exists but runs only manually, with per-test clients and production timeouts, and misses one tool.",
+      "remediation": "Add .github/workflows/live.yml (schedule + workflow_dispatch, timeout-minutes: 10, secret LIVE_TEST_DISCOVER_SWISS_KEY), make the live client session-scoped (pytest_asyncio fixture scope/loop_scope='session') with tighter timeouts, and add a source_status canary.",
+      "effort": "M"
+    },
+    "OPS-002": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "medium",
+      "evidence": [
+        "README.md:47-66 — 'Anchor demo queries', three concrete natural-language questions with tool chains (docs/DEMO.md)",
+        "README.md:124-132 — Installation (git clone + pip install -e); README.md:151 Available Tools; README.md:240-252 Configuration table",
+        "README.md:220-238 — Known limitations, 12 numbered items",
+        "README.md:321-326 — License (software MIT, data per provider)",
+        "README.de.md:45,122,150,221,241,317,323 — same top-level section set in German (Anker-Abfragen, Installation, Verfügbare Tools, Bekannte Einschränkungen, Konfiguration, Sicherheit, Lizenz)",
+        "CHANGELOG.md:1-8 — Keep a Changelog header, [Unreleased] with ### Added"
+      ],
+      "gaps": [
+        "No ASCII/Mermaid architecture diagram: README 'Architecture decision' (README.md:197-218) is prose; the only box-drawing characters are the file tree (README.md:254-275); grep for ┌|└|▼|mermaid|--> finds nothing else (control '┌──┐' matches)",
+        "Security section (README.md:315-319) only links SECURITY.md; data class, auth model and trifecta assessment are not stated there",
+        "CONTRIBUTING.md is English only; no CONTRIBUTING.de.md"
+      ],
+      "evaluator_notes": "4 of 7 criteria met. Anchor demo, limits, bilingual parity and changelog format are good; diagram, security summary and bilingual CONTRIBUTING missing.",
+      "remediation": "Add a one-screen ASCII data-flow diagram (client -> stdio/HTTP -> server -> net.safe_request -> api.discover.swiss) to both READMEs, extend the Security section with data class (public open data), auth model (BYO upstream key, no client auth, local only) and trifecta rating, and add CONTRIBUTING.de.md.",
+      "effort": "S"
+    },
+    "OPS-003": {
+      "status": "fail",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:170-179 — all 8 tools annotated readOnlyHint=True, destructiveHint=False",
+        "tests/test_server.py:103-108 — test asserts read_only_hint True / destructive_hint False for every tool",
+        "grep -rnE 'destructiveHint.*True' src/ -> no hit"
+      ],
+      "gaps": [
+        "No phase declaration: grep -iE 'phase|roadmap|read.only.first' over README.md, README.de.md, CHANGELOG.md, docs/*.md -> no hit (control 'Phase 1' matches). The P1-P4 labels in commits/CHANGELOG are build milestones, not OPS-003 phases",
+        "No roadmap file (find for *phase*/*roadmap* outside .venv -> none)",
+        "No documented phase-transition prerequisites (audit run, ISDS, DSG record)",
+        "Phase transitions not recorded in CHANGELOG"
+      ],
+      "evaluator_notes": "1 of 5 criteria met: the server is de facto Phase 1 (read-only, verified), but the phase is not declared and there is no roadmap or gate.",
+      "remediation": "Add a '## Phase' section to both READMEs ('Phase 1: read-only wrapper' with status table) and docs/roadmap.md listing Phase 1 completion items and Phase 2/3 prerequisites; note the declaration in CHANGELOG.",
+      "effort": "S"
+    },
+    "OPS-004": {
+      "status": "not_verified",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "audits/2026-09-26T022147-Z-discover-swiss-mcp/ contains only audit-meta.json, checks-local/, raw/ — no audit-report.md or findings/ yet (this is step 4 of the run)",
+        "probes/PROBE_REPORT_discover-swiss-mcp.md:195 — '## 9. Offene Punkte' (repo-side reports do keep an open-points section)"
+      ],
+      "gaps": [
+        "The object of this check (audit-report.md with Gemessen/Geschlossen/Offen, findings) is produced by a later step and cannot be evaluated here"
+      ],
+      "evaluator_notes": "Looked for the report structure in the audit directory; it does not exist yet. For the raw results written in this step: every pass carries positive file:line or runtime evidence with a negative control, and unmeasurable items (published artefact) are recorded as not_verified rather than pass. Must be re-evaluated against the final report.",
+      "remediation": "",
+      "effort": ""
+    },
+    "OPS-005": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        ".github/workflows/ci.yml:3-7, 53-71 — committed workflow on push+pull_request runs ruff check ., ruff format --check ., pytest -m 'not live', validate_repo.py",
+        "grep -nE 'continue-on-error|if:\\s|\\|\\| true' .github/workflows/*.yml -> no hit (exit 1); control line matches",
+        "Pipe grep only hits YAML block scalars 'run: |' (publish.yml:30,39); their bodies contain no shell pipes",
+        "grep for commented-out gates (deaktiviert|disabled|TODO|vorerst) in workflows -> no hit",
+        "ruff check . / ruff format --check . cover src, tests, scripts; probes/ excluded with rationale (pyproject.toml:78-83); lint select pinned (pyproject.toml:92-97)",
+        "runtime: pytest -q -rs -> 215 passed, 18 skipped, all skips 'DISCOVER_SWISS_KEY is not set' in test_live.py (credential, not dependency; CI deselects them)"
+      ],
+      "gaps": [
+        "Copied portfolio scripts are only format-stable at the local line-length 100: ruff format --check --line-length {88,110,120} scripts/ fails for validate_repo.py, check_release_artifacts.py, gen_tool_hashes.py, p2/p3 run scripts; no CI step enforces multi-width stability",
+        "validate_repo.py C8 version-anchor check is silent without a release heading (scripts/validate_repo.py:566-576): 'not checked' collapses into 'OK'. Counter-test in a scratch copy: README.de.md badge set to 0.0.9 -> '0 ERROR, 0 WARN', exit 0",
+        "No in-repo evidence that gates were verified in both directions (no documented counter-test)"
+      ],
+      "evaluator_notes": "7 of 10 criteria met. Pipeline runs everything on push/PR with no silent-failure constructs; gaps are width-scoped copies, a gate that cannot fire pre-release, and undocumented gate counter-tests.",
+      "remediation": "Add a CI step looping ruff format --check --line-length 88/100/110/120 over the copied scripts (after reformatting them to a width-stable form), make C8 emit INFO 'not checked: no release heading' instead of returning silently, and record gate counter-tests in CONTRIBUTING.",
+      "effort": "S"
+    },
+    "OPS-006": {
+      "status": "pass",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "pyproject.toml:49-55 — ruff==0.16.4 pinned exactly in the dev extra, with rationale comment",
+        ".github/workflows/ci.yml:48-54 — CI installs via pip install -e \".[dev]\", i.e. exactly that pin; comment forbids a second pin",
+        ".github/workflows/ci.yml:56-62 — lint and format gates judge by exit code, not output text",
+        "No second pin location: no .pre-commit-config.yaml, Makefile or .devcontainer (ls/grep)",
+        "git log -S 'ruff==' -> pin introduced in b53a500 (scaffold), no silent bumps since",
+        "Audit-side: which -a ruff -> .venv/bin/ruff 0.16.4 first in PATH (== pin); /root/.local/bin/ruff 0.15.8 and /usr/local/bin/ruff 0.16.4 also present, local verdicts taken with the pinned binary; pip index shows latest 0.16.9, so the pin is real"
+      ],
+      "gaps": [],
+      "evaluator_notes": "Pin lives in the CI install path with a reason, one location only, gates read exit codes. Criteria 6/8/9 (text counting, pin-sync step) are not applicable because there is only one pin and no output parsing.",
+      "remediation": "",
+      "effort": ""
+    },
+    "OPS-007": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "medium",
+      "evidence": [
+        "pyproject.toml:38-41 and tests/test_smoke.py:94-105 — Windows support is claimed implicitly (tzdata for win32, 'Fix start on Windows' commit 160fd7f)",
+        "grep -rnE '^\\s*[a-z].*(&&|\\|\\|)' README*.md CONTRIBUTING*.md docs/*.md -> no hit (exit 1); control 'pip install x && y' matches",
+        "Search covered README.md, README.de.md, CONTRIBUTING.md, docs/*.md (all instruction files, incl. German)"
+      ],
+      "gaps": [
+        "Platforms are named nowhere: no Windows/macOS/Linux statement in README/CONTRIBUTING, pyproject has no 'Operating System' classifier, CI matrix is ubuntu-latest only (ci.yml:25)",
+        "Bash-only commands without a PowerShell counterpart while Windows is implicitly supported: README.md:137, 288; README.de.md:135, 289; docs/DEMO.md:13 'export DISCOVER_SWISS_KEY=...'; README.md:143 'DISCOVER_SWISS_MCP_TRANSPORT=streamable-http python -m ...' (env-prefix syntax)",
+        "No paired PowerShell/POSIX blocks"
+      ],
+      "evaluator_notes": "3 of 6 criteria met (no && chaining, search scope, counter-check done); the implicit Windows claim is not matched by the documented commands.",
+      "remediation": "State supported platforms once in the README and add PowerShell equivalents ($env:DISCOVER_SWISS_KEY = '...'; $env:DISCOVER_SWISS_MCP_TRANSPORT = 'streamable-http') next to each export block in README.md, README.de.md and docs/DEMO.md.",
+      "effort": "S"
+    },
+    "OPS-008": {
+      "status": "fail",
+      "category": "OPS",
+      "severity": "medium",
+      "evidence": [
+        "grep -c \"<<\" .github/workflows/*.yml -> 0 for ci.yml and publish.yml; control \"python - <<'PY'\" matches -> no heredoc guard in any workflow",
+        ".github/workflows/ci.yml:70-71, publish.yml:38-42 — judging logic lives in scripts/validate_repo.py and scripts/check_release_artifacts.py, called by exit code",
+        "tests/test_server.py:88-95,148-154 — scripts/gen_tool_hashes.py is loaded and exercised by a test"
+      ],
+      "gaps": [
+        "The two extracted guards that decide red/green have no tests: grep -rl 'validate_repo|check_release_artifacts' tests/ -> no hit",
+        "State set incomplete: validate_repo.py C8 returns silently when CHANGELOG has no release heading (scripts/validate_repo.py:566-576); counter-test with a detuned badge -> exit 0, no warning",
+        "No documented mutation counter-test for the guards"
+      ],
+      "evaluator_notes": "2 of 5 criteria met. The core rule (no judging heredocs in workflows) holds, but the extracted guards are untested and one of them collapses 'not checked' into 'OK'.",
+      "remediation": "Add tests/test_scripts.py covering validate_repo.py (server.json drift -> ERROR, badge drift, missing release heading -> explicit 'not checked') and check_release_artifacts.py (tag mismatch, missing marker, description > 100), each run once against a deliberately broken input.",
+      "effort": "S"
+    },
+    "OPS-009": {
+      "status": "partial",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "tests/conftest.py:109-111 — probe_fixture() loads recorded upstream responses from probes/ ('The probes are the reference, not a mock')",
+        "Recorded fixtures used in tests: /search (probes/probe_out/search_dsod-content_1.json, _4.json; probe_verify_out/f1_odata.json, f5_facet.json, f3_webcam_sg.json), /vertices (probe_detail_out/detail_civic_landesmuseum.json, detail_hotel_interlaken.json), list endpoints (probe_out/raw_first_page_dsod-content_accommodations.json, probe_open_out/select_row_webcams.json)",
+        "probes/PROBE_VERIFY_discover-swiss.md:3, PROBE_DETAIL_discover-swiss.md:3, PROBE_OPEN_discover-swiss.md:3, PROBE_REPORT_discover-swiss-mcp.md:3 — recording date per probe run (2026-09-17 / 2026-09-23) and base URL",
+        "probes/probe_verify.py:30-52 — recording script writes request body, status and response per file; probe_open.py, probe_detail.py, probe_license.py, probe_tour_kinds.py likewise",
+        "/status is only ever 204 without body; tests mock httpx.Response(204) (tests/test_client.py:464,474)"
+      ],
+      "gaps": [
+        "43 hand-written json_response({...}) literals in tests shape external endpoints (e.g. tests/test_client.py:49, 135, 159, 213, 227, 362) rather than constructing out-of-source edge cases",
+        "No live test compares a recorded fixture's field set against the live source (test_live.py canaries check counts/floors only)",
+        "No counter-test showing an invented response would be rejected by such a comparison",
+        "The re-record path is implicit (scripts in probes/); CONTRIBUTING.md:16-20 says the probe is the truth but gives no command to refresh"
+      ],
+      "evaluator_notes": "4 of 7 criteria met. Fixture provenance is unusually good (dated probe runs, scripts that recorded them, tests load them); missing is the live field-level drift test and the removal of skeleton literals for real endpoints.",
+      "remediation": "Add a live test that loads e.g. probe_out/search_dsod-content_1.json and asserts set(recorded values[0]) == set(live values[0]) on the fields tools.py reads, plus an offline counter-test with an invented payload; document 'python probes/probe_verify.py' as the refresh path in CONTRIBUTING; replace endpoint-shaped literals with trimmed recorded payloads where they stand for real answers.",
+      "effort": "M"
+    },
+    "OPS-010": {
+      "status": "fail",
+      "category": "OPS",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/client.py:275-279 — own seam _sleep = asyncio.sleep; tests/conftest.py:75-84 patches client_module._sleep, not asyncio",
+        "Mutation counter-tests run by the auditor on a scratch copy (PYTHONPATH pointed at the copy, verified via module __file__): M0 control RETRY_DELAYS (2,4,8)->(1,4,8): 1 failed (method fires); M2 egress allow-list disabled (net.py 'if False and host not in EGRESS_ALLOWLIST'): 1 failed; M3 POST redirect gate disabled: 1 failed; M4 key rendered in safe_summary: 1 failed",
+        "tests/test_client.py:385 — monkeypatch.setattr(client_module.time, 'monotonic', ...) patches the stdlib time module process-wide; re-read by the report author at bd0e371 (step 4 gate: third observation moved from gaps into evidence)"
+      ],
+      "gaps": [
+        "Surviving mutation M1: TOTAL_BUDGET = 25.0 -> 1e9 (client.py:248) — 215 passed. The wall-clock budget has no test at all, under fake or real time",
+        "tests/test_client.py:385 — monkeypatch.setattr(client_module.time, 'monotonic', ...) patches the stdlib time module process-wide (client_module.time is time); the event loop clock reads time.monotonic too",
+        "No test guards the _sleep seam (no assertion that real asyncio.sleep still waits)",
+        "No documentation of which test turns red per central assurance, no dated counter-test record, nothing in CONTRIBUTING.md (grep gegenprobe|mutation|negative control over tests/ and CONTRIBUTING.md -> no hit)"
+      ],
+      "evaluator_notes": "2 of 8 criteria met (counter-counter-test by the auditor; surviving mutation now on record). The suite does catch egress, redirect and secret regressions, but the wall-clock budget is unguarded and one test patches a foreign module globally.",
+      "remediation": "Add a real-time test: respx side_effect sleeping 1 s with TOTAL_BUDGET monkeypatched to 0.05 on the client module, asserting UpstreamUnavailableError within <0.5 s; replace the time.monotonic patch with an own seam (_monotonic = time.monotonic in client.py); add a test that asyncio.sleep(0.05) still takes >=0.04 s under the sleeps fixture; document the counter-test procedure and results in CONTRIBUTING.md.",
+      "effort": "M"
+    },
+    "SCALE-008": {
+      "status": "pass",
+      "category": "SCALE",
+      "severity": "high",
+      "evidence": [
+        ".venv/.../mcp/shared/inbound.py:447-472 (mcp 2.2.0) — modern ladder compares MCP-Protocol-Version, Mcp-Method == body.method and Mcp-Name == params.name for tools/call, prompts/get, resources/read (inbound.py:72-76), before dispatch; code HEADER_MISMATCH = -32020 (mcp_types.jsonrpc)",
+        "src/discover_swiss_mcp/server.py:364-368 — the server serves the SDK's streamable_http_app unmodified, so the ladder is on its only HTTP path",
+        "runtime (audit, 127.0.0.1:18766): (a) Mcp-Method tools/call + Mcp-Name get_details with matching body → HTTP 200, tool result returned",
+        "runtime (audit): (b) Mcp-Name get_details, body name 'search' → HTTP 400, error code -32020 'mcp-name header does not match…' (tool not executed)",
+        "runtime (audit): (c) no Mcp-Method/Mcp-Name → -32020; (c2) Mcp-Method present, Mcp-Name missing on tools/call → -32020 — missing headers are rejected, not filled from the body",
+        "negative control: same grep pattern 'mcp-method|mcp-name|HeaderMismatch|-32020' finds the implementation in the SDK (inbound.py:63,66,458-472) while src/ has 0 hits — the enforcement is SDK-provided"
+      ],
+      "gaps": [
+        "No in-repo test pins the header-mismatch behaviour; a future SDK change within mcp>=2,<3 would go unnoticed — low",
+        "Outgoing-header, gateway and reverse-proxy criteria not applicable (no outbound MCP calls, no gateway/proxy)"
+      ],
+      "evaluator_notes": "Enforcement comes from mcp 2.2.0 and is verified at runtime with the required pair (matching served, mismatching rejected with -32020) plus missing-header rejection. Server code does not bypass it.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SCALE-009": {
+      "status": "pass",
+      "category": "SCALE",
+      "severity": "high",
+      "evidence": [
+        "src/ — grep 'sse_app|SseServerTransport|/sse|EventSourceResponse|mount|add_route' → no hit; src/discover_swiss_mcp/server.py:364-368 serves only mcp.streamable_http_app",
+        "runtime (audit, shipped streamable-http transport on 127.0.0.1:18770): GET /sse → 404, POST /messages/ → 404",
+        "negative control (audit): same curl against a deliberately mounted mcp.sse_app() on 127.0.0.1:18769 → 200 with SSE headers — the probe detects an open legacy path",
+        "README.md:111,142-143 — Streamable HTTP named as the HTTP transport; SSE not offered",
+        "src/discover_swiss_mcp/config.py:48,106 — transport restricted to Literal['stdio','streamable-http']; 'sse' is a ConfigError"
+      ],
+      "gaps": [
+        "No shipped remote instance exists (local-only deployment), so the check was run against the local start — which is the shipped artefact here",
+        "Deployment-config criterion vacuous: no deployment configuration exists"
+      ],
+      "evaluator_notes": "The legacy HTTP+SSE transport cannot be selected and is not served; verified with a positive control. Date/hardening criteria apply only to an open path.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SCALE-010": {
+      "status": "partial",
+      "category": "SCALE",
+      "severity": "medium",
+      "evidence": [
+        "src/ — grep 'resources/(un)?subscribe|subscriptions/listen|subscriptionId|toolsListChanged|notifications/progress|report_progress|ctx\\.info|list_changed' → no hit (control fires on 3 control lines)",
+        "runtime (audit): initialize (2025-11-25) response capabilities tools.listChanged=false, prompts.listChanged=false, resources.listChanged=false, resources.subscribe=false",
+        "runtime (audit): resources/subscribe → -32601 Method not found",
+        "runtime (audit): GET /mcp with MCP-Protocol-Version 2026-07-28 → 405, Allow: POST"
+      ],
+      "gaps": [
+        "README does not state that the server emits no change notifications (criterion 1 requires one sentence, not silence)",
+        "The SDK's backward-compatible 2025-11-25 session path still serves a server-initiated GET stream: after a legacy initialize, GET /mcp with mcp-session-id → 200 text/event-stream (runtime). Modern GET is 405; the legacy stream is SDK compat behaviour, not server code"
+      ],
+      "evaluator_notes": "The server has no notification or subscription mechanism (code grep with control, capabilities, Method-not-found) and the modern GET answers 405. The README is silent on notifications and the legacy-era GET stream remains reachable for 2025-11-25 clients → partial.",
+      "remediation": "Add one README sentence under the protocol/transport section: 'This server sends no list-changed or resource notifications; tools are static.' Optionally note that legacy (2025-11-25) sessions still get the SDK's GET stream, or disable legacy protocol support if only 2026-07-28 clients are targeted.",
+      "effort": "S"
+    },
+    "SDK-001": {
+      "status": "pass",
+      "category": "SDK",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:103-104 — @asynccontextmanager async def app_lifespan(server: MCPServer)",
+        "src/discover_swiss_mcp/server.py:147-161 — MCPServer(..., lifespan=app_lifespan)",
+        "src/discover_swiss_mcp/server.py:125,135-140 — one DiscoverSwissClient per process, closed via await client.aclose() in finally",
+        "src/discover_swiss_mcp/client.py:644-650 — the only httpx.AsyncClient(...) in src/, created lazily once and reused; tools obtain it via ctx.request_context.lifespan_context (server.py:189)"
+      ],
+      "gaps": [],
+      "evaluator_notes": "Lifespan with asynccontextmanager, cleanup in finally, shared HTTP client; single-server setup so AsyncExitStack is not applicable.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SDK-002": {
+      "status": "pass",
+      "category": "SDK",
+      "severity": "medium",
+      "evidence": [
+        "pyproject.toml:36 — pydantic>=2 (installed 2.13.5)",
+        "src/discover_swiss_mcp/server.py:231,246,261,276,291,306,321,336 — every tool annotated with a Pydantic response model (SearchResponse, DetailResponse, …, SourceStatusResponse)",
+        "src/discover_swiss_mcp/models.py:33-53 — shared Envelope with source, provenance (Literal['live_api','cached','list_fallback']), retrieved_at, hint, excluded_* counters; tools.py:480-496 paged responses add upstream_count/returned/hits",
+        "src/discover_swiss_mcp/tools.py:468,492,496,500,513 — list/dict defaults via Field(default_factory=…); tests/test_server.py:131-140 assert output_schema and envelope fields for all tools"
+      ],
+      "gaps": [
+        "models.py:43-44 — degraded is 'str | None' though its values are enumerable (quota_exhausted, upstream_unreachable, search_unavailable); should be a Literal (low)"
+      ],
+      "evaluator_notes": "Structured Pydantic v2 returns with a consistent envelope (results named hits, count as upstream_count/returned) and output schemas; one enumerable field is typed as str.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SDK-003": {
+      "status": "partial",
+      "category": "SDK",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:231,246,261,276,291,306,321,336 — every tool declares ctx: Context",
+        "src/discover_swiss_mcp/server.py:200-222 — failures logged (log.exception) to stderr and raised as masked ToolError, not swallowed; logging_config.py:32,48 stderr",
+        "grep 'report_progress' src/ → 0; grep 'ctx.(info|warning|error)' src/ → 0 (control: pattern hits .venv/.../mcp/server/mcpserver/context.py)",
+        "runtime: logging/setLevel → -32601 (no handler); server never sends notifications/message (no ctx logging calls)"
+      ],
+      "gaps": [
+        "No ctx.report_progress on paths that can exceed 2 s: list fallback up to FALLBACK_MAX_CALLS sequential calls (tools.py:846-871), retry ladder/429 waits up to 25–55 s (client.py:248,772)",
+        "No test demonstrating that no notifications/message is emitted for a request without logLevel (trivially true today, not held by a test)"
+      ],
+      "evaluator_notes": "Context is injected everywhere and logging correctly targets stderr per the 2026-07-28 baseline; progress reporting for the long fallback/retry paths is missing.",
+      "remediation": "Pass ctx into the fallback scan / retry waits and call await ctx.report_progress(i, total, message) per list page and before each retry sleep.",
+      "effort": "S"
+    },
+    "SDK-006": {
+      "status": "pass",
+      "category": "SDK",
+      "severity": "high",
+      "evidence": [
+        "find . -name pyproject.toml (excluding .venv) → only ./pyproject.toml; pyproject.toml:34 'mcp>=2,<3'",
+        "grep 'mcp.server.fastmcp|from fastmcp import|FastMCP(' src/ tests/ → 0; src/discover_swiss_mcp/server.py:27-28 import from mcp.server.mcpserver (MCPServer, Context, ToolError) (negative control fires on scratch file)",
+        "grep settings writes 'mcp.settings.x =' src/ tests/ → 0 (control fires); bind params go as kwargs: server.py:364-368 uvicorn.run(mcp.streamable_http_app(host=…), host=…, port=…)",
+        "grep camelCase attribute reads '.readOnlyHint' etc. src/ tests/ → 0 (control fires); tests/test_server.py:106-108 read read_only_hint/open_world_hint/destructive_hint",
+        "runtime: DISCOVER_SWISS_MCP_TRANSPORT=streamable-http → 'Uvicorn running on http://127.0.0.1:8765', tools/list 200",
+        "no lockfile; .github/workflows/ci.yml:54 pip install -e '.[dev]' resolves within <3 (installed mcp 2.2.0); pytest -m 'not live' → 215 passed"
+      ],
+      "gaps": [],
+      "evaluator_notes": "Migration to mcp 2.x is complete: bound anchored at 2, new module path, no settings writes, snake_case reads, network start works.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SEC-002": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/discover_swiss_mcp/client.py:652-666 — request_headers() builds every upstream header from settings only (Ocp-Apim-Subscription-Key via settings.auth_header, User-Agent, Accept, Accept-Language from the Literal-validated `lang`, categoryVersion); no inbound value is copied",
+        "src/discover_swiss_mcp/config.py:59-61 — auth_header is the single place the server-owned BYOK key is unwrapped; the key comes from DISCOVER_SWISS_KEY (config.py:91), not from any client request",
+        "src/ — grep 'request\\.headers|Authorization|headers\\.get\\(|ctx\\.request_context\\.request' finds no read of inbound request headers (only net.py:146 reads the upstream response Location header); pattern verified to fire on a control line",
+        "runtime (audit probe, in-process uvicorn on 127.0.0.1:18780 with net.safe_request patched to capture outbound headers): tools/call source_status sent with 'Authorization: Bearer ATTACKER-TOKEN', 'Cookie', 'Mcp-Param-Evil' → HTTP 200; 3 upstream calls captured, header names [accept, accept-language, categoryversion, ocp-apim-subscription-key, user-agent], authorization/cookie absent, ATTACKER nowhere, subscription key == operator key (positive control: the capture does see the real key header)",
+        "runtime: /.well-known/oauth-protected-resource → 404; no inbound auth layer exists on the streamable-http transport"
+      ],
+      "gaps": [
+        "No inbound token verification exists at all, so the aud/iss/RFC 8707 criteria (1, 2, 5, 6) are not implemented — the HTTP transport is unauthenticated",
+        "Consequence of the above: any caller that can reach the HTTP port spends the operator's BYOK subscription key (runtime probe: unauthenticated call → upstream request with operator key). Mitigated by the loopback default bind, not by a control",
+        "No user identity propagation (criterion 4) — single-user server, no identity to propagate"
+      ],
+      "evaluator_notes": "The passthrough prohibition itself is satisfied with positive code and runtime evidence: client tokens never reach discover.swiss; upstream uses the server's own key. The audience/issuer criteria are unmet because the server accepts no inbound token at all. Counted as partial rather than pass because 4 of 7 criteria (aud check, 401 on wrong audience, iss validation, server-side issuer mapping) have no implementation; the practical exposure is bounded by the 127.0.0.1 default.",
+      "remediation": "Document in README/SECURITY.md that the HTTP transport has no inbound authentication and must stay on loopback; if it is ever exposed beyond loopback, add inbound bearer auth (TokenVerifier with aud/iss validation against server-side configured values, 401 on mismatch) before serving tools, and keep the upstream key server-owned as today.",
+      "effort": "M"
+    },
+    "SEC-003": {
+      "status": "fail",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/ — grep 'audience|aud|WWW-Authenticate|insufficient_scope|scope|oauth|jwt|Bearer|TokenVerifier|AuthSettings' finds only unrelated uses of the word 'scope' (tools.py:491 geographic scope, server.py:83-84 CacheHint scope='public'); no scope model, no per-tool scope check",
+        "runtime: GET /.well-known/oauth-protected-resource and /.well-known/oauth-protected-resource/mcp → 404 (control: GET /mcp on same server → 405, server was up)",
+        "runtime: POST /mcp with foreign Origin on loopback bind → HTTP 403 'Invalid Origin header' (criterion 7 met via SDK default)",
+        "src/discover_swiss_mcp/server.py:170-175 — all 8 tools annotated readOnlyHint=True, destructiveHint=False (single read-only capability class)"
+      ],
+      "gaps": [
+        "No scope hierarchy defined and no per-tool scope requirements",
+        "No per-call scope validation and no 403 + WWW-Authenticate insufficient_scope challenge",
+        "No RFC 9728 Protected Resource Metadata (/.well-known/oauth-protected-resource → 404)",
+        "Only the Origin→403 criterion is met (and only on loopback bind, via SDK default)"
+      ],
+      "evaluator_notes": "auth_model is API-Key (BYOK upstream key) and the HTTP transport has no inbound OAuth at all, so none of the scope criteria is implemented. Measured strictly against the pass criteria this is a fail (1 of ~10 met). Practical risk is low: all tools are read-only over public open data and the transport binds loopback by default; the catalogue's applies_when (auth_model != none) maps a BYOK upstream key onto an inbound-OAuth check — worth a catalogue/profile review.",
+      "remediation": "Either (a) record in README/SECURITY.md that the server has no inbound authorization and therefore a single implicit read-only scope, and keep HTTP loopback-only; or (b) if the HTTP transport is to be exposed, add OAuth resource-server support with a minimal read scope (e.g. data:read:public), per-tool scope checks returning 403 + WWW-Authenticate, and /.well-known/oauth-protected-resource.",
+      "effort": "L"
+    },
+    "SEC-004": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/discover_swiss_mcp/net.py:93-94 — scheme != 'https' raises EgressError before any request (test: tests/test_net.py:17-19)",
+        "src/discover_swiss_mcp/net.py:96-103 — host resolved once, every resolved IP checked against BLOCKED_NETWORKS before the request",
+        "src/discover_swiss_mcp/net.py:39-53 — blocklist: 0.0.0.0/8, 10/8, 100.64/10, 127/8, 169.254/16 (covers 169.254.169.254), 172.16/12, 192.168/16, ::1/128, fc00::/7, fe80::/10",
+        "src/discover_swiss_mcp/net.py:133-134 — safe_request re-runs the full check on every redirect hop; tests/test_net.py:75-87 (redirect off allow-list stopped)",
+        "tests/test_net.py:22-35 — parametrized block test for 127.0.0.1, 10.0.0.5, 192.168.1.1, 169.254.169.254, ::1 (215 offline tests pass)",
+        "runtime (audit): net._is_blocked_ip → 169.254.169.254 True, ::1 True, fe80::1 True, fd00::1 True (controls), but ::ffff:169.254.169.254 False, ::ffff:127.0.0.1 False, '::' False, 224.0.0.1 False, 198.18.0.1 False, 64:ff9b::a9fe:a9fe False"
+      ],
+      "gaps": [
+        "IPv4-mapped IPv6 answers bypass the blocklist: ::ffff:169.254.169.254 and ::ffff:127.0.0.1 are not blocked (ipaddress compares across versions as not-contained). Exploitation requires control of DNS for api.discover.swiss because the host allow-list (net.py:34, 95) restricts targets first — compensated, not closed",
+        "Unspecified (::), multicast (224.0.0.0/4), benchmark (198.18.0.0/15), reserved (240.0.0.0/4) and NAT64 (64:ff9b::/96) ranges not blocked",
+        "No egress proxy (criterion 5) — not applicable in practice: server is local-only, not production/cloud deployed"
+      ],
+      "evaluator_notes": "HTTPS enforcement, post-resolution IP check, metadata and IPv6 loopback/link-local blocking are all present with tests. The blocklist is range-based on the raw address and misses IPv4-mapped IPv6 forms of the blocked ranges — the 'IPv6-mapped' trick named in the check. Because the host allow-list admits only api.discover.swiss, the gap is not reachable via tool arguments, so it is rated below critical; still a gap in criterion 2/3 → partial.",
+      "remediation": "In _is_blocked_ip: unwrap ip.ipv4_mapped (and ip.sixtofour / NAT64 if desired) before the range check, and additionally reject ip.is_private, is_loopback, is_link_local, is_multicast, is_reserved, is_unspecified; add ::ffff:169.254.169.254 and ::ffff:127.0.0.1 to the parametrized test in tests/test_net.py.",
+      "effort": "S"
+    },
+    "SEC-005": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/net.py:75-84 — _resolve() calls loop.getaddrinfo once per hop; net.py:134 assert_url_allowed returns the checked IPs",
+        "src/discover_swiss_mcp/net.py:107-112,136 — _pin_url replaces the host with the checked IP (ips[0]); the TCP connection goes to the pinned IP",
+        "src/discover_swiss_mcp/net.py:137,144 — original hostname kept in Host header and passed as extensions={'sni_hostname': host}",
+        ".venv/.../httpcore/_async/connection.py:107,149-152 (httpcore 1.0.9) — sni_hostname becomes server_hostname for start_tls with httpx's default verifying SSL context, so certificate validation runs against api.discover.swiss, not the IP; src/ has no verify=/ssl overrides (grep, control fires on 'verify=False')",
+        "src/discover_swiss_mcp/client.py:648 — shared AsyncClient with follow_redirects=False so redirects go back through the pinned path",
+        "tests/test_net.py:55-72 — request goes to https://203.0.113.10/... with Host: api.discover.swiss",
+        "runtime (audit, socket.getaddrinfo patched to answer 203.0.113.10 then 169.254.169.254): safe_request → 204, getaddrinfo called exactly 1 time, Host header and sni_hostname = api.discover.swiss; control: two explicit _resolve calls → counter 2; the rebinding answer 169.254.169.254 on a fresh resolve → EgressError 'Blocked address'"
+      ],
+      "gaps": [
+        "The in-repo test monkeypatches net._resolve and asserts the pinned IP/Host, but no repo test counts DNS lookups per request (criterion 5 met only by this audit's runtime probe) — low"
+      ],
+      "evaluator_notes": "Resolve-once + pin + Host/SNI preservation is implemented in one function and verified at runtime with a counting resolver and a rebinding second answer. TLS verification is not disabled and uses the SNI hostname. The only shortfall is the missing in-repo lookup-count regression test, below check severity.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SEC-006": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/config.py:48 — Settings.transport default 'stdio'; config.py:105-106 — DISCOVER_SWISS_MCP_TRANSPORT defaults to 'stdio', anything other than stdio/streamable-http is a ConfigError",
+        "src/discover_swiss_mcp/server.py:358-370 — HTTP (uvicorn) only when settings.transport == 'streamable-http', else mcp.run() (stdio)",
+        "runtime (audit): `python -m discover_swiss_mcp` without transport env → 0 listening TCP sockets for the PID (/proc/<pid>/fd × /proc/net/tcp state 0A); control: same check on a streamable-http run → 1 listening socket",
+        "README.md:139-143 — stdio shown first ('stdio (Claude Desktop and other local clients)'), HTTP shown as explicit opt-in with 'binds to 127.0.0.1:8000 by default (localhost only)'",
+        "README.md:111 — 'Dual transport — stdio (Claude Desktop) and Streamable HTTP (cloud)'"
+      ],
+      "gaps": [
+        "README has no Claude Desktop / mcpServers configuration example for the local stdio use-case (criterion 3 only partly met)",
+        "README has no separate cloud-deployment section with security notes (criterion 4 unmet); the only network note is SECURITY.md:39-41, which references a host allow-list the code does not provide (see SEC-024)"
+      ],
+      "evaluator_notes": "Code-side criteria (stdio default, HTTP only via explicit env var, no port on default start — runtime verified with control) are met. The two documentation criteria are only partly met: local use is shown as a bare command, and HTTP is labelled '(cloud)' without any cloud section or security guidance.",
+      "remediation": "Add to README a 'Local use (Claude Desktop)' block with the full mcpServers JSON (command, args, env DISCOVER_SWISS_KEY) and a separate 'HTTP transport' section stating it is for loopback/local testing unless fronted by auth and a host allow-list, with the security caveats.",
+      "effort": "S"
+    },
+    "SEC-007": {
+      "status": "fail",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "repo — `find` for Dockerfile*, *compose*.y*ml, railway.toml, render.yaml, k8s/, helm/ (excluding .venv) returns nothing; control: same find expression matches ./pyproject.toml; `git ls-files | grep -iE 'docker|compose|k8s|helm|railway|render'` → no match (91 tracked files)",
+        "README.md:127-143 — only documented run mode is pip install -e + `python -m discover_swiss_mcp` directly on the host, with user privileges",
+        "src/ — no file-system tools (grep 'open\\(|Path\\(' in src/ → no file access), so criterion 6 is not applicable"
+      ],
+      "gaps": [
+        "No container image or sandbox of any kind: no non-root USER, no read-only root FS, no dropped capabilities, no seccomp profile (criteria 1-5 unmet)",
+        "Server runs as the local user with access to that user's files and environment (including DISCOVER_SWISS_KEY and any other secrets in the MCP host's env)"
+      ],
+      "evaluator_notes": "The check applies to local-stdio deployments. The server ships no sandboxing mechanism and documents none; all applicable criteria are unmet. Risk is moderated by a small dependency set and read-only, no-filesystem tool code, but that is not a sandbox.",
+      "remediation": "Ship a Dockerfile (python slim, non-root USER 10001, no secrets in layers) and document a stdio launch via `docker run -i --rm --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges -e DISCOVER_SWISS_KEY ghcr.io/.../discover-swiss-mcp` in the Claude Desktop config; alternatively document uvx-based isolation as the minimum and mark container use as recommended.",
+      "effort": "S"
+    },
+    "SEC-008": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "medium",
+      "evidence": [
+        "pyproject.toml:1-3 — hatchling build backend, no custom build hooks; pyproject.toml:58-59 — only a regular [project.scripts] entry point; no setup.py, no package.json (no pre/postinstall hooks possible)",
+        "README.md:125-130 — full install commands shown verbatim (git clone …; pip install -e \".[dev]\"); README.md:137-143 — full run commands",
+        ".github/workflows/publish.yml:56-59 — publish job in environment 'pypi' with id-token: write (OIDC Trusted Publishing); publish.yml:70 — pypa/gh-action-pypi-publish SHA-pinned v1.14.2 (generates PEP 740 Sigstore attestations by default); publish.yml:14-15 — default permissions contents: read",
+        ".github/workflows/publish.yml:38-42 — release gate checks the built artifact before upload",
+        "CONTRIBUTING.md — development setup (pip install -e .[dev], pytest, ruff, validate_repo)"
+      ],
+      "gaps": [
+        "CONTRIBUTING.md does not describe the release build (python -m build + check_release_artifacts.py) for independent verification — low",
+        "README installs from a git clone rather than showing the published-package command (uvx/pip install discover-swiss-mcp) and has no mcpServers config snippet — low"
+      ],
+      "evaluator_notes": "No install hooks, transparent commands, OIDC trusted publishing with attestations. The npm criterion is not applicable. Remaining gaps are documentation polish below medium.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SEC-013": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/config.py:45 — api_key held as pydantic SecretStr; config.py:59-61 — auth_header is the only unwrap; config.py:75 — safe_summary logs only 'set'/'missing'",
+        "src/discover_swiss_mcp/config.py:91 — key read from env var DISCOVER_SWISS_KEY only (Stufe 1, plain env var); no file-based config",
+        "tests/test_smoke.py:60-68 — asserts key absent from repr/str/model_dump_json/repr(client) and present only in the outbound header",
+        "SECURITY.md:12-25 — documents env-only storage, SecretStr masking, .gitignore coverage and 'rotate first' if pushed",
+        ".gitignore — ignores .env, .env.*, *.key, *.pem, credentials.json, secrets.yaml, config.local.*",
+        "src/discover_swiss_mcp/server.py:117-118 — settings loaded once per process in the lifespan; rotation = change env + restart, no code change"
+      ],
+      "gaps": [
+        "No secret-access audit (criterion 6): no secret manager and no log event for key use",
+        "Stufe-1 choice is documented in SECURITY.md but without the explicit justification the check asks for (data class Public Open Data, BYOK, local deployment) and not in a secret-management document",
+        "No reload mechanism without restart (TTL cache/reload); rotation requires a process restart — acceptable for local stdio but not what criterion 5 names"
+      ],
+      "evaluator_notes": "Data class is Public Open Data and deployment is local-only, so plain env var (Stufe 1) is acceptable provided it is documented. Key handling in code is exemplary (SecretStr, single unwrap, test). Container and region criteria are not applicable (no image, no secret manager). Audit trail is absent and the Stufe-1 rationale is implicit → partial.",
+      "remediation": "Add a short 'Secret management' section (README or docs/secret-management.md) stating Stufe 1 is used deliberately because the key is a personal BYOK key for public open data on a local process, how to rotate (portal → env → restart), and that a secret manager is required if the server is ever deployed shared/cloud.",
+      "effort": "S"
+    },
+    "SEC-016": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/discover_swiss_mcp/config.py:49 — Settings.host default '127.0.0.1'; config.py:129 — DISCOVER_SWISS_MCP_HOST env var, default '127.0.0.1'",
+        "src/discover_swiss_mcp/server.py:364-368 — settings.host passed both to mcp.streamable_http_app(host=…) and to uvicorn.run(host=…); the only network path",
+        "repo — grep for 0.0.0.0 host defaults in src/ and config files finds none (only net.py:42 '0.0.0.0/8' in the egress blocklist)",
+        "runtime (audit): default run → 'Uvicorn running on http://127.0.0.1:18766'; with DISCOVER_SWISS_MCP_HOST=0.0.0.0 → 'Uvicorn running on http://0.0.0.0:18767' (value reaches the listener)",
+        "README.md:142 and README.md:247 — default bind 127.0.0.1 documented, DISCOVER_SWISS_MCP_HOST listed"
+      ],
+      "gaps": [
+        "Non-loopback bind is silent: the 0.0.0.0 run logged no warning (only the lifespan INFO event carrying host=0.0.0.0), and there is no host allow-list to compensate (criterion 7 unmet)",
+        "README does not explain the local vs container differentiation or warn against 0.0.0.0 outside containers (criterion 6 unmet)",
+        "No deployment configuration exists in which an explicit 0.0.0.0 would live (criterion 5 not demonstrable; server is local-only)"
+      ],
+      "evaluator_notes": "Loopback default, configurable bind and propagation to both the app builder and the listener are verified by two start-log runs. The silent non-loopback bind is the substantive gap; combined with SEC-024 a 0.0.0.0 bind exposes an unauthenticated, host-unchecked endpoint without any log signal. Not critical because it requires an explicit operator opt-in.",
+      "remediation": "In main(): if settings.host not in ('127.0.0.1','localhost','::1') and no host allow-list is configured, log a WARNING naming the exposure; add a README 'Network binding' paragraph (loopback default; 0.0.0.0 only in containers, together with an allow-list).",
+      "effort": "S"
+    },
+    "SEC-018": {
+      "status": "partial",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/tools.py:260-269 — _PagedInput: extra='forbid', page ge=1 le=1000, page_size ge=1 le=MAX_PAGE_SIZE(50), lang Literal",
+        "src/discover_swiss_mcp/tools.py:278-330 — SearchInput: query max_length=200, types max_length=20 items, radius_km gt=0 le=200, locality max_length=100, match Literal; model_validator for radius/near",
+        "src/discover_swiss_mcp/tools.py:333-344 — GetDetailsInput extra='forbid', identifier min_length=1 max_length=128; client.py:226,879-880 — whitelist regex ^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$ applied before the upstream call, client.py:889 quote(safe='')",
+        "src/discover_swiss_mcp/tools.py:250-257 — GeoPoint lat/lon ranges, extra='forbid'; tools.py:2106-2143 ExploreAreaInput facets min_length=1 max_length=12",
+        "runtime (audit, HTTP transport): tools/call get_details with {params:{}} → HTTP 200, result isError=true with validation message (no crash, no upstream call); tests/test_server.py:191-196 asserts invalid input is rejected before any upstream call",
+        "runtime (audit, direct model): extra field → extra_forbidden; query 201 chars → string_too_long; page 1001 → less_than_equal"
+      ],
+      "gaps": [
+        "strict=True is not set on any input model: page='5' is coerced to 5 (runtime)",
+        "String fields have max_length but no whitelist pattern at the schema boundary; query and identifier accept control characters/NUL (runtime: 'test\\x00\\r\\ninject' accepted by SearchInput); identifier is only regex-checked later in client.get_vertex",
+        "List item strings (types, amenities, facets) have no per-item length/pattern: a 10'000-char types entry is accepted",
+        "No parametrized edge-case tests for too-long strings, unknown fields or control characters (existing tests cover page_size>50, radius without near, missing scope)"
+      ],
+      "evaluator_notes": "All tools take Pydantic models with extra='forbid' and numeric bounds; validation errors surface as isError. Missing strict mode, schema-level patterns and per-item constraints, plus thin edge-case tests, leave 3 of 7 criteria unmet → partial.",
+      "remediation": "Set model_config strict=True (keep str_strip_whitespace, extra='forbid') on all input models; add Annotated[str, StringConstraints(max_length=…, pattern=…)] for query/locality/region (reject C0 control chars), move the identifier regex into GetDetailsInput, and constrain list items (e.g. list[Annotated[str, StringConstraints(max_length=64, pattern=r'^[A-Za-z/]+$')]]); add a parametrized test for too-long, extra-field, control-char and coerced-type inputs.",
+      "effort": "S"
+    },
+    "SEC-019": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "SECURITY.md:27-35 — 'Scope and posture': read-only, no writes against discover.swiss, holds no user data; third-party text treated as untrusted input — the three Trifecta legs assessed in substance",
+        "src/discover_swiss_mcp/server.py:170-179 — every tool annotated readOnlyHint=True, destructiveHint=False, openWorldHint=True; tests/test_server.py:104 asserts it for all tools",
+        "src/discover_swiss_mcp/net.py:34 — egress limited to frozenset({'api.discover.swiss'}), enforced on every hop (net.py:95,134); no mail/webhook/arbitrary-POST capability (grep 'send_mail|smtplib|webhook' in src/ → none)",
+        "docs/LICENSES.md:3-9 and models.py — data class is public open tourism data; no private data source is read"
+      ],
+      "gaps": [
+        "The assessment is not labelled as a Lethal-Trifecta evaluation and lives in SECURITY.md rather than README/docs — low"
+      ],
+      "evaluator_notes": "Trifecta score 1 of 3: untrusted third-party content yes; private data no; external communication only to the single fixed data source (read queries). No ADR or allow-list sign-off required at this score. The posture is documented in SECURITY.md in substance.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SEC-020": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "critical",
+      "evidence": [
+        "src/ — grep -rnE 'os\\.system\\(|shell\\s*=\\s*True|\\beval\\(|\\bexec\\(|os\\.popen\\(|subprocess' → no hit (exit 1); negative control: same pattern hits 6/6 lines of a control file containing each construct",
+        "src/ — grep 'open\\(|Path\\(|pickle|yaml\\.load|__import__' → no file-system or dynamic-code use (importlib only for importlib.metadata.version in __init__.py:9-10)",
+        "src/discover_swiss_mcp/client.py:226,879-880 — the only user value that reaches a path is the identifier, checked against a whitelist regex; client.py:889 URL-quotes it with safe=''",
+        "tests/test_client.py:220-222 — '../../projects' identifier rejected with UpstreamRejectedError",
+        "src/discover_swiss_mcp/tools.py:260-344 — all tool args pass Pydantic schemas before use (see SEC-018)"
+      ],
+      "gaps": [
+        "No parametrized shell-injection suite (criterion 7) — moot because there is no subprocess/shell sink"
+      ],
+      "evaluator_notes": "No shell, subprocess, eval/exec or file-system sinks exist; the single path-bound value is whitelist-validated and quoted, with a traversal test. Subprocess-specific criteria are not applicable.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SEC-021": {
+      "status": "fail",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/net.py:34 — EGRESS_ALLOWLIST: frozenset[str] = frozenset({'api.discover.swiss'}) (immutable, not env-derived)",
+        "src/discover_swiss_mcp/net.py:67-72,95 — assert_host_allowed called inside assert_url_allowed; net.py:133-134 — runs before every outbound request and on every redirect hop; client.py:717 — the only outbound call site uses net.safe_request",
+        "tests/test_net.py:12-14 (non-allow-listed host rejected), tests/test_net.py:75-87 (redirect to evil.example stopped)",
+        "src/discover_swiss_mcp/config.py:127 — DISCOVER_SWISS_BASE_URL is configurable, but a different host still fails the frozenset check (net.py:95)",
+        "repo — no NetworkPolicy/SecurityGroup/compose/egress config (find + git ls-files, control fires on pyproject.toml); grep 'allow-list|allowlist|api\\.discover\\.swiss|egress' in README.md/README.de.md/docs/*.md/CHANGELOG.md → no documentation of the egress allow-list (only SECURITY.md:40, which is about the inbound host list)"
+      ],
+      "gaps": [
+        "No network-layer egress control (criterion 2) — none exists for the local process and none is documented as out of scope",
+        "Allow-listed host is not documented in README or docs (criterion 3); only the net.py docstring states it",
+        "No documented update procedure for allow-list changes (criterion 5)"
+      ],
+      "evaluator_notes": "The code layer is exemplary (frozenset, checked before every request and redirect hop, tested). But 3 of 5 applicable criteria (network layer, documentation, update procedure) are unmet → below half → fail by the rule. Remediation is mostly documentation; the network-layer control is realistically only achievable via a container/deployment (ties to SEC-007).",
+      "remediation": "Add a README/SECURITY 'Egress' section: the only reachable host is api.discover.swiss (net.py EGRESS_ALLOWLIST), changes require a code PR + CHANGELOG entry; state that network-layer egress control is the deployer's responsibility and give a docker/NetworkPolicy example restricting egress to 443 on that host plus DNS.",
+      "effort": "S"
+    },
+    "SEC-024": {
+      "status": "fail",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/server.py:364-368 — mcp.streamable_http_app(host=settings.host) with no transport_security argument; grep 'TransportSecuritySettings|transport_security|allowed_hosts|allowed_origins|ALLOWED_HOSTS|enable_dns_rebinding_protection' in src/ → no hit (control: 16 hits in the SDK's mcpserver/server.py)",
+        ".venv/.../mcp/server/mcpserver/server.py:1155-1159 (mcp 2.2.0) — SDK auto-enables protection only for host in 127.0.0.1/localhost/::1, with wildcard-port entries '127.0.0.1:*', 'localhost:*', '[::1]:*'",
+        "runtime (audit, loopback bind): Host: evil.example.com → 421; foreign Origin → 403; allowed Host 127.0.0.1:<port> → 200; but Host: 127.0.0.1:9999 (wrong port) → 200 — list is not port-exact",
+        "runtime (audit, DISCOVER_SWISS_MCP_HOST=0.0.0.0): Host: evil.example.com → 200 and foreign Origin → 200; start log has no warning",
+        "SECURITY.md:39-41 — claims 'A non-loopback bind needs an explicit host allow-list', but the code offers no variable or mechanism to configure one"
+      ],
+      "gaps": [
+        "TransportSecuritySettings is never wired; protection exists only as the SDK's loopback auto-default (criterion 1 unmet)",
+        "No deployment-configured allow-list (no MCP_ALLOWED_HOSTS or equivalent) — a non-loopback bind cannot be protected at all",
+        "Entries are not port-exact (wrong port accepted) — the SDK default uses ':*'",
+        "Non-loopback bind without allow-list is silent (no startup warning) — protection is fail-open exactly as the check describes",
+        "No tests for wrong-port rejection / allowed-port acceptance or for auth-not-rescuing-foreign-host",
+        "SECURITY.md documents a control that does not exist"
+      ],
+      "evaluator_notes": "Only the loopback auto-protection of the SDK is present (foreign Host 421, foreign Origin 403 on 127.0.0.1). The explicit wiring, env-sourced port-exact list, warning and tests are all absent, and a 0.0.0.0 bind accepts any Host/Origin (runtime). Fewer than half the criteria met → fail.",
+      "remediation": "Add build_transport_security(host, port) reading DISCOVER_SWISS_MCP_ALLOWED_HOSTS / _ALLOWED_ORIGINS (port-exact, loopback entries with the served port always included, '*' dropped), pass transport_security= to streamable_http_app, log a WARNING when the bind is non-loopback and the variable is empty; add tests: allowed host:port → 200, same name wrong port → 421, foreign host → 421, and a mutation check (remove transport_security → wrong-port test fails). Align SECURITY.md with the implementation.",
+      "effort": "S"
+    },
+    "SEC-026": {
+      "status": "not_verified",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/ — grep -rniE 'register|client_id_metadata|cimd|application_type|rfc7591|client_secret|client_id' → only server.py:77 (comment 'tools are registered by decorator'); no OAuth module exists. Negative control: pattern fires on a control line 'client_id'",
+        "src/discover_swiss_mcp/config.py:45,91 — the only credential is the BYOK upstream subscription key from DISCOVER_SWISS_KEY; no OAuth client credentials, no authorization server"
+      ],
+      "gaps": [
+        "The check's own negative control (grep client_id must hit in the OAuth module) finds nothing: there is no OAuth client-registration path to evaluate"
+      ],
+      "evaluator_notes": "Per the check's Modus 1 rule, when the client_id grep finds no OAuth module the outcome is not_verified, not pass. The server performs no client registration (neither DCR nor CIMD) and holds no issuer-bound credentials; the profile's auth_model API-Key makes the check formally applicable but substantively empty. Suggest marking not-applicable in the profile for BYOK API-key servers.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SEC-027": {
+      "status": "pass",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/ — grep -rniE 'x-mcp-header|custom_headers|extra_headers|passthrough_headers|headers=.*param' → no hit (control fires); server never reads inbound request headers (grep 'request\\.headers|Authorization|headers\\.get' → only net.py:146 upstream Location)",
+        "runtime (audit): tools/list of all 8 tools serialized — 'x-mcp-header' absent from every input schema (control string 'readOnlyHint' present in the same dump)",
+        "SDK mcp 2.2.0: .venv/.../mcp/shared/inbound.py:526-593 validate_mcp_param_headers only compares Mcp-Param-* headers for properties annotated with x-mcp-header and never exposes header values to the handler; no annotations → nothing to forward",
+        "src/discover_swiss_mcp/client.py:652-666 — the only parameter-derived upstream header is Accept-Language from `lang`, a Literal['de','fr','it','en'] (tools.py:59) — allow-listed values, no CR/LF possible",
+        "runtime (audit, in-process HTTP with captured upstream headers): request carrying Authorization: Bearer ATTACKER-TOKEN, Cookie and Mcp-Param-Evil → 200; upstream headers = accept, accept-language, categoryversion, ocp-apim-subscription-key, user-agent; no Authorization/Cookie, and the correct subscription key header is still present (the check's 'second assertion')"
+      ],
+      "gaps": [
+        "No in-repo regression test pinning that parameter/inbound headers are not forwarded (the evidence pair exists only as this audit's runtime probe) — low"
+      ],
+      "evaluator_notes": "x-mcp-header is not used; verified in server code, in the served schemas and in SDK 2.2.0 behaviour; the one tool-param-derived outbound header is Literal-constrained. Criteria 2-5 and 8 apply only on use. Missing regression test is below check severity.",
+      "remediation": "",
+      "effort": ""
+    },
+    "SEC-028": {
+      "status": "fail",
+      "category": "SEC",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/net.py:58-59 — a single EgressError(ValueError) type for all guard outcomes, no discriminator attribute",
+        "src/discover_swiss_mcp/net.py:96-98 — an empty DNS answer raises EgressError('No DNS answer …') — the same type as a policy violation (net.py:100-103)",
+        "src/discover_swiss_mcp/net.py:75-78 — loop.getaddrinfo is not wrapped: socket.gaierror escapes the guard untyped",
+        "src/discover_swiss_mcp/client.py:729-730 — `except net.EgressError: raise` (never retried); client.py:731 retries only httpx.RequestError, which gaierror is not",
+        "src/discover_swiss_mcp/server.py:218-219 — every EgressError is mapped to 'The outbound request was blocked by the server's egress policy.'",
+        "src/discover_swiss_mcp/client.py:1103-1106 — status() catches DiscoverSwissError and EgressError only",
+        "runtime (audit, socket.getaddrinfo raising gaierror EAI_AGAIN): client._call → socket.gaierror escapes, isEgressError False, isRequestError False, 1 attempt, 0 retries; client.status() raised gaierror (source_status would fail with 'unexpected internal error'); empty DNS answer → EgressError 'No DNS answer for …' which the tool layer reports as an egress-policy block"
+      ],
+      "gaps": [
+        "Policy violation and resolution failure are not distinguishable by a code-read discriminator; the empty-answer case shares EgressError with the policy case",
+        "Transient resolver failures are never retried (gaierror bypasses the retry ladder; empty answer is re-raised as EgressError)",
+        "User-facing message for an empty DNS answer names the egress policy — the exact misleading-message failure the check describes",
+        "gaierror escapes status(): source_status, the diagnostic tool, fails instead of reporting reachable=false",
+        "No tests for either the transient or the deterministic case with retry assertions"
+      ],
+      "evaluator_notes": "The guard throws one type for a policy violation and for an empty resolution, and lets a real resolver error escape untyped and unretried. Runtime probes confirm all three behaviours. 0 of 5 criteria met.",
+      "remediation": "In net.py add EgressPolicyViolation(EgressError, retryable=False) and EgressResolutionError(EgressError, retryable=True); wrap getaddrinfo (gaierror, OSError, empty answer) into EgressResolutionError; in client._call retry EgressResolutionError on the existing ladder and re-raise policy violations; in server._fail map the two to distinct messages (resolution: 'temporarily not resolvable, retry; configuration unaffected'); catch EgressResolutionError in status(); add the two tests from the check and run the merge-types mutation once.",
+      "effort": "S"
+    }
+  }
+}

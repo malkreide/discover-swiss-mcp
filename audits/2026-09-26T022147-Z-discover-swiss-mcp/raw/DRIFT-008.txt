@@ -1,0 +1,22 @@
+{
+  "id": "DRIFT-008",
+  "status": "fail",
+  "category": "DRIFT",
+  "severity": "high",
+  "evidence": [
+    "tests/conftest.py:41-72 — three autouse fixtures: api_key (setenv test-key), _clean_env, _pin_dns (patches net._resolve to 203.0.113.10)",
+    "tests/test_live.py:84-96 — live module overrides api_key and _pin_dns by name",
+    "pytest --fixtures-per-test (run in this audit): all 18 live tests use _pin_dns from tests/test_live.py:94 and api_key from tests/test_live.py:85; negative control: tests/test_client.py uses _pin_dns from tests/conftest.py:66 (34 tests)",
+    "src/discover_swiss_mcp/client.py:275-279 — waits go through client._sleep, not a patched stdlib function",
+    "grep request.keywords|pytest_runtest_call|item.keywords|getaddrinfo|_REAL_ in tests/ — no hit (negative control: pattern fires on 'if \"live\" in request.keywords:')"
+  ],
+  "gaps": [
+    "No suite-wide guard hook that fails a live test whose resolver/env is stubbed; protection rests on per-module override by fixture name",
+    "Stubbing fixtures do not self-exempt via `if 'live' in request.keywords`; a live test added in any other module would run against 203.0.113.10 with key 'test-key'",
+    "No reference value captured at import and no counter-probe",
+    "Live tests have never run, so reaching the source is not demonstrated"
+  ],
+  "evaluator_notes": "The concrete trap of the Belegfall is avoided today (fixtures overridden, verified with --fixtures-per-test), and the DNS stub is on an own seam (net._resolve) rather than socket. Only 1 of the applicable criteria is met; guard, hook, reference value and counter-probe are absent. Advisory check. (Caller's note 'CHANGELOG against code' belongs to DRIFT-006 in the catalogue and is judged there.)",
+  "remediation": "Add `if 'live' in request.keywords: return` to api_key and _pin_dns in conftest.py; add a pytest_runtest_call hook in conftest.py that fails a live test when net._resolve is not the original captured at import or DISCOVER_SWISS_KEY == 'test-key'; add a counter-probe test file.",
+  "effort": "S"
+}

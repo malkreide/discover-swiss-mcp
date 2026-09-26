@@ -1,0 +1,22 @@
+{
+  "id": "ARCH-020",
+  "status": "fail",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:75-85 — CACHE_HINTS tools/list and server/discover ttl_ms 300000, scope 'public', with rationale comment",
+    "runtime tools/list: ttlMs 300000, cacheScope 'public'; prompts/list, resources/list, resources/templates/list: ttlMs 0, cacheScope 'private' (SDK defaults); all scopes within {public, private}",
+    "runtime: tools/list order identical across 3 fresh processes with PYTHONHASHSEED=random (negative control: a set of the same names changed order in each of 3 runs)",
+    "grep orderBy|order_by|sort src/discover_swiss_mcp/*.py → 0: paged search results carry no explicit/total sort key",
+    "grep tests/ for ttl|cacheScope|two-page overlap → 0"
+  ],
+  "gaps": [
+    "tools/list order comes from decorator registration order, not an explicit sort",
+    "prompts/list, resources/list, resources/templates/list are served with ttlMs 0 (unjustified)",
+    "Paged query results (page parameter) have no total sort key; relevance/distance ties decided upstream per call",
+    "No two-page test (empty intersection + full union) and no Gegenprobe tests (set iteration, cacheScope 'session')"
+  ],
+  "evaluator_notes": "Fields and values are present and valid, and order is stable across processes; the explicit sort, justified ttl on all served list methods, total sort key and the paging/counter-proof tests are missing (4 of 9 applicable).",
+  "remediation": "Sort tools explicitly by name (or add a test pinning the order across fresh processes), set cache hints for prompts/list and resources lists (or stop advertising them), send a total order to /search where supported (e.g. relevance then identifier) and add a two-page overlap test against a recorded result set.",
+  "effort": "S"
+}

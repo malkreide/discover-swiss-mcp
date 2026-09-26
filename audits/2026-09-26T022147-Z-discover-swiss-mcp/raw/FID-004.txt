@@ -1,0 +1,21 @@
+{
+  "id": "FID-004",
+  "status": "partial",
+  "category": "FID",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/tools.py:1041 — match='name' sends searchFields=name; match='all' sends nothing and relies on the index default",
+    "probes/PROBE_REPORT_discover-swiss-mcp.md:89 — narrowing measured live: 'vegetarisch' 136 all / 0 name; 'Landesmuseum' 53 / 7 / 15",
+    "tests/test_live.py:255-272 — live canary asserts name < all and name >= 3",
+    "tests/test_tools.py:204 — unit test pins that searchFields is not sent for match='all'",
+    "src/discover_swiss_mcp/server.py:232 — description names the default explicitly: 'matches whole words in name AND descriptions by default (match=\\'all\\')'",
+    "src/discover_swiss_mcp/tools.py:130-149 — tour `kind` mapping from measured leafType/categoryTree sets (PROBE_TOURKINDS)"
+  ],
+  "gaps": [
+    "match='all' is expressed by omitting searchFields, i.e. inheriting the upstream default rather than sending the full field set; a change of that default would narrow silently",
+    "The live canary proving the narrowing has never been executed; only the 2026-09-17 probe measured the effect"
+  ],
+  "evaluator_notes": "No multi-flag parameter group (Field.* style) exists; the closest is searchFields, whose narrowing effect is measured and documented. Remaining gaps are reliance on the API default for 'all' and an unexecuted live check.",
+  "remediation": "Send an explicit searchFields list for match='all' (the measured searchable fields) or keep the omission but add the upstream default to the Default-Matrix with a live canary that runs; run test_match_name_narrows_the_search once.",
+  "effort": "S"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "CH-004",
+  "status": "pass",
+  "category": "CH",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/models.py:33-38 — Envelope.source on every tool response ('discover.swiss Infocenter Open — data by the providers named per hit; see attribution[]')",
+    "src/discover_swiss_mcp/licenses.py:66-76,162-192 — per-object Attribution(provider, license, copyright_notice, source_url) built from each record; tools.py:458,523,1669,1932 — attribution on every hit type (per-record provenance)",
+    "src/discover_swiss_mcp/licenses.py:42-47 — licence whitelist {CC0, CC BY, CC BY-SA, CC BY-ND, ODbL}; CC BY-NC-* deliberately excluded; non-listed objects counted in excluded_by_license, never served",
+    "README.md:176-193 — Attribution section naming providers and mixed licences, CC BY-SA stays CC BY-SA, CC BY-ND quote-only; docs/LICENSES.md:3-9 — licence table",
+    "tests/test_licenses.py:193-200 — attribution built from the object (provider, CC BY-SA, copyright notice, source URL); tests/test_licenses.py:56 — NC not served"
+  ],
+  "gaps": [
+    "Attribution carries the licence name but no licence URI/link as CC BY 4.0 §3(a)(1)(C) asks 'to the extent reasonably practicable' — low",
+    "explore_area returns aggregate facet counts without per-source breakdown (aggregate statistics, not redistributed records) — low"
+  ],
+  "evaluator_notes": "Source and licence travel per record, the README and docs document sources and licences, NC and all-rights-reserved content is filtered out, and ND/SA obligations are signalled. Remaining gaps are minor.",
+  "remediation": "",
+  "effort": ""
+}

@@ -1,0 +1,20 @@
+{
+  "id": "FID-007",
+  "status": "partial",
+  "category": "FID",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/tools.py:546-553 — _int_or_none: non-integers become None, never 0",
+    "src/discover_swiss_mcp/tools.py:1240-1242, 1439-1443 — stars and length converted only when numeric, else None",
+    "src/discover_swiss_mcp/tools.py:2195 and client.py:479 — facet counts: int or None, not 0",
+    "src/discover_swiss_mcp/client.py:552-571 — totals read only when int",
+    "src/discover_swiss_mcp/client.py:519-523 — filter_by_distance: `except (KeyError, TypeError, ValueError): continue` drops rows with non-numeric coordinates, uncounted"
+  ],
+  "gaps": [
+    "List fallback with `near`: rows whose geo is missing/non-numeric are dropped without a counter; upstream_count (tools.py:1020) is computed after the drop, so the result cannot say how many were excluded or in which direction the count deviates (the 'except ValueError: continue' anti-pattern)",
+    "No live test of which non-numeric values the source actually uses in numeric fields"
+  ],
+  "evaluator_notes": "The server computes no sums of source values, and every numeric conversion maps non-numbers to None rather than 0. The only silent exclusion is the fallback distance filter. Criteria on suppression-marker lists and the counter-probe are not applicable (the source has no suppression markers). Advisory check.",
+  "remediation": "Count rows dropped for missing/invalid coordinates in _scan_lists and expose it (e.g. applied['rows_without_coordinates']) with a hint that they are not in the result.",
+  "effort": "S"
+}

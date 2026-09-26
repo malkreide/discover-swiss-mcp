@@ -1,0 +1,25 @@
+{
+  "id": "ARCH-012",
+  "status": "fail",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:73 — MCP_PROTOCOL_VERSION = \"2026-07-28\"; used only in the startup log (:131) and tests/test_server.py:152 (snapshot equality), never passed to MCPServer or compared with _meta",
+    "src/discover_swiss_mcp/server.py:69-72 — comment claims 'a test holds the constant against the SDK's own LATEST_PROTOCOL_VERSION'; grep LATEST_PROTOCOL_VERSION tests/ scripts/ → 0 hits (negative control: hits .venv/.../mcp_types/version.py:50) — the test does not exist",
+    "runtime (streamable-http): tools/list with _meta protocolVersion 2030-01-01 → error -32022 data.supported ['2026-07-28'] (SDK mcp_types/version.py:41 MODERN_PROTOCOL_VERSIONS); server/discover supportedVersions ['2026-07-28']",
+    "runtime: legacy initialize with protocolVersion 2025-06-18 → 200, negotiated 2025-06-18 — the pinned constant does not constrain what the server speaks",
+    "CHANGELOG.md:1-8 — Keep a Changelog header; CHANGELOG.md:63-64 says 'pinned protocol version' without naming it",
+    "grep -iE 'breaking|spec.version|protocol.version|migration' README.md README.de.md → 0 hits (negative control: 27 hits in ARCH-012.md)",
+    ".github/dependabot.yml — only package-ecosystem github-actions, no pip"
+  ],
+  "gaps": [
+    "Pinned constant is decorative: the per-request check and -32022 come from the SDK's own list, not from MCP_PROTOCOL_VERSION; legacy handshake versions (2024-11-05..2025-11-25) are still accepted",
+    "Code comment asserts a guard test that does not exist",
+    "CHANGELOG does not name the spec version",
+    "README has no 'MCP Protocol Version' section and no update/breaking-change policy",
+    "No Dependabot/Renovate for pip (SDK updates are not proposed)"
+  ],
+  "evaluator_notes": "Met: CHANGELOG format; -32022 and discover list consistent (via SDK). Not met: an enforced server-side pin, CHANGELOG spec references, README section, update policy, SDK update automation. Fewer than half.",
+  "remediation": "Add the promised test (MCP_PROTOCOL_VERSION in mcp_types.MODERN_PROTOCOL_VERSIONS and == server/discover supportedVersions); decide whether legacy handshake eras should be served (stateless_http / legacy off) and document it; add README/README.de 'MCP Protocol Version' section with update policy; name '2026-07-28' in CHANGELOG; add a pip ecosystem to .github/dependabot.yml grouping mcp.",
+  "effort": "S"
+}

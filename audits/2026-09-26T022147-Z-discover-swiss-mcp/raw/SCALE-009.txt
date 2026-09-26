@@ -1,0 +1,20 @@
+{
+  "id": "SCALE-009",
+  "status": "pass",
+  "category": "SCALE",
+  "severity": "high",
+  "evidence": [
+    "src/ — grep 'sse_app|SseServerTransport|/sse|EventSourceResponse|mount|add_route' → no hit; src/discover_swiss_mcp/server.py:364-368 serves only mcp.streamable_http_app",
+    "runtime (audit, shipped streamable-http transport on 127.0.0.1:18770): GET /sse → 404, POST /messages/ → 404",
+    "negative control (audit): same curl against a deliberately mounted mcp.sse_app() on 127.0.0.1:18769 → 200 with SSE headers — the probe detects an open legacy path",
+    "README.md:111,142-143 — Streamable HTTP named as the HTTP transport; SSE not offered",
+    "src/discover_swiss_mcp/config.py:48,106 — transport restricted to Literal['stdio','streamable-http']; 'sse' is a ConfigError"
+  ],
+  "gaps": [
+    "No shipped remote instance exists (local-only deployment), so the check was run against the local start — which is the shipped artefact here",
+    "Deployment-config criterion vacuous: no deployment configuration exists"
+  ],
+  "evaluator_notes": "The legacy HTTP+SSE transport cannot be selected and is not served; verified with a positive control. Date/hardening criteria apply only to an open path.",
+  "remediation": "",
+  "effort": ""
+}

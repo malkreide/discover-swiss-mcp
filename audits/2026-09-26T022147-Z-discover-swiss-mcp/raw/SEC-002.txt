@@ -1,0 +1,21 @@
+{
+  "id": "SEC-002",
+  "status": "partial",
+  "category": "SEC",
+  "severity": "critical",
+  "evidence": [
+    "src/discover_swiss_mcp/client.py:652-666 — request_headers() builds every upstream header from settings only (Ocp-Apim-Subscription-Key via settings.auth_header, User-Agent, Accept, Accept-Language from the Literal-validated `lang`, categoryVersion); no inbound value is copied",
+    "src/discover_swiss_mcp/config.py:59-61 — auth_header is the single place the server-owned BYOK key is unwrapped; the key comes from DISCOVER_SWISS_KEY (config.py:91), not from any client request",
+    "src/ — grep 'request\\.headers|Authorization|headers\\.get\\(|ctx\\.request_context\\.request' finds no read of inbound request headers (only net.py:146 reads the upstream response Location header); pattern verified to fire on a control line",
+    "runtime (audit probe, in-process uvicorn on 127.0.0.1:18780 with net.safe_request patched to capture outbound headers): tools/call source_status sent with 'Authorization: Bearer ATTACKER-TOKEN', 'Cookie', 'Mcp-Param-Evil' → HTTP 200; 3 upstream calls captured, header names [accept, accept-language, categoryversion, ocp-apim-subscription-key, user-agent], authorization/cookie absent, ATTACKER nowhere, subscription key == operator key (positive control: the capture does see the real key header)",
+    "runtime: /.well-known/oauth-protected-resource → 404; no inbound auth layer exists on the streamable-http transport"
+  ],
+  "gaps": [
+    "No inbound token verification exists at all, so the aud/iss/RFC 8707 criteria (1, 2, 5, 6) are not implemented — the HTTP transport is unauthenticated",
+    "Consequence of the above: any caller that can reach the HTTP port spends the operator's BYOK subscription key (runtime probe: unauthenticated call → upstream request with operator key). Mitigated by the loopback default bind, not by a control",
+    "No user identity propagation (criterion 4) — single-user server, no identity to propagate"
+  ],
+  "evaluator_notes": "The passthrough prohibition itself is satisfied with positive code and runtime evidence: client tokens never reach discover.swiss; upstream uses the server's own key. The audience/issuer criteria are unmet because the server accepts no inbound token at all. Counted as partial rather than pass because 4 of 7 criteria (aud check, 401 on wrong audience, iss validation, server-side issuer mapping) have no implementation; the practical exposure is bounded by the 127.0.0.1 default.",
+  "remediation": "Document in README/SECURITY.md that the HTTP transport has no inbound authentication and must stay on loopback; if it is ever exposed beyond loopback, add inbound bearer auth (TokenVerifier with aud/iss validation against server-side configured values, 401 on mismatch) before serving tools, and keep the upstream key server-owned as today.",
+  "effort": "M"
+}

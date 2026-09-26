@@ -1,0 +1,16 @@
+{
+  "id": "SEC-026",
+  "status": "not_verified",
+  "category": "SEC",
+  "severity": "high",
+  "evidence": [
+    "src/ — grep -rniE 'register|client_id_metadata|cimd|application_type|rfc7591|client_secret|client_id' → only server.py:77 (comment 'tools are registered by decorator'); no OAuth module exists. Negative control: pattern fires on a control line 'client_id'",
+    "src/discover_swiss_mcp/config.py:45,91 — the only credential is the BYOK upstream subscription key from DISCOVER_SWISS_KEY; no OAuth client credentials, no authorization server"
+  ],
+  "gaps": [
+    "The check's own negative control (grep client_id must hit in the OAuth module) finds nothing: there is no OAuth client-registration path to evaluate"
+  ],
+  "evaluator_notes": "Per the check's Modus 1 rule, when the client_id grep finds no OAuth module the outcome is not_verified, not pass. The server performs no client registration (neither DCR nor CIMD) and holds no issuer-bound credentials; the profile's auth_model API-Key makes the check formally applicable but substantively empty. Suggest marking not-applicable in the profile for BYOK API-key servers.",
+  "remediation": "",
+  "effort": ""
+}

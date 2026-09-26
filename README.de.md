@@ -230,7 +230,7 @@ Die zwölf Fundstücke der Live-Probe, die das Verhalten dieses Servers prägen
 5. **Open-Produkt ist nicht offene Lizenz.** All-Rights-Reserved- und lizenzlose Objekte werden zurückgehalten und gezählt.
 6. **`ds-containedInPlaceFilter` ist kein Filter.** Er frisiert die Antwort; der Treffer-Filter ist der Query-Parameter.
 7. **Schweiz Tourismus liefert bereits Daten** (2'769 Hotels) — der offene Kanal trägt ihre Inhalte.
-8. **Unbekannte Facetten-Namen werden still verworfen.** Nur verifizierte Namen werden gesendet; Verworfenes steht in `missing_facets`.
+8. **Falsch geschriebene Facetten-Namen werden still verworfen — ein erfundener lässt den ganzen Request mit 400 scheitern.** Nur die acht verifizierten Namen werden gesendet; alles andere steht in `missing_facets`.
 9. **Ein Hotel wiegt 78 KB.** `get_details` kürzt auf ~8 KB.
 10. **Testdaten im Produktivindex.** «Demo Event» wird zurückgehalten und in `excluded_test_objects` gezählt.
 11. **Beschreibungen sind HTML mit Entities.** Serverseitig zu Klartext aufgelöst.

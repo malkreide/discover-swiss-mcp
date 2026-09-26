@@ -1,0 +1,21 @@
+{
+  "id": "OBS-008",
+  "status": "partial",
+  "category": "OBS",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:117-134 — settings load, client construction and server.list_tools() happen before logger.info('Server lifespan started', ...); explanatory data in separate fields",
+    "runtime: stdin held open (sleep 8 | timeout 6 python -m discover_swiss_mcp) -> exit 124, stderr: {\"...\", \"event\": \"Server lifespan started\", \"level\": \"info\", \"timestamp\": ...}; stdout 0 bytes",
+    "runtime: stdin=/dev/null -> marker line, then 'Server lifespan stopped', exit 0 (clean EOF shutdown, not a crash)",
+    "negative control: DISCOVER_SWISS_MCP_TRANSPORT=bogus and DISCOVER_SWISS_MCP_PORT=abc -> ConfigError traceback on stderr (measurement setup lets output through)",
+    "tests/test_smoke.py:71-84 — exact equality on event == 'Server lifespan started' asserted",
+    "No SDK banner on stderr; marker has no timestamp/PID/port inside the event field"
+  ],
+  "gaps": [
+    "Marker is not documented in README.md/README.de.md: grep -niE 'marker|bereitschaft|ready|lifespan started' finds only unrelated hits (README.md:231, 269) — criterion 'documented in README in the compared spelling' not met",
+    "With closed stdin the process exits 0 after the marker instead of staying up (check expects exit 124); marker still appears within 6 s"
+  ],
+  "evaluator_notes": "8 of 9 criteria met; the ready marker is correct in form and position and pinned by an exact-equality test, but it is not a documented contract.",
+  "remediation": "Add one line to both READMEs: 'Ready marker (stderr, JSON field `event`): `Server lifespan started`'.",
+  "effort": "S"
+}

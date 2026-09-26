@@ -1,0 +1,19 @@
+{
+  "id": "OBS-002",
+  "status": "pass",
+  "category": "OBS",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:210 — log.exception('tool_execution_failed') keeps the original with traceback in the server log only",
+    "src/discover_swiss_mcp/server.py:211-222 — client-facing message is one of four fixed sentences; generic 'An unexpected internal error occurred; the details are in the server log.'",
+    ".venv mcp 2.2.0 mcp/server/mcpserver/tools/base.py:158,210 — SDK masks any non-ToolError crash to 'Error executing tool <name>' (structural equivalent of mask_error_details=True)",
+    "runtime: search_impl patched to raise RuntimeError('psycopg: relation /var/secret/db.sqlite failed; key=...') -> tool result text 'Error executing tool search: search: An unexpected internal error occurred; the details are in the server log.' (path/secret absent); original only in stderr log event tool_execution_failed",
+    "src/discover_swiss_mcp/config.py:297, 311-313, 315-328 — key held as SecretStr, unwrapped only into the outbound header; safe_summary() logs 'set'/'missing'",
+    "tests/test_smoke.py:60-68, 71-84 — key absent from repr/str/model_dump/log events",
+    "grep -rnE 'traceback|format_exc|exc_info' src/ -> only logging_config.py:44 format_exc_info (log renderer) and a comment at client.py:1120; no traceback in tool returns"
+  ],
+  "gaps": [],
+  "evaluator_notes": "All five criteria met. Masking is done twice (server _fail + SDK UnexpectedToolError); originals only in the stderr log; key cannot reach logs via Settings. Validation errors echo the caller's own input_value (pydantic text), which is not server internals.",
+  "remediation": "",
+  "effort": ""
+}

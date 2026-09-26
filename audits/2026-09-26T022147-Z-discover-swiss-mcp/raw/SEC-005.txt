@@ -1,0 +1,21 @@
+{
+  "id": "SEC-005",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/net.py:75-84 — _resolve() calls loop.getaddrinfo once per hop; net.py:134 assert_url_allowed returns the checked IPs",
+    "src/discover_swiss_mcp/net.py:107-112,136 — _pin_url replaces the host with the checked IP (ips[0]); the TCP connection goes to the pinned IP",
+    "src/discover_swiss_mcp/net.py:137,144 — original hostname kept in Host header and passed as extensions={'sni_hostname': host}",
+    ".venv/.../httpcore/_async/connection.py:107,149-152 (httpcore 1.0.9) — sni_hostname becomes server_hostname for start_tls with httpx's default verifying SSL context, so certificate validation runs against api.discover.swiss, not the IP; src/ has no verify=/ssl overrides (grep, control fires on 'verify=False')",
+    "src/discover_swiss_mcp/client.py:648 — shared AsyncClient with follow_redirects=False so redirects go back through the pinned path",
+    "tests/test_net.py:55-72 — request goes to https://203.0.113.10/... with Host: api.discover.swiss",
+    "runtime (audit, socket.getaddrinfo patched to answer 203.0.113.10 then 169.254.169.254): safe_request → 204, getaddrinfo called exactly 1 time, Host header and sni_hostname = api.discover.swiss; control: two explicit _resolve calls → counter 2; the rebinding answer 169.254.169.254 on a fresh resolve → EgressError 'Blocked address'"
+  ],
+  "gaps": [
+    "The in-repo test monkeypatches net._resolve and asserts the pinned IP/Host, but no repo test counts DNS lookups per request (criterion 5 met only by this audit's runtime probe) — low"
+  ],
+  "evaluator_notes": "Resolve-once + pin + Host/SNI preservation is implemented in one function and verified at runtime with a counting resolver and a rebinding second answer. TLS verification is not disabled and uses the SNI hostname. The only shortfall is the missing in-repo lookup-count regression test, below check severity.",
+  "remediation": "",
+  "effort": ""
+}

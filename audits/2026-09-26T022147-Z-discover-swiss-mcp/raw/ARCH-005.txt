@@ -1,0 +1,21 @@
+{
+  "id": "ARCH-005",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "critical",
+  "evidence": [
+    "src/discover_swiss_mcp/config.py:45,91,125 — api_key is SecretStr read from DISCOVER_SWISS_KEY with empty default (no real key as fallback)",
+    "src/discover_swiss_mcp/config.py:58-76 and server.py:129-134 — only safe_summary() is logged ('api_key': 'set'|'missing'); runtime startup log line shows \"api_key\": \"set\"",
+    ".gitignore:15-16 — .env and .env.* ignored",
+    "grep secret pattern (api_key|password|secret|token = '16+ chars') over src/ → 0 hits (negative control: fires on a scratch file with api_key = \"abcdefghijklmnopqrstuvwx\"); AKIA/connection-string patterns → 0 hits; git grep over tracked files shows the key only as env reads in probes/*.py (e.g. probes/probe_detail.py:28)",
+    "attempted gitleaks/trufflehog: neither installed in this environment (which → not found); history grep for 32-hex subscription-key values → no hits"
+  ],
+  "gaps": [
+    ".env.example with placeholders does not exist (and .gitignore:16 '.env.*' would also ignore it — no '!.env.example' exception)",
+    "No gitleaks/trufflehog (or equivalent) secret-scan step in .github/workflows/ci.yml or publish.yml",
+    "Settings are hand-rolled from os.environ rather than pydantic-settings (accepted as 'o.ä.', noted only)"
+  ],
+  "evaluator_notes": "No secret in code or history found; key handling (SecretStr, masked summary, env only) is exemplary. Two of eight criteria (.env.example, CI secret scan) are unmet, so not a pass on a critical check; no leak evidence, gitleaks not runnable here.",
+  "remediation": "Add .env.example with DISCOVER_SWISS_KEY=replace-with-your-key and '!.env.example' in .gitignore; add a gitleaks-action job (SHA-pinned) on push/pull_request.",
+  "effort": "S"
+}

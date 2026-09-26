@@ -1,0 +1,18 @@
+{
+  "id": "SDK-006",
+  "status": "pass",
+  "category": "SDK",
+  "severity": "high",
+  "evidence": [
+    "find . -name pyproject.toml (excluding .venv) → only ./pyproject.toml; pyproject.toml:34 'mcp>=2,<3'",
+    "grep 'mcp.server.fastmcp|from fastmcp import|FastMCP(' src/ tests/ → 0; src/discover_swiss_mcp/server.py:27-28 import from mcp.server.mcpserver (MCPServer, Context, ToolError) (negative control fires on scratch file)",
+    "grep settings writes 'mcp.settings.x =' src/ tests/ → 0 (control fires); bind params go as kwargs: server.py:364-368 uvicorn.run(mcp.streamable_http_app(host=…), host=…, port=…)",
+    "grep camelCase attribute reads '.readOnlyHint' etc. src/ tests/ → 0 (control fires); tests/test_server.py:106-108 read read_only_hint/open_world_hint/destructive_hint",
+    "runtime: DISCOVER_SWISS_MCP_TRANSPORT=streamable-http → 'Uvicorn running on http://127.0.0.1:8765', tools/list 200",
+    "no lockfile; .github/workflows/ci.yml:54 pip install -e '.[dev]' resolves within <3 (installed mcp 2.2.0); pytest -m 'not live' → 215 passed"
+  ],
+  "gaps": [],
+  "evaluator_notes": "Migration to mcp 2.x is complete: bound anchored at 2, new module path, no settings writes, snake_case reads, network start works.",
+  "remediation": "",
+  "effort": ""
+}

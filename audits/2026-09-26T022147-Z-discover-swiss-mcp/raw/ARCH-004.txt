@@ -1,0 +1,17 @@
+{
+  "id": "ARCH-004",
+  "status": "pass",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:182-197 — tool handlers reach shared state only via ctx.request_context.lifespan_context; no request/headers/stdin access (grep of handlers 230-349)",
+    "src/discover_swiss_mcp/config.py:40-56,84-133 — frozen pydantic Settings built from DISCOVER_SWISS_* env vars, transport Literal['stdio','streamable-http'] (config.py:48,105-109)",
+    "src/discover_swiss_mcp/server.py:352-370 — main() selects stdio (mcp.run()) or streamable-http (uvicorn) from settings.transport; __main__.py:8-10 uses the same main()",
+    "src/discover_swiss_mcp/server.py:103-140,160 — one lifespan for both transports; runtime: 'Server lifespan started' logged on both stdio and HTTP start",
+    "runtime: source_status called via stdio and via streamable-http (same env) — structuredContent identical after removing retrieved_at"
+  ],
+  "gaps": [],
+  "evaluator_notes": "Handlers are transport-agnostic, configuration is a settings object from env, transport selectable, shared lifespan, and outputs matched across transports at runtime.",
+  "remediation": "",
+  "effort": ""
+}

@@ -1,0 +1,14 @@
+{
+  "id": "IDENT-005",
+  "status": "pass",
+  "category": "IDENT",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/__init__.py:14-18 — except PackageNotFoundError: __version__ = \"0.0.0+source\" (PEP 440 local segment)",
+    "src/discover_swiss_mcp/__init__.py:15-17 — comment explains why no plausible-looking number is used"
+  ],
+  "gaps": [],
+  "evaluator_notes": "Marker matches the portfolio convention exactly. The drift-check criterion and '# pragma: no cover' do not apply: the repo has no src version-literal drift check and no coverage gate.",
+  "remediation": "",
+  "effort": ""
+}

@@ -1,0 +1,24 @@
+{
+  "id": "DRIFT-002",
+  "status": "partial",
+  "category": "DRIFT",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/client.py:1035-1092 — resolve_area: exact name only; no exact match -> no id + suggestions; several exact matches -> largest with ambiguous=True and rivals in hint",
+    "src/discover_swiss_mcp/tools.py:1480-1495, 1787-1797, 2004-2014, 2222-2232 — unresolved region: no search is run",
+    "src/discover_swiss_mcp/tools.py:942-965 — search fallback without near/locality fetches nothing",
+    "src/discover_swiss_mcp/tools.py:1013-1016, 1370-1379 — fallback responses carry provenance=list_fallback, degraded=search_unavailable fields; ignored query/filters named in hint prose",
+    "src/discover_swiss_mcp/tools.py:1305-1324 — accommodation fallback ignores stars_min, garni, price_range, amenities, accessible",
+    "tests/test_tools.py:670-681, tests/test_tools_p3.py:659 — tests that the non-find is not a substitution",
+    "src/discover_swiss_mcp/client.py:966-981 — list_fallback docstring: 'Deliberately narrow, and deliberately not to be widened'"
+  ],
+  "gaps": [
+    "Fallbacks widen the answer set: search fallback drops `query` (returns everything near the point), accommodation fallback returns hotels regardless of stars/amenities/accessibility",
+    "Which inputs were ignored is stated only in the hint string; `applied` (tools.py:897-917) has no field for ignored query/filters",
+    "_accommodation_fallback and _ignored_accommodation_filters have no test (no test references them)",
+    "tools.py:1724-1734 _schedule_entry falls back to entries[0] when no entry runs on from_date, which the event hit then reports as the overlapping entry; webcams live_url accepts link type 'WebLink' (tools.py:1863), only 'WebDetail' is verified as a live image"
+  ],
+  "evaluator_notes": "Area resolution escalates correctly and is tested. The search-refused fallback is declared (degraded/provenance fields) but widens semantics with the specifics in prose only, and its accommodation branch is untested.",
+  "remediation": "Add applied['ignored'] = ['query', 'stars_min', ...] to both fallbacks; add a test for _accommodation_fallback asserting the ignored list; make _schedule_entry return None when no entry overlaps; restrict LIVE_LINK_TYPES to verified types.",
+  "effort": "S"
+}

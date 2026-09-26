@@ -1,0 +1,19 @@
+{
+  "id": "ARCH-008",
+  "status": "fail",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "grep '@mcp.resource|@mcp.prompt|.resource(|.prompt(' src/ → 0 hits (tools only)",
+    "grep -iE 'resources|prompts|primitive' README.md README.de.md → 0 hits (negative control: same pattern hits ARCH-008.md:3)",
+    "runtime: resources/list, prompts/list, resources/templates/list return empty lists, while server/discover advertises capabilities prompts{listChanged:true} and resources{listChanged:true, subscribe:true}"
+  ],
+  "gaps": [
+    "Only one primitive (tools) and no README rationale for tools-only",
+    "No documented review of read-only tools (get_details by identifier, source_status) as resource candidates",
+    "Capabilities advertise prompts/resources (incl. resources.subscribe) that the server does not provide (SDK default)"
+  ],
+  "evaluator_notes": "Neither alternative of criterion 1/2 is met: no second primitive and no documented justification.",
+  "remediation": "Add a 'MCP primitives' paragraph to README.md and README.de.md explaining tools-only (e.g. identifiers only come from searches; read-only tools are needed for provenance envelopes), or expose get_details as a resource template (discover-swiss://object/{identifier}); consider not advertising unused capabilities.",
+  "effort": "S"
+}

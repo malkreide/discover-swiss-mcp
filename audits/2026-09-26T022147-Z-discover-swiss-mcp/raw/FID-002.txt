@@ -1,0 +1,22 @@
+{
+  "id": "FID-002",
+  "status": "partial",
+  "category": "FID",
+  "severity": "high",
+  "evidence": [
+    "probes/PROBE_REPORT_discover-swiss-mcp.md:128-135 — Ground truth zuerich.com 1'481 vs API datasource=zht-cms 1'596, delta +8 % explained (curated categories, region, camping)",
+    "probes/PROBE_REPORT_discover-swiss-mcp.md:93-98, 193 — reference counts Landesmuseum 53, Grindelwald 37, Wanderung 529, hotels 3'093, tours 223, webcams 73",
+    "probes/PROBE_OPEN_discover-swiss.md:9-12 — list vs search cross-check: /tours Glarnerland 117 = 117, /civicStructures Zürich 232 = 232",
+    "tests/test_live.py:127-247 — recall floors (about half of measured) under pytestmark live (test_live.py:60) for search, find_accommodation, find_tours, webcams_near, explore_area, find_events, sourcePartner=zht",
+    "tests/test_live.py:116 — _assert_live refuses a degraded answer as a measurement"
+  ],
+  "gaps": [
+    "The only web-UI comparison (zuerich.com) was made against list endpoints (datasource=zht-cms), not against the /search query endpoint the tools use",
+    "Reference queries (Landesmuseum, Grindelwald, Wanderung) have API counts only; no UI count at the same time, so no per-query delta exists",
+    "Live recall canaries exist but have never been executed (no key in CI, not run locally per task brief) — per §2.6 this is todo, not evidence",
+    "No canary for the zht-cms ground-truth total (probe report line 135 proposes 'datasource=zht-cms gesamt >= 1200'; test_live.py:225-236 uses sourcePartner facet >= 600 instead)"
+  ],
+  "evaluator_notes": "3-5 reference queries with floors at half the measured value exist and cover query endpoints; one UI ground truth with an explained delta exists but on list endpoints. The query-level UI comparison and any execution of the canaries are missing.",
+  "remediation": "Measure 3 reference queries on the discover.swiss/zuerich.com UI and via search_impl on the same day, record the delta table in README Known limitations, and run `pytest -m live -rA` once; keep the output with the audit.",
+  "effort": "S"
+}

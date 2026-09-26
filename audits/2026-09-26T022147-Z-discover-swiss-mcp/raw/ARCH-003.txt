@@ -1,0 +1,21 @@
+{
+  "id": "ARCH-003",
+  "status": "fail",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/tools.py:171-177 — SEARCH_EMPTY_HINT: actionable next steps (match='all', drop types, near instead of locality, call explore_area)",
+    "src/discover_swiss_mcp/tools.py:664-694 — _paged_hint distinguishes nothing-matched / past-the-end / all-withheld",
+    "tests/test_tools.py:273-281 — empty search asserts hint == SEARCH_EMPTY_HINT (return value only, no route counter)",
+    "src/discover_swiss_mcp/models.py:33-53 — Envelope has no match_type field; grep 'match_type|suggest' src/discover_swiss_mcp/tools.py → only a docstring hit at :670"
+  ],
+  "gaps": [
+    "No match_type (exact/fuzzy/none) field in any response",
+    "No suggestions derived from the caller's own term; the hint is generic advice",
+    "The empty response does not state that the server did not broaden the query (searched once, unchanged term)",
+    "Mode-3 test pair missing: no respx test asserting route.call_count == 1 and unchanged searchText on an empty result, and no suggestion-half test; no Gegenprobe"
+  ],
+  "evaluator_notes": "Empty results are never bare — the hint is actionable and names other tools, which covers criteria 1 and 3. But of the applicable criteria (1,2,3,5,6,9,10,11; 4,7,8 n/a for public data without fuzzy arm) only two are met; per the check a server without the counter test pair has not shown the property.",
+  "remediation": "Add match_type ('exact'|'none') to the paged envelope; on returned==0 add a sentence 'searched once with your term, not broadened'; add term-derived suggestions (shorter variants ≥4 chars) in a separate field; add the two respx tests (suggestions appear; route.call_count==1 with unchanged searchText) and run the counter once against a mutated version that searches its suggestions.",
+  "effort": "S"
+}

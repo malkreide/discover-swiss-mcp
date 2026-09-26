@@ -1,0 +1,17 @@
+{
+  "id": "ARCH-021",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "grep 'io.modelcontextprotocol/|extensions' src/ → only src/discover_swiss_mcp/net.py:144 (httpx request extensions={'sni_hostname': host}, not MCP) (control: hits .venv/.../mcp/shared/subscriptions.py)",
+    "grep 'tasks/(get|update|result|list)|TaskHandle|task_id' src/ → 0 (control: hits .venv/.../mcp_types/_v2025_11_25/__init__.py)",
+    "runtime server/discover capabilities: no extensions declared — declaration matches code in both directions"
+  ],
+  "gaps": [
+    "README.md / README.de.md do not state that the server carries no extensions (grep -i extension → 0; control: 21 hits in ARCH-021.md)"
+  ],
+  "evaluator_notes": "No extensions, no Tasks, no own namespace under io.modelcontextprotocol; only the one-sentence README statement is missing.",
+  "remediation": "Add to README.md and README.de.md (e.g. in a 'MCP Protocol Version' section): 'This server speaks 2026-07-28 and carries no extensions.'",
+  "effort": "S"
+}

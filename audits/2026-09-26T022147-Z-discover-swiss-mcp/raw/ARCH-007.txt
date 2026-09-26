@@ -1,0 +1,18 @@
+{
+  "id": "ARCH-007",
+  "status": "pass",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/tools.py:480-513 — search/accommodation/tours responses carry complete hits (name, attribution, distance_km, counts, has_more), not IDs only",
+    "src/discover_swiss_mcp/tools.py:1469,1776,1993,2211 — region names are resolved to area ids internally (resolve_area) before the search, one tool call for the model",
+    "src/discover_swiss_mcp/server.py:279 — find_tours description states the internal resolution ('region … resolved to an area id; `area` in the response shows what it resolved to')",
+    "src/discover_swiss_mcp/tools.py:846-871 — list fallback aggregates up to FALLBACK_MAX_CALLS list pages internally"
+  ],
+  "gaps": [
+    "No asyncio.gather anywhere in src/ (negative control: pattern hits .venv/.../uvicorn/_compat.py); the fallback scan over several endpoints is sequential — defensible given the 55/min client bucket and token paging, but not documented as a deliberate choice"
+  ],
+  "evaluator_notes": "Tools are atomic from the model's view and return usable results; internal chaining (area resolution, fallback paging) is encapsulated. Parallelism is not used where calls are dependent or rate-bound.",
+  "remediation": "",
+  "effort": ""
+}

@@ -1,0 +1,24 @@
+{
+  "id": "FID-003",
+  "status": "partial",
+  "category": "FID",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/tools.py:171-199 — per-tool empty hints with concrete next steps (match='all', drop types, near instead of locality, explore_area; 'Do not conclude a place is absent from one empty result')",
+    "src/discover_swiss_mcp/tools.py:653-694 — _paged_hint separates nothing-matched / past-the-end / all-withheld (with per-reason counts)",
+    "src/discover_swiss_mcp/tools.py:208-222, 697-705 — degraded states carry their own hint ('This says nothing about whether matching objects exist'), not the empty-set hint",
+    "src/discover_swiss_mcp/server.py:211-222 — AuthorizationError/UpstreamRejectedError/NotFoundError become ToolError ('not an empty result — do not conclude anything about the data')",
+    "src/discover_swiss_mcp/server.py:157-158 — server instructions: 'An empty result carries a hint — follow it before concluding that something does not exist'",
+    "Registered description webcams_near (server.py:307): 'Outside Eastern Switzerland this tool returns nothing — say so and do not invent a webcam.'",
+    "Runtime probe (scratchpad, respx): GET /vertices/eve_400 answering HTTP 400 -> get_details returns detail=None with hint 'Unknown identifier...' (tools.py:1127-1130 catches UpstreamRejectedError, which client.py:807 raises for every non-auth 4xx and client.py:896-899 for a non-object payload)"
+  ],
+  "gaps": [
+    "get_details masks an upstream 4xx rejection (and a non-object payload) as 'Unknown identifier' — a failure reaches the model as a statement about the data (tools.py:1127-1130)",
+    "5xx/timeouts/429 and a refused /search end as well-formed results with returned=0 and `degraded` set, not in the error channel (tools.py:1066-1073 etc.); mitigated by the degraded field and its own hint, but the criterion asks for the error channel",
+    "webcams_near description (server.py:307) licenses a conclusion from an empty result ('returns nothing — say so') instead of pointing to the hint/retry",
+    "Only search's description has an explicit 'follow the hint before concluding'; get_details, find_accommodation, find_tours, explore_area descriptions do not say that no guessed answer may replace a missing hit"
+  ],
+  "evaluator_notes": "Empty-result diagnostics are strong and specific; transport failures carry a separate degraded marker. The concrete defect is get_details turning any non-auth 4xx into 'Unknown identifier', plus one description that pre-explains an empty result. MRTR/input_required criteria not applicable (grep for input_required in src/ empty; server does not return it).",
+  "remediation": "In get_details catch UpstreamRejectedError only for the local identifier-pattern gate (raise a distinct exception there) and let upstream 4xx propagate to _fail; move the empty-result sentence of webcams_near into _webcams_empty_hint and replace it with 'Empty result: follow the hint'; add a one-line 'do not substitute a guess for a missing hit' to every data tool description.",
+  "effort": "S"
+}

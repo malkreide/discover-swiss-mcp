@@ -1,0 +1,18 @@
+{
+  "id": "SEC-019",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "critical",
+  "evidence": [
+    "SECURITY.md:27-35 — 'Scope and posture': read-only, no writes against discover.swiss, holds no user data; third-party text treated as untrusted input — the three Trifecta legs assessed in substance",
+    "src/discover_swiss_mcp/server.py:170-179 — every tool annotated readOnlyHint=True, destructiveHint=False, openWorldHint=True; tests/test_server.py:104 asserts it for all tools",
+    "src/discover_swiss_mcp/net.py:34 — egress limited to frozenset({'api.discover.swiss'}), enforced on every hop (net.py:95,134); no mail/webhook/arbitrary-POST capability (grep 'send_mail|smtplib|webhook' in src/ → none)",
+    "docs/LICENSES.md:3-9 and models.py — data class is public open tourism data; no private data source is read"
+  ],
+  "gaps": [
+    "The assessment is not labelled as a Lethal-Trifecta evaluation and lives in SECURITY.md rather than README/docs — low"
+  ],
+  "evaluator_notes": "Trifecta score 1 of 3: untrusted third-party content yes; private data no; external communication only to the single fixed data source (read queries). No ADR or allow-list sign-off required at this score. The posture is documented in SECURITY.md in substance.",
+  "remediation": "",
+  "effort": ""
+}

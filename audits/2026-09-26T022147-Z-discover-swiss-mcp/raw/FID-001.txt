@@ -1,0 +1,26 @@
+{
+  "id": "FID-001",
+  "status": "partial",
+  "category": "FID",
+  "severity": "critical",
+  "evidence": [
+    "probes/PROBE_REPORT_discover-swiss-mcp.md:70-89 — Default-Matrix (top, project list/search, Accept-Language, categoryVersion, select, datasource, updatedSince, deleted, resultsPerPage, facets[].name, searchFields) with measured values (top 10/5/1000, resultsPerPage default 10, searchFields 53/7/15)",
+    "src/discover_swiss_mcp/client.py:822-830 — /search always sends project as array and select; project re-imposed after caller body",
+    "src/discover_swiss_mcp/client.py:932-944 — list endpoints always send project, top=200 (overridden to 1000 by fallback), select, includeCount on first page",
+    "src/discover_swiss_mcp/client.py:660-666 — Accept-Language and categoryVersion always explicit",
+    "src/discover_swiss_mcp/tools.py:1050-1052, 1212-1214, 1425-1427 — resultsPerPage/currentPage explicit on every search body",
+    "src/discover_swiss_mcp/tools.py:492, 1059-1060 — `applied` field in every paged response carries the scope actually sent (incl. default_type_exclusion)",
+    "tests/test_client.py:45-64, tests/test_tools.py:195-205, tests/test_tools_p3.py:630-631, tests/test_client.py:163-166 — regression tests hold project, resultsPerPage, select, top=1000, includeCount",
+    "Spec extraction (probes/probe_out/openapi.json, run in this audit) — optional params of POST /search FacetRequest (count, scope default 'current', project), /vertices/{id} includeAllPhotos ('otherwise images with low confidence will be skipped'), Accept-Timezone header are not in the matrix"
+  ],
+  "gaps": [
+    "Default-Matrix is hand-written, not derived from the spec: FacetRequest members (count/scope/project), includeAllPhotos on /vertices, Accept-Timezone are missing; completeness over all optional params of the used endpoints is not shown",
+    "Recall delta for list `project` (undocumented partner default) was not measured, only 'works without'",
+    "resolve_area requests the containedInPlace/id facet with count=30 (client.py:1028); an exact area name ranked beyond the top 30 is reported as 'No area is named exactly' (client.py:1079) — the truncation is not visible in the result",
+    "Live canaries (tests/test_live.py) that would re-measure recall have never been executed; empirical evidence is the 2026-09-17 probe only",
+    "Accept-Language header is not regression-tested"
+  ],
+  "evaluator_notes": "Every restricting default the probe found (top, project, resultsPerPage, select, facet names) is sent explicitly and pinned by unit tests; the sent scope is exposed in `applied`. The matrix is not shown to be complete against the spec, one deliberate truncation (area facet count 30) is invisible, and no live re-measurement has run. Criterion 6 (scope-widening fallback) not applicable: no vocabulary-based widening.",
+  "remediation": "Generate the Default-Matrix from probes/probe_out/openapi.json for /search (incl. FacetRequest), /vertices/{id} and the list endpoints and add the missing rows; when resolve_area finds no exact match among the 30 facet values, say in the hint that only the top 30 areas by content were compared (or page the facet); add a test for Accept-Language; run tests/test_live.py once with a key and record the values.",
+  "effort": "S"
+}

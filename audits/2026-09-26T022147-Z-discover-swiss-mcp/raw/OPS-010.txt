@@ -1,0 +1,20 @@
+{
+ "id": "OPS-010",
+ "status": "fail",
+ "category": "OPS",
+ "severity": "high",
+ "evidence": [
+  "src/discover_swiss_mcp/client.py:275-279 — own seam _sleep = asyncio.sleep; tests/conftest.py:75-84 patches client_module._sleep, not asyncio",
+  "Mutation counter-tests run by the auditor on a scratch copy (PYTHONPATH pointed at the copy, verified via module __file__): M0 control RETRY_DELAYS (2,4,8)->(1,4,8): 1 failed (method fires); M2 egress allow-list disabled (net.py 'if False and host not in EGRESS_ALLOWLIST'): 1 failed; M3 POST redirect gate disabled: 1 failed; M4 key rendered in safe_summary: 1 failed",
+  "tests/test_client.py:385 — monkeypatch.setattr(client_module.time, 'monotonic', ...) patches the stdlib time module process-wide; re-read by the report author at bd0e371 (step 4 gate: third observation moved from gaps into evidence)"
+ ],
+ "gaps": [
+  "Surviving mutation M1: TOTAL_BUDGET = 25.0 -> 1e9 (client.py:248) — 215 passed. The wall-clock budget has no test at all, under fake or real time",
+  "tests/test_client.py:385 — monkeypatch.setattr(client_module.time, 'monotonic', ...) patches the stdlib time module process-wide (client_module.time is time); the event loop clock reads time.monotonic too",
+  "No test guards the _sleep seam (no assertion that real asyncio.sleep still waits)",
+  "No documentation of which test turns red per central assurance, no dated counter-test record, nothing in CONTRIBUTING.md (grep gegenprobe|mutation|negative control over tests/ and CONTRIBUTING.md -> no hit)"
+ ],
+ "evaluator_notes": "2 of 8 criteria met (counter-counter-test by the auditor; surviving mutation now on record). The suite does catch egress, redirect and secret regressions, but the wall-clock budget is unguarded and one test patches a foreign module globally.",
+ "remediation": "Add a real-time test: respx side_effect sleeping 1 s with TOTAL_BUDGET monkeypatched to 0.05 on the client module, asserting UpstreamUnavailableError within <0.5 s; replace the time.monotonic patch with an own seam (_monotonic = time.monotonic in client.py); add a test that asyncio.sleep(0.05) still takes >=0.04 s under the sleeps fixture; document the counter-test procedure and results in CONTRIBUTING.md.",
+ "effort": "M"
+}
