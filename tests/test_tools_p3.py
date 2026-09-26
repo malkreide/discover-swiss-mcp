@@ -36,6 +36,7 @@ from discover_swiss_mcp.tools import (
     FALLBACK_MAX_CALLS,
     MISSING_FACETS_HINT,
     SNAPSHOT_NOTE,
+    UNKNOWN_FACETS_HINT,
     ExploreAreaInput,
     FindAccommodationInput,
     FindEventsInput,
@@ -415,14 +416,35 @@ async def test_explore_short_names_are_mapped_before_sending(api_mock, client) -
     assert result.facets["containedInPlace/id"][0].value == "osm_51701"
 
 
-async def test_explore_reports_a_facet_the_api_dropped(api_mock, client) -> None:
+async def test_explore_does_not_send_an_unknown_facet(api_mock, client) -> None:
+    """Live 2026-09-26: an unknown facet name answers 400 for the whole request."""
     recorded = probe_fixture("probe_verify_out", "f1_odata.json")["response"]
-    api_mock.post("/search").mock(return_value=json_response(recorded))
+    route = api_mock.post("/search").mock(return_value=json_response(recorded))
     result = await explore_area_impl(client, ExploreAreaInput(facets=["leafType", "difficultyX"]))
 
+    assert [f["name"] for f in _body(route)["facets"]] == ["leafType"]
     assert result.missing_facets == ["difficultyX"]
-    assert "difficultyX" not in result.facets
-    assert result.hint == MISSING_FACETS_HINT.format(names="difficultyX")
+    assert set(result.facets) == {"leafType"}
+    assert result.hint == UNKNOWN_FACETS_HINT.format(names="difficultyX")
+
+
+async def test_explore_only_unknown_facets_still_counts(api_mock, client) -> None:
+    route = api_mock.post("/search").mock(
+        return_value=json_response({"count": 1661, "values": [], "facets": {}})
+    )
+    result = await explore_area_impl(client, ExploreAreaInput(facets=["difficultyX"]))
+    assert "facets" not in _body(route)
+    assert result.total == 1661
+    assert result.missing_facets == ["difficultyX"]
+
+
+async def test_explore_reports_a_sent_facet_that_did_not_come_back(api_mock, client) -> None:
+    api_mock.post("/search").mock(
+        return_value=json_response({"count": 5, "values": [], "facets": {"leafType": {}}})
+    )
+    result = await explore_area_impl(client, ExploreAreaInput(facets=["leafType", "season"]))
+    assert result.missing_facets == ["season"]
+    assert result.hint == MISSING_FACETS_HINT.format(names="season")
     assert "silently dropped by the upstream API" in result.hint
 
 

@@ -4,8 +4,9 @@
 Runs both through the same ``*_impl`` functions the MCP wrappers call and
 prints the envelope fields that decide whether they are right: the resolved
 area, the total, every facet with its first values, `missing_facets`, and the
-status counters. A third call asks for one invented facet name, to show that
-the silent drop upstream reaches the response as `missing_facets`. Nothing is
+status counters. A third call asks for one invented facet name: it must not be
+sent (upstream answers 400 for the whole request) and must come back in
+`missing_facets`. Nothing is
 written to disk.
 
 The key comes from the environment and nowhere else:
