@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The server did not start on Windows.** `find_events` resolves «today» in
+  `Europe/Zurich` through `zoneinfo`, which on Windows needs the `tzdata`
+  package; without it, importing the tools raised `ZoneInfoNotFoundError`.
+  `tzdata` is now a dependency on Windows.
+
 ### Added
 
 - P3: the remaining four tools, each a pure `*_impl` function plus an MCP

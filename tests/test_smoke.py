@@ -89,3 +89,17 @@ async def test_lifespan_hands_out_one_shared_client() -> None:
     async with app_lifespan(mcp) as ctx:
         assert ctx.client is not None
         assert ctx.client.settings is ctx.settings
+
+
+def test_windows_install_carries_the_time_zone_database() -> None:
+    """Windows has no IANA database; `zoneinfo` needs `tzdata` there.
+
+    CI runs on Linux only and cannot see the failure itself, so the
+    declaration is held here.
+    """
+    import tomllib
+    from pathlib import Path
+
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    dependencies = tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["dependencies"]
+    assert any(d.replace(" ", "").startswith("tzdata;sys_platform=='win32'") for d in dependencies)
