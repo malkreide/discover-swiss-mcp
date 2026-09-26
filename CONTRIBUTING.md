@@ -71,8 +71,9 @@ which would change every caller in the process, the event loop included.
 test per wall-clock assurance runs on the real clock
 (`test_the_budget_holds_under_real_time`).
 
-**Assurances and the tests that must turn red.** Last run on 2026-09-26; every
-mutation below was detected.
+**Assurances and the tests that must turn red.** Last run on 2026-09-26. A
+mutation that survived is recorded under «Survivors» below with what closed it —
+the list is never shortened to look clean.
 
 | Assurance | Mutation | Tests that fail |
 |---|---|---|
@@ -86,6 +87,21 @@ mutation below was detected.
 | Only an invalid id or a 404 is «unknown» | catch every upstream 4xx | `test_an_upstream_400_is_not_reported_as_unknown_identifier`, among 3 failing |
 | Container keeps its hardening | `readOnlyRootFilesystem: false` | `test_container_security_context` |
 | Egress policy names exactly the allowed hosts | add or drop a Cilium FQDN | `test_cilium_policy_names_exactly_the_allowed_hosts` |
+| Budget left after a bucket wait | reuse the pre-wait `remaining` | `test_the_request_gets_only_what_the_bucket_wait_left_of_the_budget` |
+| `Retry-After` header is read | ignore the header | `test_429_reads_retry_after_from_the_header_when_the_body_names_none` |
+| DNS failure retried, policy block not | — (pair asserted together) | `test_a_dns_failure_is_retried_but_an_egress_block_is_not` |
+| Introspection outage is not «invalid» | return `None` on a non-200 | `test_an_unreachable_authorization_server_lets_nothing_through`, `test_an_outage_is_not_cached_so_a_valid_token_works_after_recovery` |
+| `iss` is required | accept a missing `iss` | `test_an_answer_without_issuer_is_refused` |
+| Host check precedes the metadata | skip the Host check in the gate | `test_a_foreign_host_is_refused_before_metadata_or_token` (2), among 3 failing |
+| Rows without `identifier` are a shape error | drop the check | 4 failing in `tests/test_shape.py` |
+| Unsupported query syntax is named in the hint | drop the note | `test_an_empty_result_after_unsupported_syntax_names_the_syntax` (7) |
+
+**Survivors.**
+
+| Found | Mutation | Closed by |
+|---|---|---|
+| Re-verification 2026-09-26 (M20) | ignore the `Retry-After` header | `test_429_reads_retry_after_from_the_header_when_the_body_names_none` |
+| Re-verification 2026-09-26 | reuse the pre-wait `remaining` (visible only under real time) | `test_the_request_gets_only_what_the_bucket_wait_left_of_the_budget` |
 
 ## Commits and pull requests
 

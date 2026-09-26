@@ -1,0 +1,30 @@
+{
+  "id": "SEC-028",
+  "status": "partial",
+  "category": "SEC",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/net.py:66-71 — two types: EgressError(ValueError) for policy, ResolutionError(httpx.ConnectError) for resolution; net.py:116-117 wraps gaierror/UnicodeError, net.py:136-137 empty answer → ResolutionError",
+    "src/discover_swiss_mcp/client.py:821-837 — retry decided by type: EgressError re-raised immediately, ResolutionError caught as httpx.RequestError and retried on the 2/4/8 s ladder",
+    "runtime probe (DiscoverSwissClient._call, fake resolver): ResolutionError then success → 2 resolver calls, one 2.0 s wait, result returned; 169.254.169.254 → EgressError after 1 resolver call, no wait; persistent ResolutionError → UpstreamUnavailableError 'discover.swiss is not reachable (ResolutionError).' degraded=upstream_unreachable after 4 attempts; status() → reachable=False (no crash)",
+    "src/discover_swiss_mcp/server.py:227-228 — only EgressError maps to the 'egress policy' message; the transient case surfaces as upstream_unreachable, naming no policy (docs/network-egress.md:39-41 says so)",
+    "tests/test_net.py:45-71 — empty answer and gaierror are ResolutionError, not EgressError, and are httpx.RequestError"
+  ],
+  "gaps": [
+    "Criterion 5 unmet: no test exercises the pair at the retry decision — nothing asserts that a ResolutionError is retried and an EgressError is not. Mutation (scratch copy) merging the types (ResolutionError subclassing EgressError) fails only test_a_host_that_resolves_to_nothing_is_a_resolution_error; a mutation that makes policy violations retried (EgressError→ConnectError, except-branch removed) fails no test at all",
+    "Criterion 4 unmet on the new path (REGRESSION): auth.py:229 catches (net.EgressError, httpx.HTTPError) together — policy block and ResolutionError collapse into the same None, never retried, answered as 401 error=\"invalid_token\" and cached for 60 s. Runtime: one DNS hiccup to the AS → the valid token refused on the next call too; a fresh verifier accepts it"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "Policy violation and resolution failure not distinguishable by a code-read discriminator — closed (two types)",
+    "Transient resolver failures never retried — closed (runtime: retried on the ladder)",
+    "Empty DNS answer named the egress policy — closed (now upstream_unreachable)",
+    "gaierror escaped status() — closed (runtime: reachable=False)"
+  ],
+  "previous_gaps_open": [
+    "No tests for the transient and deterministic cases with retry assertions"
+  ],
+  "evaluator_notes": "The Infocenter path now meets criteria 1-3 with runtime proof. Criterion 5 (test pair that fails when the types are merged) is not met — verified by mutation — and the new introspection egress path reintroduces the collapsed handling the check forbids, with negative caching on top. 3 of 5 → partial.",
+  "remediation": "Add the two client-level tests from Modus 3 (transient retried; policy not retried, one resolver call) and re-run the merge mutation. In IntrospectionVerifier, handle ResolutionError/HTTPError separately from EgressError: retry once or answer 503, and never cache a result produced by a transport failure.",
+  "effort": "S"
+}

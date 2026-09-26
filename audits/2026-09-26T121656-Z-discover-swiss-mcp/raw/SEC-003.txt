@@ -1,0 +1,32 @@
+{
+  "id": "SEC-003",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/auth.py:71-89 — Scope StrEnum hierarchy: mcp:tools-basic (entry) and tourism:read:public; read access + data class as separate name components; no omnibus scope; no write/admin scope because no tool writes (docstring)",
+    "src/discover_swiss_mcp/auth.py:94-126 — TOOL_SCOPES per tool, BASE_SCOPES for every request, unknown tool fails closed to the read scope; tests/test_auth.py:49-53 holds that every registered tool has an entry",
+    "SECURITY.md:94-113 — scope table and tool→scope table documented",
+    "src/discover_swiss_mcp/auth.py:334-339,343-355 — scopes checked per request from the JSON-RPC body; insufficient scope → 403 with WWW-Authenticate error=\"insufficient_scope\", scope=…, resource_metadata=…",
+    "runtime (real SDK app via build_http_app, fake verifier with only mcp:tools-basic): tools/call search with a spoofed 'Mcp-Name: source_status' header → 403 + insufficient_scope naming tourism:read:public; source_status → 200; unknown tool → 403",
+    "src/discover_swiss_mcp/auth.py:157-164 — RFC 9728 metadata: resource, authorization_servers, scopes_supported derived from the enum (cannot drift); runtime GET /.well-known/oauth-protected-resource/mcp and the root form → 200 with both scopes",
+    "tests/test_http_app.py:158-167 — real app: metadata 200 with scopes_supported == hierarchy, anonymous POST 401 with resource_metadata",
+    "runtime (loopback, no OAuth): foreign Origin → 403 (criterion 7)",
+    "parser-differential probe: 10 malformed/edge JSON bodies — no case where the gate's json.loads fails while the SDK's pydantic_core.from_json succeeds (the direction that would drop the check to BASE_SCOPES)"
+  ],
+  "gaps": [
+    "Scopes exist only when inbound OAuth is configured; the default loopback HTTP transport has no scopes at all (by design, documented in SECURITY.md) — /.well-known/oauth-protected-resource is 404 there",
+    "The 403 challenge names all scopes the call needs rather than only the missing one (acceptable, noted)"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "No scope hierarchy and no per-tool scope requirements — closed (auth.py:71-126)",
+    "No per-call scope validation and no 403 + WWW-Authenticate insufficient_scope — closed (auth.py:334-355, runtime)",
+    "No RFC 9728 Protected Resource Metadata — closed when OAuth is configured (runtime 200)",
+    "Only the Origin→403 criterion met — superseded, all criteria now met"
+  ],
+  "previous_gaps_open": [],
+  "evaluator_notes": "All ten criteria are met with code, tests and runtime evidence on the real SDK app. Scope decisions come from the body, not from client routing headers (verified with a spoofed Mcp-Name). The hierarchy is minimal but honest for a read-only public-data server. Unauthenticated loopback use remains a deliberate, documented mode.",
+  "remediation": "",
+  "effort": ""
+}

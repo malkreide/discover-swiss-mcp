@@ -1,0 +1,32 @@
+{
+  "id": "FID-005",
+  "status": "fail",
+  "category": "FID",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:241 — search description: 'Query syntax: plain words. The source documents no operators; wildcards (*, ?), quotes, AND/OR and prefixes are untested — send whole words, not fragments or operators.'",
+    "src/discover_swiss_mcp/tools.py:301-303 — `query` field: 'No operators: wildcards, quotes, AND/OR and word fragments are undocumented and untested.'",
+    "git diff bd0e371..f326260 -- server.py/tools.py — removed: 'matches whole words ... Compounds are not found by their parts' and 'Whole words only: Landesmuseum matches, Landesmus and parts of compounds do not'",
+    "probes/probe_query_syntax.py:1-92 — probe for prefix/wildcard/fuzzy/phrase/boolean exists, but probes/probe_query_out/ does not exist (ls probes/) and no PROBE_QUERY_*.md: the probe has not been run",
+    "grep -rn -i 'whole word|compound|fragment' src/ — only the 'untested' sentences above; control grep for 'Plain search words' hits tools.py:301",
+    "Registered descriptions (mcp.list_tools()): find_events and webcams_near no longer explain empty results"
+  ],
+  "gaps": [
+    "Supported operators are not listed — the description states they are unknown; the probe that would establish them (probes/probe_query_syntax.py) has never been run",
+    "Matching granularity is no longer named: the unmeasured 'whole words / compounds not by their parts' claim was removed instead of measured, so there is no granularity statement and no German compound example at all (criterion 3 was met before — regression)",
+    "No live test for wildcard/prefix behaviour",
+    "No documentation of escaping or of what invalid syntax does (400 vs. silently literal)"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "Two tool descriptions (find_events, webcams_near) explaining empty results — removed",
+    "Unbacked whole-word/compound claim — removed (but not replaced by a measured statement)"
+  ],
+  "previous_gaps_open": [
+    "Query language/operators not established; probe never run",
+    "No live test for wildcard/prefix behaviour; no escaping / invalid-syntax documentation"
+  ],
+  "evaluator_notes": "The description is now honest about what is unknown, and it tells the model not to use operators — a defensible interim state. But the check asks for measured facts: operators, granularity with a compound example, a live wildcard test and invalid-syntax behaviour. Criteria met: 1 (syntax named as plain words) and 6 (in the tool description). 2/6 -> fail. Criterion 3 regressed from met to not met.",
+  "remediation": "Run DISCOVER_SWISS_KEY=... python probes/probe_query_syntax.py, record probes/PROBE_QUERY_discover-swiss.md, then write the measured operator list, the granularity (with a German compound example such as Landesmuseum vs Landesmus/museum) and invalid-syntax behaviour into the search description; add a @pytest.mark.live test pinning the prefix/wildcard result.",
+  "effort": "S"
+}

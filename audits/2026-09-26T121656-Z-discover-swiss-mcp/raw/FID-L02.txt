@@ -1,0 +1,25 @@
+{
+  "id": "FID-L02",
+  "status": "pass",
+  "category": "FID",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/client.py:947-952 — /search compares requested facet names with the answer keys and records them in SearchResult.missing_facets",
+    "src/discover_swiss_mcp/client.py:1128-1134 — resolve_area raises UpstreamShapeError when containedInPlace/id is missing instead of reporting 'No area is named X'",
+    "src/discover_swiss_mcp/tools.py:1517-1528, 1825-1836, 2042-2053, 2260-2271 — find_tours, find_events, webcams_near, explore_area(region) turn that into a degraded envelope ('upstream_shape_changed', hint tools.py:229-233 'This is not an empty result')",
+    "src/discover_swiss_mcp/tools.py:2300-2325 — explore_area: unknown names not sent, sent-but-missing names both in missing_facets with UNKNOWN/MISSING_FACETS_HINT",
+    "tests/test_defaults.py:82-87 — facet missing from the answer -> degraded upstream_shape_changed, no 'No area is named'; tests/test_client.py:84-106 — recorded probe answer, two dropped names reported in missing_facets",
+    "runtime (scratch copy of f326260, repo untouched) — mutations M6 (drop the resolve_area missing-facet check) and M25 (missing = []) each turn a named test red",
+    "tests/test_live.py:283-296 — live canary for containedInPlace/id (collected, not executed)"
+  ],
+  "gaps": [],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "resolve_area ignored result.missing_facets — now raises UpstreamShapeError and every region tool reports it as degraded",
+    "No test covering the resolve_area missing-facet path — tests/test_defaults.py:82-87"
+  ],
+  "previous_gaps_open": [],
+  "evaluator_notes": "Both pass criteria met with code and mutation-verified tests. The live canary in verification step 3 has not run; the pass criteria do not require it, but the item stays not_verified at runtime. Out-of-scope residual (recorded under FID-006): a facet whose inner `values` key changed reads as an empty facet with no hint.",
+  "remediation": "",
+  "effort": ""
+}

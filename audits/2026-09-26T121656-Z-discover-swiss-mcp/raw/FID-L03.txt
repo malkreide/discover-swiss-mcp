@@ -1,0 +1,28 @@
+{
+  "id": "FID-L03",
+  "status": "pass",
+  "category": "FID",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/licenses.py:195-219 — is_test_object: name pattern, placeholder street/postal code/locality, placeholder e-mail on address and object",
+    "src/discover_swiss_mcp/tools.py:1017,1101,1312,1405,1562,1867,2082 — screen() with excluded_test_objects in search, search fallback, accommodation (+fallback), tours, events, webcams",
+    "src/discover_swiss_mcp/tools.py:1198-1212 — get_details now withholds a test object (detail=None, excluded_test_objects=1, TEST_OBJECT_HINT)",
+    "tests/test_shape.py:150-169 — get_details withholds and counts the Demo Event; counter-check: a real event passes",
+    "tests/test_licenses.py:223-231 — recorded Demo Event detected; :256-271 counter-check 'Demokratie-Forum' etc. not filtered",
+    "runtime (scratch copy of f326260, repo untouched) — mutation M9 (drop the get_details gate) turns test_a_test_object_is_withheld_and_counted_by_get_details red",
+    "tests/test_live.py:331-348 — live canary excluded_test_objects >= 1, skip at 0 (collected, not executed)"
+  ],
+  "gaps": [
+    "Low, residual: organizer.email (where the recorded Demo Event carries mail@example.ch, tests/test_licenses.py:226) is still not checked, so the mail rule does not fire for the recorded record; it is caught by name and address instead"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "get_details delivered a test record in full and did not count it"
+  ],
+  "previous_gaps_open": [
+    "is_test_object does not check organizer.email"
+  ],
+  "evaluator_notes": "Filter and counter are now in every tool that delivers objects, including the detail tool, and each is tested against the recorded object with a counter-check. The organizer-mail rule is defence in depth below the check's severity. The live canary has not run.",
+  "remediation": "Optionally extend is_test_object to organizer.email.",
+  "effort": "S"
+}

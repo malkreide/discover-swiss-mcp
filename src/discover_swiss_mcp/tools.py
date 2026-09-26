@@ -25,6 +25,7 @@ spec and the probe win (session rule: the probe is the truth):
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, date, datetime, timedelta
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
@@ -170,6 +171,23 @@ SEASON_CODES: tuple[str, ...] = (
 # Hints (mcp-data-fidelity: an empty result always says what to try next)
 # ---------------------------------------------------------------------------
 
+# What the query-syntax probe (2026-09-26) measured as not understood. Each
+# one returns 0 or fewer hits instead of an error, so an empty result after one
+# says the query, not the index, is the cause.
+_UNSUPPORTED_SYNTAX = re.compile(r"[*?~]|(?:^|\s)-\S|\b(?:AND|OR)\b|\"")
+
+
+def query_syntax_note(query: str | None) -> str | None:
+    """A hint for a query that uses syntax the source does not understand."""
+    if not query or not _UNSUPPORTED_SYNTAX.search(query):
+        return None
+    return (
+        "The query uses syntax the source does not understand (wildcards *, ?, fuzzy ~, "
+        "AND/OR, '-' exclusion or quotes); it matches whole words only, all of them. "
+        "Retry with plain whole words, one search per alternative."
+    )
+
+
 SEARCH_EMPTY_HINT = (
     "No hit. Try: (1) match='all' if you used 'name' — descriptions are indexed too; "
     "(2) drop `types`; (3) use `near` instead of `locality` — locality must match the "
@@ -298,9 +316,9 @@ class SearchInput(_PagedInput):
         default=None,
         max_length=200,
         description=(
-            "Plain search words, e.g. 'Landesmuseum'. No operators: wildcards, quotes, "
-            "AND/OR and word fragments are undocumented and untested. Omit to list by "
-            "type/place alone."
+            "Whole words, e.g. 'Landesmuseum'; case-insensitive; several words must all "
+            "match. No prefixes, wildcards (*, ?), fuzzy (~), AND/OR or '-' exclusion "
+            "(measured: they return 0 or fewer hits). Omit to list by type/place alone."
         ),
     )
     types: list[str] | None = Field(
@@ -1109,21 +1127,25 @@ async def search_impl(client: DiscoverSwissClient, params: SearchInput) -> Searc
     hits = [Hit(**_hit_fields(obj, params.near)) for obj in kept]
     fetched = len(result.values)
     upstream_count, has_more = _paging(result, params.page, params.page_size, fetched)
+    hint = _paged_hint(
+        upstream_count,
+        fetched,
+        len(hits),
+        params.page,
+        SEARCH_EMPTY_HINT,
+        by_license=screened.excluded_by_license,
+        test_objects=screened.excluded_test_objects,
+        default_types=excluded_default,
+    )
+    syntax_note = query_syntax_note(params.query) if fetched == 0 else None
+    if syntax_note:
+        hint = f"{syntax_note} {hint}" if hint else syntax_note
     return SearchResponse(
         provenance=result.provenance,
         retrieved_at=result.retrieved_at,
         source_freshness=_freshness(kept),
         project=project,
-        hint=_paged_hint(
-            upstream_count,
-            fetched,
-            len(hits),
-            params.page,
-            SEARCH_EMPTY_HINT,
-            by_license=screened.excluded_by_license,
-            test_objects=screened.excluded_test_objects,
-            default_types=excluded_default,
-        ),
+        hint=hint,
         excluded_by_license=screened.excluded_by_license,
         excluded_test_objects=screened.excluded_test_objects,
         excluded_by_default_types=excluded_default,

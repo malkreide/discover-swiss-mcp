@@ -1,0 +1,31 @@
+{
+  "id": "ARCH-012",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:70-79 — MCP_PROTOCOL_VERSION = '2026-07-28', with an accurate comment on what it does not do",
+    "tests/test_smoke.py:113-117 — test holds the constant equal to mcp_types.LATEST_PROTOCOL_VERSION (the test the old comment promised now exists)",
+    "runtime stdio (hardened container): tools/list with _meta protocolVersion 2099-01-01 and 2025-11-25 → error -32022 'Unsupported protocol version', data.supported ['2026-07-28']; server/discover → supportedVersions ['2026-07-28']",
+    "CHANGELOG.md:1-7 — Keep a Changelog + SemVer header",
+    ".github/dependabot.yml:27-36 — pip ecosystem, weekly, grouped (SDK updates proposed as PRs); docker ecosystem :40-46"
+  ],
+  "gaps": [
+    "The per-request check is the SDK's, not the server's pin: legacy initialize is still served on both transports — runtime HTTP initialize with 2024-11-05, 2025-06-18, 2025-11-25 and stdio initialize with 2024-11-05 all succeed and echo the requested version, while server/discover advertises only ['2026-07-28'] (criterion 3: the advertised list and the accepted set differ)",
+    "CHANGELOG does not name the spec version (grep '2026-07-28' in CHANGELOG.md → no hit; control: grep 'protocol' hits lines 104, 156)",
+    "README has no 'MCP Protocol Version' section and no update/breaking-change policy (grep README.md for protocol/breaking/semver/update policy → only badge and credits lines)"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "Code comment asserts a guard test that does not exist — closed (tests/test_smoke.py:113-117, comment corrected)",
+    "No Dependabot/Renovate for pip — closed (.github/dependabot.yml:27-36)"
+  ],
+  "previous_gaps_open": [
+    "Pinned constant not the enforcing mechanism; legacy handshake versions 2024-11-05..2025-11-25 still accepted",
+    "CHANGELOG does not name the spec version",
+    "README has no 'MCP Protocol Version' section and no update/breaking-change policy"
+  ],
+  "evaluator_notes": "Improved from fail: the pin is now tied to the SDK by a test, -32022 and discover agree on stdio's _meta path, and Dependabot covers pip. Still unmet: legacy initialize accepted contrary to the advertised list, no spec version in CHANGELOG, no README section/policy. About half the criteria → partial.",
+  "remediation": "Add a README 'MCP Protocol Version' section with the update/breaking-change policy; name the spec version in the CHANGELOG release entry; reject or explicitly document legacy initialize once the SDK offers a switch.",
+  "effort": "S"
+}

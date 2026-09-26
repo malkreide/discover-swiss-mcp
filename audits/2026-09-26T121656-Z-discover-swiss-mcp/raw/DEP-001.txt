@@ -1,0 +1,32 @@
+{
+  "id": "DEP-001",
+  "status": "pass",
+  "category": "DEP",
+  "severity": "high",
+  "evidence": [
+    "pyproject.toml:34-44 — every runtime import-bearing dependency has both bounds: mcp>=2,<3; httpx>=0.27.0,<1; pydantic>=2,<3; structlog>=24.1.0,<27; uvicorn>=0.30,<1 and starlette>=0.40,<2 now declared (imported directly: server.py:373, auth.py:52-53); no == in runtime deps",
+    "Import inventory: src/ imports mcp, httpx, pydantic, structlog, starlette, uvicorn (+ stdlib) — all capped",
+    "runtime 4a: the highest cap-allowed versions are the index's latest and are what the venv runs (mcp 2.2.0, httpx 0.28.1, pydantic 2.13.5, structlog 26.1.0, uvicorn 0.54.0, starlette 1.7.0); offline suite 325 passed on them",
+    "runtime 3: empty venv `pip install --dry-run --no-cache-dir .` resolves exactly those versions (pip config: only the CA cert); no lockfile in the repo to compare against",
+    "runtime 4b: `pip index versions --pre httpx` lists 1.0.dev6 — without <1 a --pre install would take it, so the httpx cap has a measurable effect; for mcp, pydantic, structlog, uvicorn, starlette no next major is on the index — effect of those caps currently unverified (reported, not a defect)",
+    "runtime: clean venv with mcp==2.0.0 (lower bound) installs and serves server/discover",
+    ".github/dependabot.yml:27-36 — pip ecosystem weekly: the cap-raising process"
+  ],
+  "gaps": [
+    "Low: open ranges without a written decision — tzdata (win32 only, data package, never imported; judged acceptable in this audit) and the dev extras pytest>=8.0.0, pytest-asyncio>=0.23.0, respx>=0.21.0 (test tooling, not runtime) at pyproject.toml:48,53-55",
+    "Caps other than httpx<1 have no observable effect today (next major not published) — to be re-checked when one appears"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "pydantic>=2 uncapped — closed (<3)",
+    "httpx>=0.27.0 uncapped — closed (<1; effect measurable against 1.0.dev6)",
+    "uvicorn imported but undeclared — closed (uvicorn>=0.30,<1; starlette also declared)",
+    "No automated cap-raising process — closed (Dependabot pip)"
+  ],
+  "previous_gaps_open": [
+    "Caps on mcp/structlog (and now pydantic/uvicorn/starlette) have no measurable effect yet — reported as 'Wirkung ungeprüft'"
+  ],
+  "evaluator_notes": "All import-bearing runtime dependencies are capped with measured upper ends, resolution in an empty venv matches, the lower SDK bound was installed and runs, and Dependabot raises caps. SDK-006 is not judged here. Residuals are documentation of deliberate open ranges on non-runtime packages.",
+  "remediation": "Optional: one comment in pyproject.toml explaining why tzdata and the dev extras stay open.",
+  "effort": "S"
+}

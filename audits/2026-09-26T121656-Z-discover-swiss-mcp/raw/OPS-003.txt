@@ -1,0 +1,34 @@
+{
+  "id": "OPS-003",
+  "status": "partial",
+  "category": "OPS",
+  "severity": "high",
+  "evidence": [
+    "README.md:48-61 — 'Phases and gates': 'The server is read-only in every phase — no tool writes, and none will before a phase that says so explicitly'; table P1-P5 + Release with gates; README.de.md:46-60 same in German",
+    "README.md:27 — Status table: 'Phase | P5 — remediation of the audit of 2026-09-26'",
+    "src/discover_swiss_mcp/server.py:179-184 — every tool readOnlyHint True, destructiveHint False (phase matches annotations)",
+    "find . -path ./.venv -prune -o -iname '*phase*' -o -iname '*roadmap*' — only the previous audit's finding file; no roadmap file",
+    "grep -n -i 'ISDS|DSG|Verarbeitungsverzeichnis|sign-off' README.md README.de.md — no phase-transition prerequisites of that kind",
+    "CHANGELOG.md:8-15 — single [Unreleased] section; 'P5' mentioned in the Security subsection, no entries recording P1->P2->P3->P4 transitions",
+    "tests/test_live.py — the P4 gate 'canaries green' (README.md:59) has no execution record, yet README.md:27 reports P5"
+  ],
+  "gaps": [
+    "The declared phases are build milestones (P1-P5), not the OPS-003 architecture phases (1 read-only wrapper / 2 enrichment / 3 write); 'read-only in every phase' is stated but the server is not placed as 'Phase 1' with what Phase 2/3 would require",
+    "No roadmap file with phase-specific tasks for the next architecture phase",
+    "Phase transitions have no documented prerequisites of the kind the check names (audit run, ISDS classification, DSG processing record; for writes: semantic layer, identity resolution, sign-offs)",
+    "Phase transitions are not recorded in the CHANGELOG as transitions",
+    "Consistency: README declares P5 although the P4 gate 'canaries green' was never demonstrably met (live canaries not executed)"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "No phase declaration — the README now declares the current (build) phase and read-only-in-every-phase"
+  ],
+  "previous_gaps_open": [
+    "No roadmap file",
+    "No documented phase-transition prerequisites (audit run, ISDS, DSG record)",
+    "Phase transitions not recorded in CHANGELOG"
+  ],
+  "evaluator_notes": "Criterion 2 met; criteria 1, 3, 5 partly (phase and read-only discipline declared, gated table in README, P5 named in CHANGELOG); criterion 4 not met. About half -> partial. The read-only commitment is explicit, which is what matters most; the rest is governance paperwork the check requires.",
+  "remediation": "Add a short docs/roadmap.md placing the server in OPS-003 Phase 1 (read-only wrapper), listing Phase-1 exit conditions (audit run done, ISDS/DSG references or 'n/a: public data, no personal data' with reasoning) and stating Phase 2/3 are not planned; record phase transitions in CHANGELOG; align README P4 gate wording with the canaries' actual execution state.",
+  "effort": "S"
+}

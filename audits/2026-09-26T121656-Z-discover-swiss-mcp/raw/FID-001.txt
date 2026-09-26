@@ -1,0 +1,35 @@
+{
+  "id": "FID-001",
+  "status": "partial",
+  "category": "FID",
+  "severity": "critical",
+  "evidence": [
+    "scripts/default_matrix.py:206-221 — spec_parameters() reads every parameter of POST /search (headers + SearchRequest), FacetRequest, GET /vertices/{id} and the five list endpoints from probes/probe_out/openapi.json",
+    "tests/test_defaults.py:25-28 — undecided()=={} and stale_decisions()=={} : a spec parameter without a decision fails the suite; tests/test_defaults.py:31-32 holds docs/DEFAULTS.md equal to render()",
+    "docs/DEFAULTS.md:84-101 — FacetRequest members (count/scope/project/orderBy/orderDirection/excludeRedundant) now decided; :110,128 Accept-Timezone decided; :120 includeAllPhotos sent",
+    "src/discover_swiss_mcp/client.py:531-539 facet_request() sends orderBy=count, orderDirection=desc explicitly; client.py:987 includeAllPhotos=false on /vertices",
+    "src/discover_swiss_mcp/client.py:1189-1195 — resolve_area appends 'Only the 30 areas holding the most matches were compared' when the facet came back full (truncation now visible in hint)",
+    "tests/test_defaults.py:52-107 — wire tests for facet ordering, truncation hint (+counter-check), includeAllPhotos, Accept-Language for de/fr/it/en",
+    "runtime (scratch copy of f326260, repo untouched) — mutations M12 (drop facet orderBy/orderDirection), M13 (drop includeAllPhotos), M17 (drop Accept-Language), M7 (drop truncation hint) each turned exactly one named test red",
+    "probes/PROBE_REPORT_discover-swiss-mcp.md:76 — list `project`: only '200 ohne project' recorded, no count comparison with/without",
+    "pytest --collect-only tests/test_live.py — 25 live canaries collected; none executed (no key/network in this sandbox; no execution record in repo)"
+  ],
+  "gaps": [
+    "Recall delta (omitted vs. explicit) still not measured for list `project` (undocumented partner default) nor for the resolve_area facet cut at 30 and explore_area's cut at 20 — criterion 3 remains open",
+    "Live canaries that would re-measure recall have never been executed; empirical evidence is still the 2026-09-17 probe only",
+    "explore_area's 20-values-per-facet cut is stated in the tool description only; the result carries no field/hint when a facet came back full (applied drops `facets`, tools.py:2287) — unlike resolve_area, where the fix added one"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "Matrix hand-written / incomplete: now derived from the recorded spec and held complete by tests/test_defaults.py (FacetRequest members, includeAllPhotos, Accept-Timezone included)",
+    "resolve_area truncation at count=30 invisible: hint now names it (client.py:1189-1195), tested with counter-check",
+    "Accept-Language not regression-tested: tests/test_defaults.py:100-107"
+  ],
+  "previous_gaps_open": [
+    "Recall delta for list `project` not measured",
+    "Live canaries never executed"
+  ],
+  "evaluator_notes": "Every restricting default found is now sent explicitly and pinned by wire tests whose mutations are detected; the matrix is generated from the spec and cannot silently fall behind it. What keeps this below pass is empirical: criterion 3 (measured recall delta per restricting parameter) is not met for list `project` and the facet caps, and no live re-measurement has run. The risk itself is mitigated because the parameters are sent. Criterion 6 not applicable (no vocabulary-based widening).",
+  "remediation": "Run the live canaries once with a key and record the output; add a one-off probe measuring list counts with and without `project` and the facet value counts at 20/30 vs. a larger count; surface the explore_area facet cap in the result (field or hint when len(values)==20).",
+  "effort": "S"
+}

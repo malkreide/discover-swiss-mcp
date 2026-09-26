@@ -1,0 +1,33 @@
+{
+  "id": "SEC-002",
+  "status": "partial",
+  "category": "SEC",
+  "severity": "critical",
+  "evidence": [
+    "src/discover_swiss_mcp/auth.py:253-260 — aud is required and compared as an exact set member against the configured resource URL (no substring match); missing aud is refused",
+    "src/discover_swiss_mcp/auth.py:312-319 — missing token → 401, verifier returns None (wrong aud/iss/exp/inactive) → 401 error=\"invalid_token\" with WWW-Authenticate",
+    "tests/test_auth.py:265-284 — parametrized: inactive, aud of another service, aud missing, foreign iss, expired → all refused; tests/test_auth.py:168-174 — unknown token → 401 invalid_token",
+    "src/discover_swiss_mcp/auth.py:248-252 + config.py:74,187,217 — expected issuer comes from server-side config DISCOVER_SWISS_MCP_AUTH_ISSUER, not from the token",
+    "src/discover_swiss_mcp/client.py:753 + config.py:84-87 — upstream calls carry only the operator's own Ocp-Apim-Subscription-Key; grep src/ for request.headers/Authorization reads outside auth.py → none (control: the same grep hits auth.py and client.AuthorizationError), so the client bearer never reaches discover.swiss",
+    "src/discover_swiss_mcp/http_app.py:63-77 — a non-loopback bind without inbound OAuth is refused; runtime: DISCOVER_SWISS_MCP_HOST=0.0.0.0 without AUTH_* → event http_start_refused, no listener",
+    "runtime (0.0.0.0:8001, OAuth configured): no token → 401 + WWW-Authenticate with resource_metadata; 'Bearer abc' with unreachable AS → 401 invalid_token (fail closed)"
+  ],
+  "gaps": [
+    "Criterion 4 unmet: the caller's identity (AccessToken.subject/client_id) is neither propagated nor logged per tool call — the audit trail records client_id only on insufficient_scope (auth.py:337). Forwarding sub to discover.swiss would be inappropriate for a third-party API; a local per-call log line would satisfy the intent",
+    "Criterion 5 only partly met: iss is checked only when the introspection answer carries it (auth.py:248-252); runtime probe: an active answer with aud but without iss and exp is accepted. Compensated by provenance of the channel (pinned HTTPS to the configured AS with client auth), not by the claim",
+    "REGRESSION (availability): a transient failure reaching the AS (DNS/connect) returns None and that None is cached for 60 s (auth.py:209-216). Runtime: first verify_token hit a ResolutionError → None; a second call 1 s later returned None without contacting the AS; a fresh verifier accepted the same token. A valid token is refused as 'invalid_token' for up to a minute after a network hiccup, which also invites clients to discard valid tokens",
+    "On loopback the HTTP transport still runs without inbound auth by design (any local process can spend the key); acceptable for the local profile, noted only",
+    "Minor: server.py:380 discards the IntrospectionVerifier (_verifier) — its httpx client is never closed on shutdown"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "No inbound token verification / aud-iss-RFC 8707 criteria unimplemented — closed: introspection verifier with required aud and configured-issuer check (auth.py:180-271)",
+    "Any caller reaching the HTTP port spends the operator's key — closed for network binds: non-loopback requires OAuth (http_app.py:63-77); still true on loopback by design"
+  ],
+  "previous_gaps_open": [
+    "No user identity propagation (criterion 4)"
+  ],
+  "evaluator_notes": "The critical core is now in place and verified: tokens are introspected, aud must name this resource (exact match, required), the expected issuer is server-side configuration, wrong/missing audience yields 401, and the client token never reaches discover.swiss. Kept at partial because criterion 4 (identity for audit) is still unmet and criterion 5 accepts an introspection answer without iss; neither is critical, so the release-blocking part of the previous finding is closed. The fix introduced a negative-cache bug that locks out valid tokens for 60 s after a transient AS/DNS failure.",
+  "remediation": "Do not cache a None that came from a transport/resolution failure (cache only definitive AS answers), and answer such a failure with 503 rather than 401 invalid_token. Log client_id/sub per tool call (structlog, no token). Optionally require iss in the introspection answer or document why the channel suffices.",
+  "effort": "S"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "SEC-021",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/net.py:42 — EGRESS_ALLOWLIST: frozenset[str] = frozenset({'api.discover.swiss'}), not read from the environment",
+    "src/discover_swiss_mcp/net.py:100-108,134 — assert_host_allowed runs inside assert_url_allowed before resolution on every request and every redirect hop; the only two outbound call sites (client.py:809, auth.py:220) both use net.safe_request (grep for direct httpx/requests/urllib calls in src/ → none besides these)",
+    "src/discover_swiss_mcp/auth.py:194-196 — the one exception (introspection host) is a one-element frozenset built once at start-up from the operator's HTTPS introspection URL (config.py:210-215 enforces https)",
+    "deploy/k8s/networkpolicy.yaml:32-60 — Egress policy: DNS (UDP+TCP 53) to kube-dns, TCP 443 to public IPv4 only (private, loopback, link-local, CGNAT excluded); deploy/k8s/cilium-networkpolicy.yaml:76-95 — toFQDNs api.discover.swiss + introspection host, DNS rule kept",
+    "docs/network-egress.md:7-21 — allowed hosts per layer; :39-41 DNS path; :48-60 update procedure (code, Cilium policy, table, CHANGELOG, test)",
+    "tests/test_deploy.py:128-166 — NetworkPolicy shape, Cilium FQDNs equal to the code allow-list, every allowed host documented; tests/test_net.py:19-21, 129-141 — non-listed host and off-list redirect refused"
+  ],
+  "gaps": [
+    "Low: the introspection host is operator-configurable through DISCOVER_SWISS_MCP_AUTH_INTROSPECTION_URL — formally the 'allow-list from env' pattern the check calls a fail; accepted here because it is one HTTPS host, frozen at start-up, documented as the only exception and still subject to the IP blocklist. Consequence: an in-cluster authorization server on a private address can never be used (fail closed)",
+    "Network-layer control exists only for Kubernetes; a local stdio/VM run has none in this repo (documented, docs/network-egress.md:43-46)",
+    "The Cilium policy carries the placeholder login.example.ch that each deployment must replace"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "No network-layer egress control — closed for Kubernetes (NetworkPolicy + Cilium FQDN policy)",
+    "Allow-listed host not documented — closed (docs/network-egress.md, SECURITY.md)",
+    "No documented update procedure — closed (docs/network-egress.md:48-60, enforced by tests/test_deploy.py)"
+  ],
+  "previous_gaps_open": [],
+  "evaluator_notes": "All six criteria met with code, manifests, docs and tests tying them together. The env-derived introspection host is a deliberate, documented and narrowly bounded exception.",
+  "remediation": "",
+  "effort": ""
+}

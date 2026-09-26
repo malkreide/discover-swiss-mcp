@@ -1,0 +1,25 @@
+{
+  "id": "ARCH-013",
+  "status": "pass",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "Path enumeration: grep src/ for streamable_http_app(/sse_app(/http_app(/mcp.run(/uvicorn.run(/factory → server.py:380 build_http_app, server.py:384 uvicorn.run(app, host, port), server.py:386 mcp.run() (stdio), http_app.py:84 the only streamable_http_app call; no SSE, no factory. Entry points: pyproject.toml:67-68 console script and __main__.py both call server.main; Dockerfile:48 ENTRYPOINT python -m discover_swiss_mcp; deploy/k8s/deployment.yaml:46-52 only env vars",
+    "src/discover_swiss_mcp/http_app.py:80-105 — one builder: bind policy, transport_security (always, not conditional on auth) and the optional ScopeGate; host and port both come from Settings (http_app.py:43,84; server.py:384)",
+    "tests/test_http_app.py:116-127 — seam test main() → build_http_app → uvicorn: asserts uvicorn gets host/port and that the handed app refuses a wrong-port Host with 421",
+    "mutation (scratch copy): (a) drop transport_security= in build_http_app → 3 tests fail; (b) main() serves streamable_http_app directly, bypassing the builder → test_main_hands_the_checked_app_to_uvicorn fails; (c) builder ignores settings.port (hard 8000) → 2 tests fail",
+    "runtime: default loopback run and 0.0.0.0:8001 run both go through the same builder (Uvicorn start line + http_bind_non_loopback warning)"
+  ],
+  "gaps": [
+    "The ScopeGate layer is conditional on OAuth being configured — that is the control itself, not a foreign condition, and a network bind without it is refused; noted only"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "No test of the seam main() → streamable_http_app — closed (tests/test_http_app.py:116-127) and counter-proofed by mutation",
+    "Host allow-list armed only for a loopback bind — closed (transport_security always passed explicitly)"
+  ],
+  "previous_gaps_open": [],
+  "evaluator_notes": "Exactly one network path exists, it carries the full hardening with host and port, and a seam test catches each of three wiring mutations performed in a scratch copy.",
+  "remediation": "",
+  "effort": ""
+}
