@@ -195,20 +195,29 @@ FACET_ALIASES: dict[str, str] = {
 
 
 def odata_facet_names(names: list[str]) -> list[str]:
-    """Map short facet names to their OData names; keep everything else as given.
-
-    Names outside :data:`VERIFIED_FACETS` are passed on, not refused: the index
-    knows 31 facets and eight are verified. Whether an unverified one exists is
-    for the response to say — :meth:`DiscoverSwissClient.search` compares the
-    answer against the request and reports the difference as
-    ``missing_facets``.
-    """
+    """Map short facet names to their OData names; keep everything else as given."""
     mapped: list[str] = []
     for name in names:
         candidate = FACET_ALIASES.get(name.strip(), name.strip())
         if candidate and candidate not in mapped:
             mapped.append(candidate)
     return mapped
+
+
+def partition_facet_names(names: list[str]) -> tuple[list[str], list[str]]:
+    """``(sendable, unknown)``: verified OData names, and everything else.
+
+    Only verified names leave the client. An unknown name is not dropped
+    quietly upstream, as the probe suggested — the live stop-gate run of
+    2026-09-26 answered ``facets=[leafType, difficultyX]`` with HTTP 400 for
+    the whole request. The quiet drop only applies to the ``filterPropertyName``
+    spellings of real facets, which :data:`FACET_ALIASES` rewrites first.
+    """
+    sendable: list[str] = []
+    unknown: list[str] = []
+    for name in odata_facet_names(names):
+        (sendable if name in VERIFIED_FACETS else unknown).append(name)
+    return sendable, unknown
 
 
 # Identifiers look like `civ_px9-s28_bggg` or

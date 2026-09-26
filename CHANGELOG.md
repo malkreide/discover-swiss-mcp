@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Europe/Zurich` through `zoneinfo`, which on Windows needs the `tzdata`
   package; without it, importing the tools raised `ZoneInfoNotFoundError`.
   `tzdata` is now a dependency on Windows.
+- **`explore_area` failed on an unknown facet name.** The probe had seen the
+  API drop the `filterPropertyName` spellings quietly and the tool assumed the
+  same for any name; the live stop-gate run (2026-09-26) answered an invented
+  name with HTTP 400 for the whole request. Only the eight verified names are
+  sent now; anything else is reported in `missing_facets` with a hint.
 
 ### Added
 

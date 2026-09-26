@@ -43,7 +43,7 @@ from discover_swiss_mcp.client import (
     distance_km,
     facet_values,
     filter_by_distance,
-    odata_facet_names,
+    partition_facet_names,
 )
 from discover_swiss_mcp.licenses import (
     Attribution,
@@ -2071,6 +2071,13 @@ DEFAULT_EXPLORE_FACETS: tuple[str, ...] = ("leafType", "sourcePartner", "season"
 EXPLORE_FACET_VALUES = 20
 EXPLORE_DEFAULT_RADIUS_KM = 10.0
 
+UNKNOWN_FACETS_HINT = (
+    "Facet(s) {names} are not valid names and were not sent — the upstream API rejects the "
+    "whole request for an unknown facet; valid names are leafType, containedInPlace/id, "
+    "rating/difficulty, sourcePartner, season, priceRange, address/addressLocality, "
+    "categoryTree."
+)
+
 MISSING_FACETS_HINT = (
     "Facet(s) {names} were silently dropped by the upstream API — the name is probably wrong; "
     "valid names are leafType, containedInPlace/id, rating/difficulty, sourcePartner, season, "
@@ -2123,7 +2130,8 @@ class ExploreAreaInput(BaseModel):
         description=(
             "Facet names (OData spelling): leafType, containedInPlace/id, rating/difficulty, "
             "sourcePartner, season, priceRange, address/addressLocality, categoryTree. The "
-            "short forms containedInPlace, ratingDifficulty and addressLocality are mapped."
+            "short forms containedInPlace, ratingDifficulty and addressLocality are mapped; "
+            "any other name is not sent and is reported in missing_facets."
         ),
     )
     lang: Lang = Field(default="de", description="Language of facet labels (de, fr, it, en).")
@@ -2146,7 +2154,8 @@ class ExploreAreaResponse(Envelope):
     facets: dict[str, list[FacetValue]] = Field(default_factory=dict)
     # The names sent upstream, after mapping short forms.
     requested_facets: list[str] = Field(default_factory=list)
-    # Sent, and not in the answer: the upstream API drops unknown names quietly.
+    # Asked for and not in the answer: names this server does not send (unknown
+    # upstream answers 400), and sent names the upstream API dropped quietly.
     missing_facets: list[str] = Field(default_factory=list)
     area: AreaInfo | None = None
     applied: dict[str, Any] = Field(default_factory=dict)
@@ -2162,7 +2171,11 @@ def build_explore_body(
         "filters": [geo_distance_filter(params.near, radius)] if params.near is not None else None,
         "resultsPerPage": 1,
         "select": "identifier",
-        "facets": [{"name": name, "count": EXPLORE_FACET_VALUES} for name in facet_names],
+        "facets": (
+            [{"name": name, "count": EXPLORE_FACET_VALUES} for name in facet_names]
+            if facet_names
+            else None
+        ),
     }
     return {k: v for k, v in body.items() if v is not None}
 
@@ -2189,7 +2202,7 @@ async def explore_area_impl(
     client: DiscoverSwissClient, params: ExploreAreaInput
 ) -> ExploreAreaResponse:
     project = client.settings.project
-    facet_names = odata_facet_names(params.facets)
+    facet_names, unknown = partition_facet_names(params.facets)
     area: AreaInfo | None = None
     area_id: str | None = None
 
@@ -2200,7 +2213,10 @@ async def explore_area_impl(
             if exc.degraded is None:
                 raise
             return ExploreAreaResponse(
-                project=project, requested_facets=facet_names, **degraded_envelope_fields(exc)
+                project=project,
+                requested_facets=facet_names,
+                missing_facets=unknown,
+                **degraded_envelope_fields(exc),
             )
         area = _area_info(lookup)
         if lookup.identifier is None:
@@ -2210,6 +2226,7 @@ async def explore_area_impl(
                 retrieved_at=lookup.retrieved_at,
                 source_freshness=None,
                 requested_facets=facet_names,
+                missing_facets=unknown,
                 area=area,
                 hint=_unresolved_area_hint(lookup, "facet count"),
             )
@@ -2223,6 +2240,7 @@ async def explore_area_impl(
         return ExploreAreaResponse(
             project=project,
             requested_facets=facet_names,
+            missing_facets=unknown,
             area=area,
             applied=applied,
             **degraded_envelope_fields(result),
@@ -2234,6 +2252,8 @@ async def explore_area_impl(
         if name in result.facets and name not in result.missing_facets
     }
     hints: list[str] = []
+    if unknown:
+        hints.append(UNKNOWN_FACETS_HINT.format(names=", ".join(unknown)))
     if result.missing_facets:
         hints.append(MISSING_FACETS_HINT.format(names=", ".join(result.missing_facets)))
     if result.count == 0:
@@ -2248,7 +2268,7 @@ async def explore_area_impl(
         total=result.count,
         facets=facets,
         requested_facets=facet_names,
-        missing_facets=list(result.missing_facets),
+        missing_facets=unknown + list(result.missing_facets),
         area=area,
         applied=applied,
         hint=" ".join(hints) if hints else None,
