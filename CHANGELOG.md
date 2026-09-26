@@ -317,7 +317,9 @@ Full mcp-audit run against `bd0e371`: 85 applicable checks, 25 pass, 38 partial,
 Targeted re-run of the 27 checks P5 addressed (run
 `audits/2026-09-26T121656-Z-discover-swiss-mcp`, target `f326260`), not a full
 audit. Live evidence from the maintainer's own runs (24 canaries passed, 1
-skipped; query-syntax probe). Result: 10 pass, 16 partial, 1 fail.
+skipped; query-syntax probe). Result: 10 pass, 16 partial, 1 fail. After the
+follow-ups, the live suite on `421f5c6` passed 26 of 26, the demo-event
+canary included.
 
 | Check | Before | Re-verified | Follow-up in this change |
 |---|---|---|---|

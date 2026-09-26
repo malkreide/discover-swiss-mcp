@@ -41,3 +41,26 @@ Wire details visible in the log: `GET /vertices/…?project=dsod-content&include
 answered 200; the list calls with the 15-field `select` answered 200.
 
 ## `python probes/probe_query_syntax.py` — see `probes/PROBE_QUERY_discover-swiss.md`
+
+Run at `2026-09-26T12:29:25Z`. The values in `probes/probe_query_out/results.json`
+were checked against the maintainer's original file: identical in every row.
+
+## Follow-up run on `421f5c6` (merge of #19) — 26 passed, 0 skipped
+
+Same machine, same key, after the follow-up fixes. Every measured value of
+the first run is unchanged. The two new canaries:
+
+| Canary | Measured | Floor |
+|---|---:|---:|
+| search Landesmuseum / landesmuseum / Landesmus (`match='name'`) | 7 / 7 / 0 | equal / equal / 0 |
+| search('Demo', Event).upstream_count | 1 | 1 |
+| search('Demo', Event).excluded_test_objects | 1 | 1 |
+
+The demo-event canary, which skipped in the first run, now passes: the record
+exists upstream and the test-object filter withholds and counts it. The skip
+of the first run was the 30-day window, not a gap in the filter.
+
+A first attempt at this run still collected the old suite (25 tests):
+`git pull` had aborted because the untracked original of
+`probes/probe_query_out/results.json` would have been overwritten. That run is
+not counted.
