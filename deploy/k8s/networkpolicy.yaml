@@ -1,0 +1,60 @@
+# Network-layer egress control (audit SEC-021), plain Kubernetes.
+#
+# A standard NetworkPolicy knows IP ranges, not host names. It therefore
+# allows exactly: DNS to the cluster resolver, and HTTPS (TCP 443) to public
+# addresses — every private, loopback, link-local (cloud metadata 169.254/16)
+# and carrier-grade NAT range excluded. Which public host is contacted is
+# decided by the code-layer allow-list (src/discover_swiss_mcp/net.py:
+# api.discover.swiss, plus the one introspection host when OAuth is on).
+# For a host-name-exact rule use cilium-networkpolicy.yaml.
+#
+# Ingress: only the ingress controller's namespace may reach port 8000.
+# Adjust the namespace label to your ingress controller.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: discover-swiss-mcp
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: discover-swiss-mcp
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # DNS — without it no host name resolves and every call fails.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # HTTPS to public addresses only.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 0.0.0.0/8
+              - 10.0.0.0/8
+              - 100.64.0.0/10
+              - 127.0.0.0/8
+              - 169.254.0.0/16
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443

@@ -1,0 +1,14 @@
+# gitleaks configuration: the default rules plus the one secret format this
+# repository is about. The default rules do not recognise a discover.swiss
+# (Azure API Management) subscription key — 32 hex characters — and missed it
+# in the counter-check of 2026-09-26 while finding an AWS key in the same file.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "discover-swiss-subscription-key"
+description = "discover.swiss / Azure APIM subscription key next to its header or variable name"
+regex = '''(?i)(?:ocp-apim-subscription-key|discover_swiss_key|subscription[_-]?key)["'\s:=]+["']?([0-9a-f]{32})\b'''
+secretGroup = 1
+keywords = ["ocp-apim-subscription-key", "discover_swiss_key", "subscription_key", "subscription-key", "subscriptionkey"]

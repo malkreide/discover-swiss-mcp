@@ -10,6 +10,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Not released. Release gate: written confirmation of the search entitlement by
 discover.swiss (README «Status»).
 
+### Security
+
+P5 — remediation of the audit of 2026-09-26. Each entry names its finding.
+
+- **Inbound OAuth for the HTTP transport** (SEC-003, SEC-002): the server acts
+  as an OAuth resource server. Scope hierarchy `mcp:tools-basic` (discovery,
+  `source_status`) and `tourism:read:public` (every data tool); no write or
+  admin scope, because no tool writes. Tokens are checked by introspection
+  (RFC 7662): active, unexpired, `iss` = configured issuer, `aud` contains the
+  resource URL (RFC 8707). Scopes are checked per call from the JSON-RPC body;
+  401/403 carry `WWW-Authenticate` with the missing scope and the metadata URL;
+  `/.well-known/oauth-protected-resource` (RFC 9728) names every scope. Off on
+  stdio. New module `auth.py`.
+- **HTTP bind policy** (SEC-016): any bind address other than loopback is
+  refused at start-up (exit 2) unless inbound OAuth and
+  `DISCOVER_SWISS_MCP_ALLOWED_HOSTS` are configured; an allowed network bind is
+  logged as the warning `http_bind_non_loopback`. New module `http_app.py`.
+- **Port-exact Host and Origin checks, always on** (SEC-024): the lists are
+  passed to the SDK explicitly; on loopback `127.0.0.1:<port>` instead of the
+  SDK's `127.0.0.1:*`, which let another local port through. Allowed hosts
+  refuse wildcards; a name without a port is exact (the Host behind an HTTPS
+  ingress).
+- **SSRF: IPv4 embedded in IPv6** (SEC-004): IPv4-mapped (`::ffff:169.254.169.254`),
+  6to4 and Teredo addresses are unwrapped before the blocklist; multicast,
+  reserved and unspecified addresses are blocked too.
+- **Hardened container and Kubernetes manifests** (SEC-007): `Dockerfile` with
+  UID/GID 10001, no login shell, no bytecode writes, base image pinned by
+  digest; `deploy/k8s/deployment.yaml` with `runAsNonRoot`,
+  `readOnlyRootFilesystem`, `capabilities.drop: [ALL]`,
+  `allowPrivilegeEscalation: false`, seccomp `RuntimeDefault`, memory `/tmp`.
+  Measured on a built image: `docs/network-egress.md`.
+- **Network-layer egress control** (SEC-021): `deploy/k8s/networkpolicy.yaml`
+  (DNS plus TCP 443 to public ranges only), `deploy/k8s/cilium-networkpolicy.yaml`
+  (host names), `docs/network-egress.md` with the allowed hosts per layer, the
+  DNS path and the update procedure; a test holds policy, code allow-list and
+  documentation together.
+- **Secret scan in CI** (ARCH-005): a `secret-scan` job runs gitleaks v8.30.1
+  (image pinned by digest) over the full history, with `.gitleaks.toml` adding
+  the discover.swiss key format the default rules missed. `.env.example` with
+  placeholders.
+
 ### Added
 
 - **Eight read-only tools**, each a pure `*_impl` function in `tools.py` plus
@@ -64,6 +105,9 @@ discover.swiss (README «Status»).
   version; structlog JSON to stderr; the key as `SecretStr`, never logged.
 - **Tool hash snapshot** (`docs/tool-hashes.json`, `scripts/gen_tool_hashes.py`),
   checked by the test suite — the `openlex-mcp` pattern.
+- **Live canaries for status and the fallback** (DRIFT-004, OPS-001): `/status`,
+  `source_status` and each of the five list endpoints the fallback reads, with
+  the current `select`; the module shares one client and one event loop.
 - **Live canaries** (`tests/test_live.py`, marker `live`, key from the
   environment, excluded from CI): recall floors at half of the 2026-09-17
   counts for six tools (`search`, `find_accommodation`, `find_tours`,
@@ -88,6 +132,34 @@ discover.swiss (README «Status»).
 
 ### Changed
 
+- **Every wait counts against the 25 s call budget** (ARCH-014): a 429's named
+  wait and the client-side token bucket no longer extend it (one call could
+  reach about 55 s, past the MCP client's 30 s). A wait that does not fit ends
+  the call at once with the new state `degraded: rate_limited` and the seconds
+  in `hint`; `source_status` reports a rate limit as such, not as unreachable.
+- **Own time seams** (OPS-010): `client._monotonic` next to `client._sleep`; no
+  test patches `time.monotonic` any more. A real-time budget test and guards
+  on both seams; the counter-test procedure is in CONTRIBUTING.md.
+- **Facet requests send their ordering** (FID-001): `orderBy=count`,
+  `orderDirection=desc`; `get_details` sends `includeAllPhotos=false`.
+  `docs/DEFAULTS.md` lists all 118 parameters the spec offers on the endpoints
+  used, with the server's decision for each — generated from the spec by
+  `scripts/default_matrix.py`, held complete by `tests/test_defaults.py`.
+- **Tool descriptions** (FID-005): `search` names its query syntax as plain
+  words and says that operators, wildcards and prefixes are undocumented and
+  untested, instead of an unmeasured «whole words, compounds not by their
+  parts»; `find_events` and `webcams_near` no longer explain an empty result
+  (their `hint` does). These reword sentences the P2/P3 briefs fixed verbatim.
+  `probes/probe_query_syntax.py` measures the syntax.
+- **`serverInfo.version`** is the package version (ARCH-016; was `""`). The
+  version lives in the leaf module `_version.py` (ARCH-022). A test holds the
+  protocol pin equal to the SDK's `LATEST_PROTOCOL_VERSION` and the comment
+  above it says what it does not do (ARCH-012).
+- **Dependencies capped** (DEP-001): `httpx<1`, `pydantic<3`; `uvicorn` and
+  `starlette` are declared, being imported directly; Dependabot covers pip and
+  docker.
+- **README**: phases and gates (OPS-003), the new variables, container use.
+
 - `DiscoverSwissClient.search` reads its cache before refusing a call while
   search is unavailable — a cached area lookup keeps working in fallback mode.
 - `search` says in its description that with a `query`, text relevance
@@ -98,6 +170,24 @@ discover.swiss (README «Status»).
   to drop it first.
 
 ### Fixed
+
+- **A moved root key no longer reads as «no hit»** (FID-006): a `/search` or
+  list answer whose rows cannot be read while its count says there are some
+  raises the new state `degraded: upstream_shape_changed`; a genuine zero stays
+  an empty result.
+- **`get_details` called an upstream 4xx «unknown identifier»** (FID-003): only
+  an identifier refused by the shape gate or a 404 says that now.
+- **The list fallback's ignored filters are a field** (DRIFT-002):
+  `ignored_parameters` lists what the answer did not apply (`query`;
+  `stars_min`, `garni`, `price_range`, `amenities`, `accessible`).
+- **`resolve_area` said «no area is named X» about data it never saw**
+  (FID-L02): a missing `containedInPlace/id` facet is `upstream_shape_changed`;
+  a comparison over the truncated 30 values says so.
+- **`get_details` served test objects** (FID-L03): withheld and counted like in
+  every list tool.
+- **A DNS failure read as «blocked by egress policy»** (SEC-028): resolution
+  failures are `ResolutionError`, retried like connection errors; `EgressError`
+  is reserved for policy.
 
 - **Every live search hit was withheld as unlicensed.** Search hits carry no
   root `license` and no `dataGovernance.provider`, only `origin`. The licence

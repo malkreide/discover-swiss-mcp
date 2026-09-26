@@ -41,6 +41,7 @@ class Envelope(BaseModel):
     source_freshness: str | None  # lastModified of the most recent hit, else None
     project: str
     # None | "quota_exhausted" | "upstream_unreachable" | "search_unavailable"
+    # | "rate_limited" | "upstream_shape_changed"
     degraded: str | None = None
     disclaimer: str | None = None
     hint: str | None = None

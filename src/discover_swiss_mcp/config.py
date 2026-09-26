@@ -7,7 +7,15 @@ bring-your-own-key secret and must never end up in a committed config.
 **The key is never logged.** It is held as a ``SecretStr``, so an accidental
 ``repr()``, an f-string, a ``model_dump()`` or a structlog event renders
 ``**********`` instead of the value. Only :meth:`Settings.auth_header` unwraps
-it, and only into the outbound HTTP header.
+it, and only into the outbound HTTP header. The OAuth client secret for token
+introspection is held the same way.
+
+**Ingress lists come from the environment, egress lists do not.** The names a
+deployment is reached under (``DISCOVER_SWISS_MCP_ALLOWED_HOSTS``) depend on
+its domain and proxy and cannot be known in code; the host this server may
+*call* is a ``frozenset`` in :mod:`discover_swiss_mcp.net` and changes only by
+review. The one egress exception — the introspection endpoint of the
+operator's authorization server — is read once at start-up and frozen.
 """
 
 from __future__ import annotations
@@ -15,6 +23,7 @@ from __future__ import annotations
 import os
 from datetime import date
 from typing import Literal
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
@@ -54,6 +63,23 @@ class Settings(BaseModel):
     # measured the access; the documentation denies it. `source_status` reports
     # which of the two a deployment is standing on.
     entitlement_confirmed: date | None = None
+    # Ingress, HTTP transport only. Exact `host:port` values the server
+    # answers to, and the origins it accepts. Empty means: derived from a
+    # loopback bind (`127.0.0.1:<port>`, `localhost:<port>`, `[::1]:<port>`);
+    # a non-loopback bind must name them.
+    allowed_hosts: tuple[str, ...] = ()
+    allowed_origins: tuple[str, ...] = ()
+    # Inbound OAuth (resource server role), HTTP transport only. All five or
+    # none: `auth_enabled` is true only when every one is set.
+    auth_issuer: str | None = None
+    auth_resource_url: str | None = None
+    auth_introspection_url: str | None = None
+    auth_client_id: str | None = None
+    auth_client_secret: SecretStr | None = None
+
+    @property
+    def auth_enabled(self) -> bool:
+        return self.auth_issuer is not None
 
     @property
     def auth_header(self) -> dict[str, str]:
@@ -73,6 +99,7 @@ class Settings(BaseModel):
                 self.entitlement_confirmed.isoformat() if self.entitlement_confirmed else "pending"
             ),
             "api_key": "set" if self.api_key.get_secret_value() else "missing",
+            "auth": "oauth" if self.auth_enabled else "none",
         }
 
 
@@ -121,6 +148,21 @@ def load_settings(require_key: bool = True) -> Settings:
                 f"'pending', not {confirmed_raw!r}."
             ) from exc
 
+    allowed_hosts = _split_list("DISCOVER_SWISS_MCP_ALLOWED_HOSTS")
+    allowed_origins = _split_list("DISCOVER_SWISS_MCP_ALLOWED_ORIGINS")
+    for host in allowed_hosts:
+        # Exact values only. A name without a port is exact too: it is what a
+        # client sends for the scheme's default port (`Host: mcp.example.ch`
+        # behind an HTTPS ingress). Wildcards are refused — the SDK's loopback
+        # default `127.0.0.1:*` accepted any port (audit SEC-024).
+        if "*" in host:
+            raise ConfigError(
+                f"DISCOVER_SWISS_MCP_ALLOWED_HOSTS entry {host!r} contains a wildcard; list the "
+                "exact Host values instead (mcp.example.ch, or mcp.example.ch:8443)."
+            )
+
+    auth = _load_auth()
+
     return Settings(
         api_key=SecretStr(raw_key),
         project=_env("DISCOVER_SWISS_PROJECT", DEFAULT_PROJECT) or DEFAULT_PROJECT,
@@ -130,4 +172,51 @@ def load_settings(require_key: bool = True) -> Settings:
         port=port,
         log_level=(_env("DISCOVER_SWISS_MCP_LOG_LEVEL", "INFO") or "INFO").upper(),
         entitlement_confirmed=confirmed,
+        allowed_hosts=allowed_hosts,
+        allowed_origins=allowed_origins,
+        **auth,
     )
+
+
+def _split_list(name: str) -> tuple[str, ...]:
+    raw = _env(name, "") or ""
+    return tuple(item.strip() for item in raw.split(",") if item.strip())
+
+
+AUTH_VARIABLES = {
+    "auth_issuer": "DISCOVER_SWISS_MCP_AUTH_ISSUER",
+    "auth_resource_url": "DISCOVER_SWISS_MCP_AUTH_RESOURCE_URL",
+    "auth_introspection_url": "DISCOVER_SWISS_MCP_AUTH_INTROSPECTION_URL",
+    "auth_client_id": "DISCOVER_SWISS_MCP_AUTH_CLIENT_ID",
+    "auth_client_secret": "DISCOVER_SWISS_MCP_AUTH_CLIENT_SECRET",
+}
+
+
+def _load_auth() -> dict[str, object]:
+    """All five OAuth variables, or none. Half a configuration is an error.
+
+    A partly configured resource server is the dangerous case: it looks
+    protected in the environment and is not. It fails loudly at start-up.
+    """
+    values = {field: _env(env, "") or "" for field, env in AUTH_VARIABLES.items()}
+    present = [AUTH_VARIABLES[f] for f, v in values.items() if v]
+    if not present:
+        return {}
+    missing = [AUTH_VARIABLES[f] for f, v in values.items() if not v]
+    if missing:
+        raise ConfigError(
+            "Inbound OAuth is configured only in part; also set: " + ", ".join(missing) + "."
+        )
+    for field in ("auth_issuer", "auth_resource_url", "auth_introspection_url"):
+        parsed = urlparse(values[field])
+        if parsed.scheme != "https" or not parsed.hostname:
+            raise ConfigError(
+                f"{AUTH_VARIABLES[field]} must be an https:// URL, not {values[field]!r}."
+            )
+    return {
+        "auth_issuer": values["auth_issuer"],
+        "auth_resource_url": values["auth_resource_url"],
+        "auth_introspection_url": values["auth_introspection_url"],
+        "auth_client_id": values["auth_client_id"],
+        "auth_client_secret": SecretStr(values["auth_client_secret"]),
+    }

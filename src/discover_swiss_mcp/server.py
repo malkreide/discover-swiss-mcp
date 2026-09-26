@@ -28,6 +28,7 @@ from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
 from discover_swiss_mcp import net
+from discover_swiss_mcp._version import __version__
 from discover_swiss_mcp.client import (
     AuthorizationError,
     DiscoverSwissClient,
@@ -66,10 +67,15 @@ from discover_swiss_mcp.tools import (
 # Constants
 # ---------------------------------------------------------------------------
 
-# The MCP protocol revision this server is built and tested against. Variant A
-# of the SDK (`mcp>=2,<3`) negotiates this revision; a test holds the constant
-# against the SDK's own `LATEST_PROTOCOL_VERSION` from P1 on, so the next drift
-# is a failing build rather than a line nobody re-reads.
+# The MCP protocol revision this server is built and tested against.
+#
+# What this constant does and does not do (audit ARCH-012): it is reported in
+# the tool-hash snapshot and in the start-up log, and a test holds it equal to
+# the SDK's `mcp_types.LATEST_PROTOCOL_VERSION` — an SDK update that moves the
+# protocol fails the build instead of changing it silently. It does NOT decide
+# negotiation: the SDK answers each request from its own list of supported
+# revisions, and over HTTP it still serves the pre-2026 `initialize` handshake
+# to legacy clients (audit ARCH-015, accepted until the SDK offers a switch).
 MCP_PROTOCOL_VERSION = "2026-07-28"
 
 # SEP-2549: the listing methods carry `ttlMs` and `cacheScope`, and the SDK
@@ -146,6 +152,9 @@ async def app_lifespan(server: MCPServer) -> AsyncIterator[AppContext]:
 
 mcp = MCPServer(
     "discover_swiss_mcp",
+    # serverInfo.version on the wire. The SDK default is "" (audit ARCH-016):
+    # a client could not tell which release it is talking to.
+    version=__version__,
     cache_hints=CACHE_HINTS,
     instructions=(
         "MCP server for the discover.swiss Infocenter Open index (Swiss tourism "
@@ -229,7 +238,7 @@ def _fail(exc: Exception, tool: str, log) -> NoReturn:
 
 @mcp.tool(name="search", annotations=_annotations("Search Swiss tourism data"))
 async def search(params: SearchInput, ctx: Context) -> SearchResponse:
-    """Full-text and geo search over discover.swiss open tourism data (~20k objects: hotels nationwide; museums, restaurants, shops, tours, webcams, ski resorts for Zurich, Eastern Switzerland, Liechtenstein, Engadin). `query` matches whole words in name AND descriptions by default (`match='all'`), so a hit count includes objects that merely mention the term; use `match='name'` for exact lookups. Compounds are not found by their parts. `near` ranks by distance from a coordinate; `locality` filters by the exact municipality name in the address. Rooms and meeting rooms are excluded unless requested via `types`. Every hit carries its own licence and attribution — cite the provider when you present it. Empty result: follow the `hint` before concluding anything.
+    """Full-text and geo search over discover.swiss open tourism data (~20k objects: hotels nationwide; museums, restaurants, shops, tours, webcams, ski resorts for Zurich, Eastern Switzerland, Liechtenstein, Engadin). `query` is matched in name AND descriptions by default (`match='all'`), so a hit count includes objects that merely mention the term; use `match='name'` to match names only. Query syntax: plain words. The source documents no operators; wildcards (*, ?), quotes, AND/OR and prefixes are untested — send whole words, not fragments or operators. `near` ranks by distance from a coordinate; `locality` filters by the exact municipality name in the address. Rooms and meeting rooms are excluded unless requested via `types`. Every hit carries its own licence and attribution — cite the provider when you present it. Empty result: follow the `hint` before concluding anything.
 
     `types` takes leafType values (Hotel, Museum, Restaurant, HikingTrail, Webcam, Event, HotelRoom, MeetingRoom), ORed. `radius_km` only works together with `near` and is a hard cut-off; without it `near` only sorts. With a `query`, text relevance outweighs distance in that order — the nearest match is not necessarily first; use `radius_km` to bound the area and read `distance_km`, which is exact on every hit. `upstream_count` is the source's total before filtering; `returned` is what this page holds after the licence gate, the test-data filter and the room default — each exclusion is counted in its own `excluded_*` field. Page through with `page` while `has_more` is true. For full text, fees and accessibility of one hit, call `get_details` with its `identifier`.
     """
@@ -289,7 +298,7 @@ async def find_tours(params: FindToursInput, ctx: Context) -> ToursResponse:
 
 @mcp.tool(name="find_events", annotations=_annotations("Find events in a date range"))
 async def find_events(params: FindEventsInput, ctx: Context) -> EventsResponse:
-    """Find events whose schedule overlaps a date range (default: today to today + 30 days, Europe/Zurich). Event coverage in this source is thin (about 20 objects, mostly Eastern Switzerland; Zurich events are not included because their provider is not open-licensed). Treat this tool as a supplement: if it returns nothing, name a regional event calendar rather than concluding nothing is on.
+    """Find events whose schedule overlaps a date range (default: today to today + 30 days, Europe/Zurich). Event coverage in this source is thin (about 20 objects, mostly Eastern Switzerland; Zurich events are not included because their provider is not open-licensed).
 
     An event is included when any of its dates overlaps `from_date`–`to_date` (whole days). Place: `near` (+ optional `radius_km`), `locality` (exact municipality name from the address, e.g. 'St.Gallen' and 'St. Gallen' are different values) or `region` (area name, resolved to an area id; `area` shows the result). Each hit has `next_occurrence`, and `start`/`end` from the schedule entry that overlaps the range. `date_open: true` means the provider gives no concrete date — present it with `date_note` («Termin offen»), never with a guessed date. Test records and events that are not openly licensed are withheld and counted (`excluded_test_objects`, `excluded_by_license`). Dates and prices are provider-maintained — see `disclaimer`; cite the provider from `attribution`.
     """
@@ -304,7 +313,7 @@ async def find_events(params: FindEventsInput, ctx: Context) -> EventsResponse:
 
 @mcp.tool(name="webcams_near", annotations=_annotations("Webcams near a place"))
 async def webcams_near(params: WebcamsNearInput, ctx: Context) -> WebcamsResponse:
-    """Webcams within a radius of a point (`near`, `radius_km`, default 25 km, nearest first) or in a region (`region`, area name resolved to an area id). 73 webcams, all in Eastern Switzerland (St. Gallen, Thurgau, Toggenburg, Heidiland, Glarnerland, Appenzell). `live_url` opens the provider's live image; `snapshot_url` is a stored still and may be hours old. Outside Eastern Switzerland this tool returns nothing — say so and do not invent a webcam.
+    """Webcams within a radius of a point (`near`, `radius_km`, default 25 km, nearest first) or in a region (`region`, area name resolved to an area id). 73 webcams, all in Eastern Switzerland (St. Gallen, Thurgau, Toggenburg, Heidiland, Glarnerland, Appenzell). `live_url` opens the provider's live image; `snapshot_url` is a stored still and may be hours old.
 
     Each hit carries `distance_km` when `near` is given; `upstream_count` is the number of webcams in the radius, 20 per `page`. Cite the provider from `attribution`. The webcam shows the view, not trail or road conditions.
     """
@@ -351,21 +360,28 @@ async def source_status(ctx: Context) -> SourceStatusResponse:
 
 def main() -> None:
     """Start the server on the transport named by the environment."""
-    settings = load_settings(require_key=False)
+    try:
+        settings = load_settings(require_key=False)
+    except ConfigError as exc:
+        configure_logging("INFO")
+        logger.error("settings_invalid", error=str(exc))
+        raise SystemExit(2) from exc
     # JSON logging to stderr; stdout belongs to the JSON-RPC stream.
     configure_logging(settings.log_level)
 
     if settings.transport == "streamable-http":
         import uvicorn
 
-        # The bind address has to travel into the app: mcp 2.x derives its host
-        # allow-list from it, and a default of 127.0.0.1 rejects every real
-        # request with 421.
-        uvicorn.run(
-            mcp.streamable_http_app(host=settings.host),
-            host=settings.host,
-            port=settings.port,
-        )
+        from discover_swiss_mcp.http_app import build_http_app
+
+        # Bind policy, port-exact Host/Origin lists and inbound OAuth are
+        # decided in one place (http_app); an unsafe combination stops here.
+        try:
+            app, _verifier = build_http_app(mcp, settings)
+        except ConfigError as exc:
+            logger.error("http_start_refused", error=str(exc))
+            raise SystemExit(2) from exc
+        uvicorn.run(app, host=settings.host, port=settings.port)
     else:
         mcp.run()
 

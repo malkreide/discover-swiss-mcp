@@ -1,0 +1,120 @@
+# discover-swiss-mcp on Kubernetes — HTTP transport behind an HTTPS ingress.
+#
+# Hardening (audit SEC-007): non-root UID/GID 10001, read-only root
+# filesystem with an in-memory /tmp, all capabilities dropped, no privilege
+# escalation, seccomp RuntimeDefault, no service-account token.
+# Egress (audit SEC-021): networkpolicy.yaml, and cilium-networkpolicy.yaml
+# where Cilium is available. See docs/network-egress.md.
+#
+# The server refuses to start on 0.0.0.0 without inbound OAuth and an exact
+# host list; both are set below. Replace mcp.example.ch, the image and the
+# authorization-server URLs with your own. Secrets come from the Secret
+# `discover-swiss-mcp` (keys: discover-swiss-key, oauth-client-secret) and
+# never from this file.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discover-swiss-mcp
+  labels:
+    app.kubernetes.io/name: discover-swiss-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: discover-swiss-mcp
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: discover-swiss-mcp
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: mcp
+          image: registry.example.ch/discover-swiss-mcp:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: DISCOVER_SWISS_MCP_TRANSPORT
+              value: streamable-http
+            - name: DISCOVER_SWISS_MCP_HOST
+              value: 0.0.0.0
+            - name: DISCOVER_SWISS_MCP_PORT
+              value: "8000"
+            - name: DISCOVER_SWISS_MCP_ALLOWED_HOSTS
+              value: mcp.example.ch
+            - name: DISCOVER_SWISS_MCP_AUTH_ISSUER
+              value: https://login.example.ch/realms/mcp
+            - name: DISCOVER_SWISS_MCP_AUTH_RESOURCE_URL
+              value: https://mcp.example.ch/mcp
+            - name: DISCOVER_SWISS_MCP_AUTH_INTROSPECTION_URL
+              value: https://login.example.ch/realms/mcp/protocol/openid-connect/token/introspect
+            - name: DISCOVER_SWISS_MCP_AUTH_CLIENT_ID
+              value: discover-swiss-mcp
+            - name: DISCOVER_SWISS_MCP_AUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: discover-swiss-mcp
+                  key: oauth-client-secret
+            - name: DISCOVER_SWISS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: discover-swiss-mcp
+                  key: discover-swiss-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            privileged: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      volumes:
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discover-swiss-mcp
+  labels:
+    app.kubernetes.io/name: discover-swiss-mcp
+spec:
+  selector:
+    app.kubernetes.io/name: discover-swiss-mcp
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http

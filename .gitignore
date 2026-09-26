@@ -14,6 +14,8 @@ env/
 # Secrets — the DISCOVER_SWISS_KEY never belongs in a committed file.
 .env
 .env.*
+# The one committed env file: placeholders only (audit ARCH-005).
+!.env.example
 *.key
 *.pem
 credentials.json
