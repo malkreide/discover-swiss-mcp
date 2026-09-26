@@ -1,0 +1,16 @@
+{
+  "id": "ARCH-001",
+  "status": "pass",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:230,245,260,275,290,305,320,335 — all eight tools registered with explicit name= in snake_case: search, get_details, find_accommodation, find_tours, find_events, webcams_near, explore_area, source_status",
+    "runtime: tools/list over streamable-http returned exactly these 8 names; none contain spaces, dots, brackets or non-ASCII",
+    "src/discover_swiss_mcp/server.py:232-234 — search description gives scope, coverage, parameter semantics and follow-up tool (get_details); all eight descriptions are 573–1531 chars after whitespace normalisation",
+    "src/discover_swiss_mcp/server.py:322 — explore_area description states when to use it ('Use it to decide which tool to call next')"
+  ],
+  "gaps": [],
+  "evaluator_notes": "One consistent convention (snake_case, acceptable per criteria), no forbidden characters, descriptions carry context and use guidance, not just function.",
+  "remediation": "",
+  "effort": ""
+}

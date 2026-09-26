@@ -1,0 +1,21 @@
+{
+  "id": "ARCH-022",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/__init__.py:13-18 — __version__ from importlib.metadata in the package root; root imports only stdlib (importlib.metadata), no submodules",
+    "src/discover_swiss_mcp/client.py:46 — 'from discover_swiss_mcp import __version__, net' (submodule reads version from the root); used in USER_AGENT client.py:52",
+    "ls src/discover_swiss_mcp/_version.py → not present",
+    "KALT (fresh interpreter, cwd /tmp): python -c 'import discover_swiss_mcp.client' → ok, USER_AGENT discover-swiss-mcp/0.1.0, kalt_exit=0",
+    "WARM (fresh interpreter): import discover_swiss_mcp; import discover_swiss_mcp.client → ok, 0.1.0, warm_exit=0",
+    "pyproject.toml:58-59 console script discover_swiss_mcp.server:main; fresh-interpreter import of discover_swiss_mcp.server → ok, script_exit=0"
+  ],
+  "gaps": [
+    "No leaf _version.py; client.py reads __version__ from the package root",
+    "Root computes the version itself instead of importing it from a leaf module"
+  ],
+  "evaluator_notes": "Both measurements pass and today there is no cycle because __init__.py imports no submodule; but the structure the check asks for (leaf version module, no submodule reading the root) is absent — adding 'from .server import mcp' to __init__ would create the i14y-style cycle.",
+  "remediation": "Create src/discover_swiss_mcp/_version.py (stdlib-only) with the metadata lookup; import __version__ from it in __init__.py and client.py.",
+  "effort": "S"
+}

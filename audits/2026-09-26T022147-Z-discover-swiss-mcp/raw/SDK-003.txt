@@ -1,0 +1,19 @@
+{
+  "id": "SDK-003",
+  "status": "partial",
+  "category": "SDK",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:231,246,261,276,291,306,321,336 — every tool declares ctx: Context",
+    "src/discover_swiss_mcp/server.py:200-222 — failures logged (log.exception) to stderr and raised as masked ToolError, not swallowed; logging_config.py:32,48 stderr",
+    "grep 'report_progress' src/ → 0; grep 'ctx.(info|warning|error)' src/ → 0 (control: pattern hits .venv/.../mcp/server/mcpserver/context.py)",
+    "runtime: logging/setLevel → -32601 (no handler); server never sends notifications/message (no ctx logging calls)"
+  ],
+  "gaps": [
+    "No ctx.report_progress on paths that can exceed 2 s: list fallback up to FALLBACK_MAX_CALLS sequential calls (tools.py:846-871), retry ladder/429 waits up to 25–55 s (client.py:248,772)",
+    "No test demonstrating that no notifications/message is emitted for a request without logLevel (trivially true today, not held by a test)"
+  ],
+  "evaluator_notes": "Context is injected everywhere and logging correctly targets stderr per the 2026-07-28 baseline; progress reporting for the long fallback/retry paths is missing.",
+  "remediation": "Pass ctx into the fallback scan / retry waits and call await ctx.report_progress(i, total, message) per list page and before each retry sleep.",
+  "effort": "S"
+}

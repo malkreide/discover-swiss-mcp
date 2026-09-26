@@ -1,0 +1,22 @@
+{
+  "id": "FID-L01",
+  "status": "pass",
+  "category": "FID",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/licenses.py:47 — explicit whitelist ALLOWED {CC0, CC 0, CC BY, CC BY-SA, CC BY-ND, ODbL}; NC deliberately absent",
+    "src/discover_swiss_mcp/licenses.py:103-127 — license_of: root license, else first dataGovernance.origin (measured 15/15 live, 105/105 recorded, PROBE_LICENSE)",
+    "src/discover_swiss_mcp/licenses.py:237-261 — screen(): licence gate first, counts excluded_by_license",
+    "src/discover_swiss_mcp/tools.py:1075, 992, 1268, 1356, 1512, 1816, 2031 — screen() on search, search fallback, find_accommodation, accommodation fallback, find_tours, find_events, webcams_near; each envelope sets excluded_by_license",
+    "src/discover_swiss_mcp/tools.py:1156-1168 — get_details withholds content with excluded_by_license=1 and hint",
+    "tests/test_licenses.py:26-56, 110-116, 274-292 — C-All-Rights-Reserved, None, CC BY-NC-SA withheld and counted; open licences served (counter-probe); tests/test_tools_p3.py:206-217 Guidle event withheld and counted",
+    "pytest -m 'not live' run in this audit: 215 passed"
+  ],
+  "gaps": [
+    "explore_area facet counts include non-open objects (documented in its description as 'before licence filtering') — low",
+    "get_details returns the name of a withheld object (by design, 'name it and link') — low"
+  ],
+  "evaluator_notes": "Whitelist, licence derivation for search hits, and gate+counter on every object-delivering path are present and tested.",
+  "remediation": "",
+  "effort": ""
+}

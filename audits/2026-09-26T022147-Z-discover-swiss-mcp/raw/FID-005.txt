@@ -1,0 +1,23 @@
+{
+  "id": "FID-005",
+  "status": "fail",
+  "category": "FID",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/tools.py:285-286 — query field: 'Whole words only: \\'Landesmuseum\\' matches, \\'Landesmus\\' and parts of compounds do not.'",
+    "Registered search description (list_tools, whitespace-normalised): '...matches whole words in name AND descriptions... Compounds are not found by their parts.' — granularity stated in the tool, not only README",
+    "Registered descriptions scanned with /lucene|wildcard|\\*|fuzzy|operator|syntax/ (negative control fired on 'Lucene syntax: * wildcard'): search has no query-language or operator mention (only hit '*' is 'excluded_*', 'fuzzy' is 'No fuzzy match' for locality)",
+    "Registered find_events description (server.py:292): 'if it returns nothing, name a regional event calendar rather than concluding nothing is on'",
+    "Registered webcams_near description (server.py:307): 'Outside Eastern Switzerland this tool returns nothing — say so and do not invent a webcam.'",
+    "grep probes/*.md probes/*.py for wildcard|lucene|searchMode|prefix — no probe of query syntax; 'Landesmus' appears only in tools.py:285 (claim unmeasured)"
+  ],
+  "gaps": [
+    "The query language of searchText is not named, and it is not stated whether operators (*, ?, ~, quotes, AND/OR) work or are ignored; the probe never tested it",
+    "The whole-word/compound claim is not backed by a probe measurement and has no concrete German compound example with a working alternative",
+    "No live test for wildcard/prefix behaviour; no documentation of escaping or invalid-syntax behaviour",
+    "Session rule violated: two tool descriptions (find_events, webcams_near) explain/handle an empty result set, which belongs in the hint"
+  ],
+  "evaluator_notes": "Matching granularity is in the tool description (criteria 3 and 6 met), but the query syntax is neither named nor probed, operators are unknown, and two descriptions carry empty-result explanations. 2 of 6 criteria met.",
+  "remediation": "Probe /search searchText with 'Landesmus*', 'Landesmus', '\"Landesmuseum Zürich\"', 'Landesmuseum~' and record counts; state the outcome in the search/query description (e.g. 'plain words, no wildcard' or 'Lucene: * ? ~ work'); add a live test; move the empty-result sentences of find_events and webcams_near into EVENTS_EMPTY_HINT/_webcams_empty_hint.",
+  "effort": "S"
+}

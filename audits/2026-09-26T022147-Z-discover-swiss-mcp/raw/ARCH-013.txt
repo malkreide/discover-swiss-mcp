@@ -1,0 +1,19 @@
+{
+  "id": "ARCH-013",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "Path enumeration (grep streamable_http_app|sse_app|http_app|mcp.run|uvicorn.run in src/): server.py:364-368 uvicorn.run(mcp.streamable_http_app(host=settings.host), host=settings.host, port=settings.port) and server.py:370 mcp.run() (stdio) — no SSE app, no factory",
+    "Deployment manifests: no Dockerfile/railway.toml/render.yaml/Procfile/docker-compose; pyproject.toml:58-59 console script → discover_swiss_mcp.server:main (same main as __main__.py:8-10)",
+    ".venv/.../mcp/server/lowlevel/server.py:741-747 — SDK enables DNS-rebinding protection with allowed_hosts 127.0.0.1:*, localhost:*, [::1]:* (port wildcard, so the port need not travel) when host is loopback",
+    "runtime: POST /mcp with Host: evil.example.com → 421, with Host: 127.0.0.1:8768 → 200; GET /mcp → 400 (no server-initiated GET stream)"
+  ],
+  "gaps": [
+    "No test exercises the seam main() → streamable_http_app(host=…) (grep tests/ for streamable_http_app/transport/main → none); no mutation Gegenprobe",
+    "Host-allow-list protection is armed only when DISCOVER_SWISS_MCP_HOST is loopback; a non-loopback bind silently runs without transport_security (documented only as 'localhost only' default, README.md:142)"
+  ],
+  "evaluator_notes": "Only one network path exists and it carries the SDK host allow-list, verified at runtime. The per-path seam test and the counter-proof are missing, which blocks pass on a high check.",
+  "remediation": "Add a test that calls main() with DISCOVER_SWISS_MCP_TRANSPORT=streamable-http (uvicorn.run monkeypatched) and asserts the app rejects Host: evil.example.com with 421; run it once with host= removed to see it fail; pass explicit transport_security for non-loopback hosts or refuse them.",
+  "effort": "S"
+}

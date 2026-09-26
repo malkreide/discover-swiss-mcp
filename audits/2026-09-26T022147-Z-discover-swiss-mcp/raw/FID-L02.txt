@@ -1,0 +1,21 @@
+{
+  "id": "FID-L02",
+  "status": "partial",
+  "category": "FID",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/client.py:207-220 — partition_facet_names: only VERIFIED_FACETS are sent, unknown names returned separately",
+    "src/discover_swiss_mcp/client.py:851-863 — response keys compared against requested names -> SearchResult.missing_facets",
+    "src/discover_swiss_mcp/tools.py:2249-2274 — explore_area: missing_facets = unknown + upstream-missing, with UNKNOWN_FACETS_HINT / MISSING_FACETS_HINT",
+    "tests/test_tools_p3.py:419-449 — unknown not sent; sent-but-missing reported",
+    "tests/test_live.py:275-288 — live canary containedInPlace/id comes back (unexecuted)",
+    "Runtime probe (scratchpad, respx): /search answering facets={} to resolve_area -> find_tours(region='Glarnerland') returns area.identifier=None, hint 'No area is named exactly «Glarnerland». The search text matched no area at all.', no missing_facets; control: explore_area with same answer reports missing_facets=['leafType'] + hint"
+  ],
+  "gaps": [
+    "resolve_area (client.py:1023-1032) ignores result.missing_facets: a dropped containedInPlace/id facet is reported as 'matched no area at all' in find_tours, find_events, webcams_near and explore_area(region=...) — exactly the 'missing facet appears as no values' case",
+    "AreaLookup (client.py:362-379) has no field to carry the missing facet; no test covers this path"
+  ],
+  "evaluator_notes": "explore_area fulfils the check completely; resolve_area, which the check names explicitly, loses the missing-facet signal.",
+  "remediation": "In resolve_area raise (or return a lookup with hint) when 'containedInPlace/id' is in result.missing_facets, e.g. 'area facet did not come back — this is not an unknown area'; propagate it to the envelopes; add a unit test with facets={}.",
+  "effort": "S"
+}

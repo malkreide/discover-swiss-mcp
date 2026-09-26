@@ -1,0 +1,18 @@
+{
+  "id": "ARCH-018",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "runtime HTTP tools/call search without key (error path): result.isError true, resultType 'complete'",
+    "runtime stdio tools/call source_status (success path): resultType 'complete', structuredContent present",
+    "runtime: tools/list, server/discover, resources/list, prompts/list, resources/templates/list all carry resultType 'complete'",
+    "grep resultType|result_type src/ → 0: field set by SDK (mcp 2.2.0); pyproject.toml:34 mcp>=2,<3"
+  ],
+  "gaps": [
+    "No test checks resultType on the wire (grep tests/ → 0); it rests entirely on SDK behaviour"
+  ],
+  "evaluator_notes": "Field present on success and error paths via the SDK, value 'complete', no MRTR. Only the wire-format regression test is missing.",
+  "remediation": "Add a test using mcp.Client (or raw JSON-RPC over stdio) that asserts resultType == 'complete' on a successful and an isError tool result.",
+  "effort": "S"
+}

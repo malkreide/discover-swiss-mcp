@@ -1,0 +1,19 @@
+{
+  "id": "SEC-020",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "critical",
+  "evidence": [
+    "src/ — grep -rnE 'os\\.system\\(|shell\\s*=\\s*True|\\beval\\(|\\bexec\\(|os\\.popen\\(|subprocess' → no hit (exit 1); negative control: same pattern hits 6/6 lines of a control file containing each construct",
+    "src/ — grep 'open\\(|Path\\(|pickle|yaml\\.load|__import__' → no file-system or dynamic-code use (importlib only for importlib.metadata.version in __init__.py:9-10)",
+    "src/discover_swiss_mcp/client.py:226,879-880 — the only user value that reaches a path is the identifier, checked against a whitelist regex; client.py:889 URL-quotes it with safe=''",
+    "tests/test_client.py:220-222 — '../../projects' identifier rejected with UpstreamRejectedError",
+    "src/discover_swiss_mcp/tools.py:260-344 — all tool args pass Pydantic schemas before use (see SEC-018)"
+  ],
+  "gaps": [
+    "No parametrized shell-injection suite (criterion 7) — moot because there is no subprocess/shell sink"
+  ],
+  "evaluator_notes": "No shell, subprocess, eval/exec or file-system sinks exist; the single path-bound value is whitelist-validated and quoted, with a traversal test. Subprocess-specific criteria are not applicable.",
+  "remediation": "",
+  "effort": ""
+}

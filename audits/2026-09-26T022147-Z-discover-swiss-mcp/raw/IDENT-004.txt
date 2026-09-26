@@ -1,0 +1,16 @@
+{
+  "id": "IDENT-004",
+  "status": "partial",
+  "category": "IDENT",
+  "severity": "low",
+  "evidence": [
+    "README.md:7 and README.de.md:5 — shields badge version-0.1.0 == pyproject.toml:7 (check script: both OK; control pattern extracts 0.0.9 from a test badge)"
+  ],
+  "gaps": [
+    "No CI enforcement against pyproject: validate_repo.py C8 compares against the CHANGELOG release heading, is WARN-only, and returns silently when there is none (scripts/validate_repo.py:566-576); counter-test with README.de.md badge 0.0.9 -> '0 ERROR, 0 WARN', exit 0",
+    "Hence no counter-test where a reverted badge breaks the check with exit 1"
+  ],
+  "evaluator_notes": "2 of 4 criteria met: both badges are currently correct and both READMEs were checked, but nothing enforces it; pre-release the existing gate cannot fire.",
+  "remediation": "Compare README badges against pyproject version inside check_server_json (same run as the server.json check) and report ERROR; verify with a reverted badge.",
+  "effort": "XS"
+}

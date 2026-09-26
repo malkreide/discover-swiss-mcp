@@ -1,0 +1,19 @@
+{
+  "id": "OPS-008",
+  "status": "fail",
+  "category": "OPS",
+  "severity": "medium",
+  "evidence": [
+    "grep -c \"<<\" .github/workflows/*.yml -> 0 for ci.yml and publish.yml; control \"python - <<'PY'\" matches -> no heredoc guard in any workflow",
+    ".github/workflows/ci.yml:70-71, publish.yml:38-42 — judging logic lives in scripts/validate_repo.py and scripts/check_release_artifacts.py, called by exit code",
+    "tests/test_server.py:88-95,148-154 — scripts/gen_tool_hashes.py is loaded and exercised by a test"
+  ],
+  "gaps": [
+    "The two extracted guards that decide red/green have no tests: grep -rl 'validate_repo|check_release_artifacts' tests/ -> no hit",
+    "State set incomplete: validate_repo.py C8 returns silently when CHANGELOG has no release heading (scripts/validate_repo.py:566-576); counter-test with a detuned badge -> exit 0, no warning",
+    "No documented mutation counter-test for the guards"
+  ],
+  "evaluator_notes": "2 of 5 criteria met. The core rule (no judging heredocs in workflows) holds, but the extracted guards are untested and one of them collapses 'not checked' into 'OK'.",
+  "remediation": "Add tests/test_scripts.py covering validate_repo.py (server.json drift -> ERROR, badge drift, missing release heading -> explicit 'not checked') and check_release_artifacts.py (tag mismatch, missing marker, description > 100), each run once against a deliberately broken input.",
+  "effort": "S"
+}

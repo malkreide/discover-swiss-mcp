@@ -1,0 +1,20 @@
+{
+  "id": "SEC-008",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "medium",
+  "evidence": [
+    "pyproject.toml:1-3 — hatchling build backend, no custom build hooks; pyproject.toml:58-59 — only a regular [project.scripts] entry point; no setup.py, no package.json (no pre/postinstall hooks possible)",
+    "README.md:125-130 — full install commands shown verbatim (git clone …; pip install -e \".[dev]\"); README.md:137-143 — full run commands",
+    ".github/workflows/publish.yml:56-59 — publish job in environment 'pypi' with id-token: write (OIDC Trusted Publishing); publish.yml:70 — pypa/gh-action-pypi-publish SHA-pinned v1.14.2 (generates PEP 740 Sigstore attestations by default); publish.yml:14-15 — default permissions contents: read",
+    ".github/workflows/publish.yml:38-42 — release gate checks the built artifact before upload",
+    "CONTRIBUTING.md — development setup (pip install -e .[dev], pytest, ruff, validate_repo)"
+  ],
+  "gaps": [
+    "CONTRIBUTING.md does not describe the release build (python -m build + check_release_artifacts.py) for independent verification — low",
+    "README installs from a git clone rather than showing the published-package command (uvx/pip install discover-swiss-mcp) and has no mcpServers config snippet — low"
+  ],
+  "evaluator_notes": "No install hooks, transparent commands, OIDC trusted publishing with attestations. The npm criterion is not applicable. Remaining gaps are documentation polish below medium.",
+  "remediation": "",
+  "effort": ""
+}

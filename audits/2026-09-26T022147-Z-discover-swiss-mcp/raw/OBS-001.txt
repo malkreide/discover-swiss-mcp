@@ -1,0 +1,25 @@
+{
+  "id": "OBS-001",
+  "status": "partial",
+  "category": "OBS",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:200-222 — _fail() logs the original, re-raises a masked ToolError; SDK turns ToolError into CallToolResult isError=true",
+    "src/discover_swiss_mcp/server.py:236-242 — every tool body wrapped in try/except Exception -> _fail (same pattern at 251-257, 266-272, 281-287, 296-302, 311-317, 326-332, 341-349)",
+    "src/discover_swiss_mcp/tools.py:697-705,708-716 — operational states (quota_exhausted, upstream_unreachable, search_unavailable) returned as structured result with degraded+hint, never as JSON-RPC error",
+    "src/discover_swiss_mcp/tools.py:387, 275, 1641-1643 — input validators raise ValueError naming the field; arrive as execution errors",
+    "runtime (in-memory Client, mcp 2.2.0): search params.page=-5 -> is_error=True, text names 'params.page' and 'greater than or equal to 1'; find_accommodation without near/locality -> is_error=True, 'Give `near` or `locality`'",
+    "runtime (real stdio, python -m discover_swiss_mcp): tools/call no_such_tool -> result isError=true 'Unknown tool: no_such_tool', NOT a JSON-RPC error object",
+    "tests/test_server.py:179-188 — missing key: execution-error path tested (is_error True, message names DISCOVER_SWISS_KEY)",
+    "tests/test_server.py:191-196 — invalid argument returns is_error True and makes no upstream call",
+    "grep -rnE '-320[2-9][0-9]|-3200[0-9]|-3201[0-9]|-32002' src/ -> no hit (exit 1); control 'code=-32021' matches -> no custom codes in the reserved range"
+  ],
+  "gaps": [
+    "Unknown tool is answered as a tool result with isError=true instead of a JSON-RPC protocol error (-32601); this is mcp 2.2.0 MCPServer behaviour (exceptions.py docstring: SDK raises ToolError for unknown tool names), but the server does not override it — pass criterion 'standardised codes for protocol-level errors' not met",
+    "No test covers the protocol-error path (unknown tool); grep for no_such_tool/unknown tool/-32601 in tests/ returns nothing",
+    "Upstream-unreachable/quota states are returned as isError=false results with degraded+hint rather than isError=true; model-actionable, but deviates from the check's table (API down -> isError:true)"
+  ],
+  "evaluator_notes": "7 of 9 criteria met. Classification of execution vs validation errors is correct and tested (SEP-1303 satisfied). The protocol-error side is missing: unknown tool comes back as isError result (SDK default) and no test pins the protocol-error path.",
+  "remediation": "Add a test that calls an unknown tool and asserts the observed contract; if the target is spec conformance, map unknown-tool to a JSON-RPC -32601 (e.g. raise MCPError in a call_tool override) or document the SDK behaviour as accepted. Optionally set isError=true alongside degraded for upstream_unreachable/quota states.",
+  "effort": "S"
+}

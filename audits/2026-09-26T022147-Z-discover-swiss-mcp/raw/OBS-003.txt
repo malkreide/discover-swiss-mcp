@@ -1,0 +1,21 @@
+{
+  "id": "OBS-003",
+  "status": "partial",
+  "category": "OBS",
+  "severity": "medium",
+  "evidence": [
+    "pyproject.toml:37 — structlog>=24.1.0,<27 in [project].dependencies",
+    "src/discover_swiss_mcp/logging_config.py:68-82 — structlog JSONRenderer, add_log_level, ISO timestamp",
+    "src/discover_swiss_mcp/logging_config.py:93-95 — tool_logger binds tool name and a fresh correlation_id per call; used at server.py:236,251,266,281,296,311,326,341",
+    "grep of logger/log calls in src/: info (12), warning (6), error (4), exception (1); no debug",
+    "grep -rnE '\\bprint\\(|sys\\.stdout' src/ -> no hit (exit 1); control 'print(\"hi\")' matches",
+    "runtime: stderr lines are single JSON objects with event/level/timestamp fields (server start)"
+  ],
+  "gaps": [
+    "Only three distinct severities in use (info, warning, error/exception); debug is never emitted — criterion 'at least 4 levels (debug, info, warning, error)' not met",
+    "Bound context has tool + correlation_id but no session_id / client identity"
+  ],
+  "evaluator_notes": "3 of 5 criteria fully met (structured logger dep, JSON output, no print); level coverage and session binding short.",
+  "remediation": "Add debug-level events at useful points (cache hit/miss, request params after sanitisation) and bind the MCP session/request id from ctx in tool_logger.",
+  "effort": "S"
+}

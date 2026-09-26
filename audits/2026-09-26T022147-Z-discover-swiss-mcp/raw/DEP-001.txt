@@ -1,0 +1,23 @@
+{
+  "id": "DEP-001",
+  "status": "partial",
+  "category": "DEP",
+  "severity": "high",
+  "evidence": [
+    "pyproject.toml:29-42 (mode 1 script): OK mcp>=2,<3; OK structlog>=24.1.0,<27; OFFEN httpx>=0.27.0; OFFEN pydantic>=2; OFFEN tzdata (win32 only); dev: OFFEN pytest/pytest-asyncio/respx, ruff==0.16.4 (dev extra only)",
+    "imports (mode 2): httpx at client.py:43 and net.py:30; pydantic BaseModel subclassing in config.py:19, models.py:26, licenses.py:40, tools.py:32, client.py:44; uvicorn imported at server.py:359 but not declared (only transitively via mcp 'uvicorn>=0.31.1', no upper bound)",
+    "mode 4a: installed mcp 2.2.0 and structlog 26.1.0 (highest under caps per fresh resolve) — pytest -m 'not live' → 215 passed",
+    "mode 4b / mode 3: fresh venv, pip --dry-run --no-cache-dir 'mcp>=2' 'structlog>=24.1.0' 'pydantic>=2' 'httpx>=0.27.0' uvicorn → mcp 2.2.0, structlog 26.1.0, pydantic 2.13.5, httpx 0.28.1, uvicorn 0.54.0: no next major exists today, so both caps are 'Wirkung ungeprüft'; no lockfile in repo to compare",
+    ".github/dependabot.yml — only github-actions ecosystem, no pip"
+  ],
+  "gaps": [
+    "pydantic>=2 uncapped although the server subclasses its BaseModel across five modules (framework dependency per question 2)",
+    "httpx>=0.27.0 uncapped although imported in two modules (client.py, net.py) with exception types and AsyncClient — not behind one adapter, no written rationale",
+    "uvicorn imported directly (server.py:359) but not declared as a dependency — no bound of its own",
+    "No automated cap-raising process for Python deps (Dependabot pip ecosystem missing)",
+    "Caps on mcp (<3) and structlog (<27) currently have no measurable effect (next major not yet on the index)"
+  ],
+  "evaluator_notes": "SDK and structlog are capped and measured; pydantic, httpx and the undeclared uvicorn are open ranges on import-bearing dependencies, and no pip update automation exists. SDK-006 (mcp major) is judged separately and passes.",
+  "remediation": "Set 'pydantic>=2,<3', 'httpx>=0.27.0,<1' (after 4a/4b measurement), declare 'uvicorn>=0.31.1,<1'; add a pip entry to .github/dependabot.yml; republish.",
+  "effort": "S"
+}

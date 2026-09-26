@@ -1,0 +1,19 @@
+{
+  "id": "ARCH-015",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "grep 'initialize|notifications/initialized|InitializeResult|InitializationOptions' src/ → 0; grep 'mcp-session-id|session_manager|SessionManager|sessionId' src/ → 0 (negative controls: 10 and 9 hits in .venv/.../mcp/server/lowlevel/server.py)",
+    "runtime: request with _meta protocolVersion 2030-01-01 → -32022 'Unsupported protocol version' (per-request version check by SDK)",
+    "module-level container grep '^_?[A-Z_]+ … = {}|[]' src/ → 0 (control fires on scratch file); broader scan shows only constants (client.py:190, tools.py:101…); instance state client.py:612-614 is source state (quota, last success, search availability), client.py:387-445 rate bucket and TTL cache are source-derived",
+    "runtime: tools/list order identical across 3 fresh processes with PYTHONHASHSEED=random; tools registered at import (server.py:230-335)"
+  ],
+  "gaps": [
+    "SDK serves the legacy era: POST initialize with protocolVersion 2025-06-18 over HTTP returns 200 and sets an mcp-session-id header — the server still issues session ids although it pins 2026-07-28 (streamable_http_app called without stateless_http, server.py:365)",
+    "No order-independence test and no Gegenprobe against a stateful variant"
+  ],
+  "evaluator_notes": "Own code is stateless and version/caps are read per request by the SDK; the remaining gaps are the SDK's dual-era session issuance on HTTP and the missing test with counter-proof.",
+  "remediation": "Pass stateless_http=True (or otherwise disable the legacy handshake) in mcp.streamable_http_app and document it; add a test that interleaves two tool calls in different order across two Client sessions and assert identical results, and run it once against a deliberately stateful variant.",
+  "effort": "S"
+}

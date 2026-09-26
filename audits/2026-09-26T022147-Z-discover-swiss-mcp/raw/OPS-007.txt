@@ -1,0 +1,19 @@
+{
+  "id": "OPS-007",
+  "status": "partial",
+  "category": "OPS",
+  "severity": "medium",
+  "evidence": [
+    "pyproject.toml:38-41 and tests/test_smoke.py:94-105 — Windows support is claimed implicitly (tzdata for win32, 'Fix start on Windows' commit 160fd7f)",
+    "grep -rnE '^\\s*[a-z].*(&&|\\|\\|)' README*.md CONTRIBUTING*.md docs/*.md -> no hit (exit 1); control 'pip install x && y' matches",
+    "Search covered README.md, README.de.md, CONTRIBUTING.md, docs/*.md (all instruction files, incl. German)"
+  ],
+  "gaps": [
+    "Platforms are named nowhere: no Windows/macOS/Linux statement in README/CONTRIBUTING, pyproject has no 'Operating System' classifier, CI matrix is ubuntu-latest only (ci.yml:25)",
+    "Bash-only commands without a PowerShell counterpart while Windows is implicitly supported: README.md:137, 288; README.de.md:135, 289; docs/DEMO.md:13 'export DISCOVER_SWISS_KEY=...'; README.md:143 'DISCOVER_SWISS_MCP_TRANSPORT=streamable-http python -m ...' (env-prefix syntax)",
+    "No paired PowerShell/POSIX blocks"
+  ],
+  "evaluator_notes": "3 of 6 criteria met (no && chaining, search scope, counter-check done); the implicit Windows claim is not matched by the documented commands.",
+  "remediation": "State supported platforms once in the README and add PowerShell equivalents ($env:DISCOVER_SWISS_KEY = '...'; $env:DISCOVER_SWISS_MCP_TRANSPORT = 'streamable-http') next to each export block in README.md, README.de.md and docs/DEMO.md.",
+  "effort": "S"
+}

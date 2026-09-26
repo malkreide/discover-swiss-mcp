@@ -1,0 +1,18 @@
+{
+  "id": "SDK-002",
+  "status": "pass",
+  "category": "SDK",
+  "severity": "medium",
+  "evidence": [
+    "pyproject.toml:36 — pydantic>=2 (installed 2.13.5)",
+    "src/discover_swiss_mcp/server.py:231,246,261,276,291,306,321,336 — every tool annotated with a Pydantic response model (SearchResponse, DetailResponse, …, SourceStatusResponse)",
+    "src/discover_swiss_mcp/models.py:33-53 — shared Envelope with source, provenance (Literal['live_api','cached','list_fallback']), retrieved_at, hint, excluded_* counters; tools.py:480-496 paged responses add upstream_count/returned/hits",
+    "src/discover_swiss_mcp/tools.py:468,492,496,500,513 — list/dict defaults via Field(default_factory=…); tests/test_server.py:131-140 assert output_schema and envelope fields for all tools"
+  ],
+  "gaps": [
+    "models.py:43-44 — degraded is 'str | None' though its values are enumerable (quota_exhausted, upstream_unreachable, search_unavailable); should be a Literal (low)"
+  ],
+  "evaluator_notes": "Structured Pydantic v2 returns with a consistent envelope (results named hits, count as upstream_count/returned) and output schemas; one enumerable field is typed as str.",
+  "remediation": "",
+  "effort": ""
+}

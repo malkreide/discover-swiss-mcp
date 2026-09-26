@@ -1,0 +1,93 @@
+{
+  "audit_meta": {
+    "server_name": "discover-swiss-mcp",
+    "audit_date": "2026-09-26",
+    "skill_version": "2.3.0",
+    "catalog_version": "2bbded9079fd",
+    "applies_when_dsl_version": "1.0",
+    "policy": "fail-or-partial"
+  },
+  "results": {
+    "FID-L01": {
+      "status": "pass",
+      "category": "FID",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/licenses.py:47 — explicit whitelist ALLOWED {CC0, CC 0, CC BY, CC BY-SA, CC BY-ND, ODbL}; NC deliberately absent",
+        "src/discover_swiss_mcp/licenses.py:103-127 — license_of: root license, else first dataGovernance.origin (measured 15/15 live, 105/105 recorded, PROBE_LICENSE)",
+        "src/discover_swiss_mcp/licenses.py:237-261 — screen(): licence gate first, counts excluded_by_license",
+        "src/discover_swiss_mcp/tools.py:1075, 992, 1268, 1356, 1512, 1816, 2031 — screen() on search, search fallback, find_accommodation, accommodation fallback, find_tours, find_events, webcams_near; each envelope sets excluded_by_license",
+        "src/discover_swiss_mcp/tools.py:1156-1168 — get_details withholds content with excluded_by_license=1 and hint",
+        "tests/test_licenses.py:26-56, 110-116, 274-292 — C-All-Rights-Reserved, None, CC BY-NC-SA withheld and counted; open licences served (counter-probe); tests/test_tools_p3.py:206-217 Guidle event withheld and counted",
+        "pytest -m 'not live' run in this audit: 215 passed"
+      ],
+      "gaps": [
+        "explore_area facet counts include non-open objects (documented in its description as 'before licence filtering') — low",
+        "get_details returns the name of a withheld object (by design, 'name it and link') — low"
+      ],
+      "evaluator_notes": "Whitelist, licence derivation for search hits, and gate+counter on every object-delivering path are present and tested.",
+      "remediation": "",
+      "effort": ""
+    },
+    "FID-L02": {
+      "status": "partial",
+      "category": "FID",
+      "severity": "high",
+      "evidence": [
+        "src/discover_swiss_mcp/client.py:207-220 — partition_facet_names: only VERIFIED_FACETS are sent, unknown names returned separately",
+        "src/discover_swiss_mcp/client.py:851-863 — response keys compared against requested names -> SearchResult.missing_facets",
+        "src/discover_swiss_mcp/tools.py:2249-2274 — explore_area: missing_facets = unknown + upstream-missing, with UNKNOWN_FACETS_HINT / MISSING_FACETS_HINT",
+        "tests/test_tools_p3.py:419-449 — unknown not sent; sent-but-missing reported",
+        "tests/test_live.py:275-288 — live canary containedInPlace/id comes back (unexecuted)",
+        "Runtime probe (scratchpad, respx): /search answering facets={} to resolve_area -> find_tours(region='Glarnerland') returns area.identifier=None, hint 'No area is named exactly «Glarnerland». The search text matched no area at all.', no missing_facets; control: explore_area with same answer reports missing_facets=['leafType'] + hint"
+      ],
+      "gaps": [
+        "resolve_area (client.py:1023-1032) ignores result.missing_facets: a dropped containedInPlace/id facet is reported as 'matched no area at all' in find_tours, find_events, webcams_near and explore_area(region=...) — exactly the 'missing facet appears as no values' case",
+        "AreaLookup (client.py:362-379) has no field to carry the missing facet; no test covers this path"
+      ],
+      "evaluator_notes": "explore_area fulfils the check completely; resolve_area, which the check names explicitly, loses the missing-facet signal.",
+      "remediation": "In resolve_area raise (or return a lookup with hint) when 'containedInPlace/id' is in result.missing_facets, e.g. 'area facet did not come back — this is not an unknown area'; propagate it to the envelopes; add a unit test with facets={}.",
+      "effort": "S"
+    },
+    "FID-L03": {
+      "status": "partial",
+      "category": "FID",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/licenses.py:57-63, 195-226 — detection rules: name word-boundary demo|test|beispiel|muster|placeholder, placeholder street/PLZ/Ort, example.ch/.com mail",
+        "src/discover_swiss_mcp/licenses.py:253-255 — screen() counts excluded_test_objects; applied in all search-based tools and both fallbacks (tools.py:992, 1075, 1268, 1356, 1512, 1816, 2031)",
+        "tests/test_licenses.py:220-271 — demo event recognised; counter-probe: 'Demokratie-Forum', 'Protestmarsch' etc. stay in",
+        "tests/test_tools_p3.py:82-99, 206-217 — recorded f4_odata.json with Demo Event: excluded_test_objects == 1",
+        "tests/test_live.py:323-340 — live canary excluded_test_objects >= 1, skip at 0 (unexecuted)",
+        "Runtime probe (scratchpad, respx): get_details on a Demo Event object (name 'Demo Event', Strasse 1/PLZ/Ort) -> detail served, excluded_test_objects=0"
+      ],
+      "gaps": [
+        "get_details (tools.py:1156) applies only is_servable, not is_test_object: a test record fetched by identifier is delivered in full and not counted",
+        "is_test_object checks obj.email and address.email but not organizer.email, where the recorded Demo Event carries mail@example.ch (tests/test_licenses.py:226) — detection there relies on the name alone"
+      ],
+      "evaluator_notes": "Filter and counter work on every list-shaped tool and are tested with the recorded object; the detail tool is the exception.",
+      "remediation": "In get_details_impl, after the licence gate, return a withheld envelope with excluded_test_objects=1 and a hint when is_test_object(obj); also check organizer.email; add a unit test.",
+      "effort": "S"
+    },
+    "FID-L04": {
+      "status": "pass",
+      "category": "FID",
+      "severity": "medium",
+      "evidence": [
+        "src/discover_swiss_mcp/transform.py:45-68 — html_to_text: tags stripped, block tags as line breaks, cells as spaces, entities unescaped after tag removal, nbsp normalised",
+        "src/discover_swiss_mcp/transform.py:190-201 — description, disambiguatingDescription, openingHours, fees, zurichcardDescription pass html_to_text in get_details",
+        "src/discover_swiss_mcp/tools.py:566-567, 609 — search teaser and opening_hours pass html_to_text",
+        "tests/test_transform.py:37-65 — recorded Landesmuseum description and fee table; tests/test_tools.py:392 '&uuml;' not in detail description",
+        "Scan of all recorded probe JSON (run in this audit): only description, fees, specialOpeningHoursSpecification[].description carry HTML/entities; trim_detail of both recorded detail objects leaves no tag/entity (negative control fired on 'Z&uuml;rcher <p>')",
+        "tests/test_live.py:291-302 — live canary without entity (unexecuted)"
+      ],
+      "gaps": [
+        "openingHoursSpecification is passed through as raw structure (transform.py:197); if an entry ever carries a description it would bypass html_to_text — low",
+        "name, organizer name, amenity names and accessibility profile names are not passed through html_to_text — no entity observed in recordings — low"
+      ],
+      "evaluator_notes": "Every free-text field named by the check goes through html_to_text, tested against the recorded HTML.",
+      "remediation": "",
+      "effort": ""
+    }
+  }
+}

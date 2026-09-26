@@ -1,0 +1,18 @@
+{
+  "id": "ARCH-009",
+  "status": "pass",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:170-179 — _READ_ONLY sets readOnlyHint True, destructiveHint False, idempotentHint True, openWorldHint True; every decorator at :230,245,260,275,290,305,320,335 passes annotations=_annotations(...)",
+    "runtime tools/list: annotations {destructiveHint:false, idempotentHint:true, openWorldHint:true, readOnlyHint:true, title:…} on the tools",
+    "tests/test_server.py:103-108 — parametrised over all tools, asserts read_only_hint True, open_world_hint True, destructive_hint False",
+    "README.md:155 — 'All eight tools are read-only (readOnlyHint: true, openWorldHint: true)'; CHANGELOG.md:15-16 repeats it"
+  ],
+  "gaps": [
+    "README policy line omits destructiveHint/idempotentHint (no four-column table) — minor"
+  ],
+  "evaluator_notes": "All tools carry explicit, behaviour-consistent annotations (pure reads against an external API), tested; policy documented in README.",
+  "remediation": "",
+  "effort": ""
+}

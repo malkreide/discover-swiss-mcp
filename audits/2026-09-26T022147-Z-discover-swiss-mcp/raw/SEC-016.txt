@@ -1,0 +1,21 @@
+{
+  "id": "SEC-016",
+  "status": "partial",
+  "category": "SEC",
+  "severity": "critical",
+  "evidence": [
+    "src/discover_swiss_mcp/config.py:49 — Settings.host default '127.0.0.1'; config.py:129 — DISCOVER_SWISS_MCP_HOST env var, default '127.0.0.1'",
+    "src/discover_swiss_mcp/server.py:364-368 — settings.host passed both to mcp.streamable_http_app(host=…) and to uvicorn.run(host=…); the only network path",
+    "repo — grep for 0.0.0.0 host defaults in src/ and config files finds none (only net.py:42 '0.0.0.0/8' in the egress blocklist)",
+    "runtime (audit): default run → 'Uvicorn running on http://127.0.0.1:18766'; with DISCOVER_SWISS_MCP_HOST=0.0.0.0 → 'Uvicorn running on http://0.0.0.0:18767' (value reaches the listener)",
+    "README.md:142 and README.md:247 — default bind 127.0.0.1 documented, DISCOVER_SWISS_MCP_HOST listed"
+  ],
+  "gaps": [
+    "Non-loopback bind is silent: the 0.0.0.0 run logged no warning (only the lifespan INFO event carrying host=0.0.0.0), and there is no host allow-list to compensate (criterion 7 unmet)",
+    "README does not explain the local vs container differentiation or warn against 0.0.0.0 outside containers (criterion 6 unmet)",
+    "No deployment configuration exists in which an explicit 0.0.0.0 would live (criterion 5 not demonstrable; server is local-only)"
+  ],
+  "evaluator_notes": "Loopback default, configurable bind and propagation to both the app builder and the listener are verified by two start-log runs. The silent non-loopback bind is the substantive gap; combined with SEC-024 a 0.0.0.0 bind exposes an unauthenticated, host-unchecked endpoint without any log signal. Not critical because it requires an explicit operator opt-in.",
+  "remediation": "In main(): if settings.host not in ('127.0.0.1','localhost','::1') and no host allow-list is configured, log a WARNING naming the exposure; add a README 'Network binding' paragraph (loopback default; 0.0.0.0 only in containers, together with an allow-list).",
+  "effort": "S"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ARCH-014",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/client.py:707-807 — single retry loop in _call (hand-read); httpx.AsyncClient at :648 without transport= (retries 0); grep HTTPTransport|max_retries|Retry( src/ → 0 (negative control: hits .venv/.../httpx/_client.py:731)",
+    "client.py:805-807 + tests/test_client.py:298-305 — other 4xx raise UpstreamRejectedError immediately, 1 call, no sleep",
+    "client.py:731-747 + tests/test_client.py:258-262 — httpx.RequestError (network, timeouts) retried on the same ladder",
+    "client.py:241 + tests/test_client.py:239-246 — fixed ladder 2/4/8 s, asserted exactly",
+    "client.py:531-549,762-774 + tests/test_client.py:272-295 — 429 wait read from body ('Try again in N seconds') then Retry-After header, one retry, >30 s (RATE_LIMIT_MAX_WAIT :257) fails immediately",
+    "client.py:248,703,716 — TOTAL_BUDGET 25 s as wall-clock deadline enforced with asyncio.timeout(remaining)",
+    "client.py:776-781 — 403 quota is a state, never retried; exhaustion raises UpstreamUnavailableError mapped to degraded envelope (tools.py:697-705)"
+  ],
+  "gaps": [
+    "No jitter: client.py:236-241 deliberately deterministic (rationale: single-process client behind token bucket) — criterion unmet",
+    "Retry-After only on 429 and only as integer seconds; 503 Retry-After ignored, HTTP-date form not parsed (client.py:546-548)",
+    "Budget not bounded below the client timeout on all paths: a 429 extends the deadline by up to 30 s (client.py:772) → up to ~55 s; bucket.acquire() (client.py:714, 409-420, up to ~60 s) runs before asyncio.timeout and outside the deadline",
+    "No test binds the wall-clock budget (no real-time slow-response test)"
+  ],
+  "evaluator_notes": "Retry exists and is well-scoped (what is retried, one layer, wall-clock deadline, 4xx abort). Jitter, full Retry-After handling and a hard total bound under the 30 s client timeout are missing.",
+  "remediation": "Add jitter after capping order (delay = min(base*2**n*(0.5+random()), MAX)); parse Retry-After on 503 and HTTP-date; move bucket.acquire inside the deadline or count it; cap deadline extension so total stays < 30 s; add a real-time test with a slow respx side effect and total_budget small.",
+  "effort": "S"
+}

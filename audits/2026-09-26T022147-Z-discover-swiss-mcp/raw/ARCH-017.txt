@@ -1,0 +1,16 @@
+{
+  "id": "ARCH-017",
+  "status": "pass",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/tools.py:263 — paging is a plain 'page: int' (1..1000) re-sent upstream as currentPage; tests/test_tools.py:202 asserts currentPage — stateless re-query, no server-held cursor",
+    "src/discover_swiss_mcp/tools.py:855-866 — upstream nextPageToken is local to one tool call (fallback scan), never exposed or stored",
+    "grep module-level mutable containers in src/ → none (control fires on scratch file); client.py:612-614 instance fields hold source state only (quota, last success, search availability), not caller state",
+    "deployment is local single-process (profile), auth_model API-Key upstream only — no replica / identity binding needed"
+  ],
+  "gaps": [],
+  "evaluator_notes": "The server holds no caller-related cross-call state, so no handles are needed; paging is a stateless page number over the source. Criteria 2-7 are not applicable.",
+  "remediation": "",
+  "effort": ""
+}

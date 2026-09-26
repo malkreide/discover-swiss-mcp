@@ -1,0 +1,18 @@
+{
+  "id": "IDENT-007",
+  "status": "not_verified",
+  "category": "IDENT",
+  "severity": "high",
+  "evidence": [
+    "https://pypi.org/pypi/discover-swiss-mcp/json -> 404 (control swiss-culture-mcp -> 200): no published distribution; per the check, the probe reports not_applicable and IDENT-006 NOT_ON_INDEX is the relevant question",
+    "Supplementary, not a substitute: wheel built from HEAD installed with --no-cache-dir into an empty venv -> import ok (0.1.0); resolved mcp==2.2.0, httpx==0.28.1, pydantic==2.13.5, structlog==26.1.0; entry point discover-swiss-mcp answered initialize, tools/list (8 tools) and tools/call source_status (isError=false, api_key_configured=false)",
+    "pyproject.toml:34-37 — mcp>=2,<3 and structlog<27 upper bounds (the DEP-001 cause of this failure class is closed)"
+  ],
+  "gaps": [
+    "Index artefact cannot be installed or started: nothing on PyPI",
+    "No recurring scheduled run that installs and starts the published package: no workflow with 'schedule:' in .github/workflows/"
+  ],
+  "evaluator_notes": "The check applies only to a published artefact; none exists. A locally built wheel installs and runs in an empty venv, which is evidence about the build, not about the index.",
+  "remediation": "After the first release run shipped_probe.py (or the four manual steps) against the PyPI artefact and add a scheduled workflow that repeats it.",
+  "effort": "S"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "SEC-007",
+  "status": "fail",
+  "category": "SEC",
+  "severity": "high",
+  "evidence": [
+    "repo — `find` for Dockerfile*, *compose*.y*ml, railway.toml, render.yaml, k8s/, helm/ (excluding .venv) returns nothing; control: same find expression matches ./pyproject.toml; `git ls-files | grep -iE 'docker|compose|k8s|helm|railway|render'` → no match (91 tracked files)",
+    "README.md:127-143 — only documented run mode is pip install -e + `python -m discover_swiss_mcp` directly on the host, with user privileges",
+    "src/ — no file-system tools (grep 'open\\(|Path\\(' in src/ → no file access), so criterion 6 is not applicable"
+  ],
+  "gaps": [
+    "No container image or sandbox of any kind: no non-root USER, no read-only root FS, no dropped capabilities, no seccomp profile (criteria 1-5 unmet)",
+    "Server runs as the local user with access to that user's files and environment (including DISCOVER_SWISS_KEY and any other secrets in the MCP host's env)"
+  ],
+  "evaluator_notes": "The check applies to local-stdio deployments. The server ships no sandboxing mechanism and documents none; all applicable criteria are unmet. Risk is moderated by a small dependency set and read-only, no-filesystem tool code, but that is not a sandbox.",
+  "remediation": "Ship a Dockerfile (python slim, non-root USER 10001, no secrets in layers) and document a stdio launch via `docker run -i --rm --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges -e DISCOVER_SWISS_KEY ghcr.io/.../discover-swiss-mcp` in the Claude Desktop config; alternatively document uvx-based isolation as the minimum and mark container use as recommended.",
+  "effort": "S"
+}

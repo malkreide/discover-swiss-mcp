@@ -1,0 +1,22 @@
+{
+  "id": "OPS-002",
+  "status": "partial",
+  "category": "OPS",
+  "severity": "medium",
+  "evidence": [
+    "README.md:47-66 — 'Anchor demo queries', three concrete natural-language questions with tool chains (docs/DEMO.md)",
+    "README.md:124-132 — Installation (git clone + pip install -e); README.md:151 Available Tools; README.md:240-252 Configuration table",
+    "README.md:220-238 — Known limitations, 12 numbered items",
+    "README.md:321-326 — License (software MIT, data per provider)",
+    "README.de.md:45,122,150,221,241,317,323 — same top-level section set in German (Anker-Abfragen, Installation, Verfügbare Tools, Bekannte Einschränkungen, Konfiguration, Sicherheit, Lizenz)",
+    "CHANGELOG.md:1-8 — Keep a Changelog header, [Unreleased] with ### Added"
+  ],
+  "gaps": [
+    "No ASCII/Mermaid architecture diagram: README 'Architecture decision' (README.md:197-218) is prose; the only box-drawing characters are the file tree (README.md:254-275); grep for ┌|└|▼|mermaid|--> finds nothing else (control '┌──┐' matches)",
+    "Security section (README.md:315-319) only links SECURITY.md; data class, auth model and trifecta assessment are not stated there",
+    "CONTRIBUTING.md is English only; no CONTRIBUTING.de.md"
+  ],
+  "evaluator_notes": "4 of 7 criteria met. Anchor demo, limits, bilingual parity and changelog format are good; diagram, security summary and bilingual CONTRIBUTING missing.",
+  "remediation": "Add a one-screen ASCII data-flow diagram (client -> stdio/HTTP -> server -> net.safe_request -> api.discover.swiss) to both READMEs, extend the Security section with data class (public open data), auth model (BYO upstream key, no client auth, local only) and trifecta rating, and add CONTRIBUTING.de.md.",
+  "effort": "S"
+}

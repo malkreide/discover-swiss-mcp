@@ -1,0 +1,20 @@
+{
+  "id": "ARCH-002",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "runtime (mcp.list_tools, whitespace-normalised): description lengths search 1531, get_details 819, find_accommodation 991, find_tours 1346, find_events 1160, webcams_near 666, explore_area 1042, source_status 573 — median 1016.5, min 573",
+    "src/discover_swiss_mcp/server.py:262 — find_accommodation carries caveats ('NO availability and NO nightly prices — never state that a room is free')",
+    "src/discover_swiss_mcp/server.py:292 — find_events: 'Treat this tool as a supplement: if it returns nothing, name a regional event calendar'",
+    "src/discover_swiss_mcp/server.py:322 and :337 — explore_area / source_status carry explicit when-to-use sentences",
+    "grep '<use_case>|<important_notes>|<example>' src/ → 0 hits (negative control: same pattern hits ARCH-002.md:19-20)"
+  ],
+  "gaps": [
+    "No structured use-case marker (<use_case> or equivalent section) in any tool; explicit 'when to use' statements exist for only ~3 of 8 tools (explore_area, source_status, find_events) — below the 80% criterion",
+    "search vs find_accommodation (both can return hotels) are not explicitly differentiated in either description"
+  ],
+  "evaluator_notes": "Length and caveats are strong (median ~1000 chars, many limitations stated). The use-case-tag criterion (≥80% of tools) and the differentiation of overlapping tools are not met.",
+  "remediation": "Add a short, uniformly placed use-case lead (e.g. 'Use when …' / 'Not for …') to each description, and state in search/find_accommodation which one to prefer for lodging questions; regenerate docs/tool-hashes.json.",
+  "effort": "S"
+}

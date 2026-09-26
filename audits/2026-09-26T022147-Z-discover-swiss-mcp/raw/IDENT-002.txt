@@ -1,0 +1,21 @@
+{
+  "id": "IDENT-002",
+  "status": "partial",
+  "category": "IDENT",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/__init__.py:9-18 — __version__ = importlib.metadata.version('discover-swiss-mcp'), PackageNotFoundError fallback '0.0.0+source'",
+    "grep -rnE '__version__\\s*=\\s*\"[0-9]+\\.[0-9]' src/ | grep -v '+' -> no hit; control '__version__ = \"0.1.0\"' matches",
+    "grep -rnE '__version__\\s*==\\s*\"[0-9]+\\.[0-9]|==\\s*\"v?[0-9]+\\.[0-9]+\\.[0-9]+\"' tests/ -> no hit; control 'assert __version__ == \"0.3.0\"' matches",
+    "src/discover_swiss_mcp/__init__.py — imports no submodule, so no circular-import ordering risk",
+    "Runtime: import discover_swiss_mcp -> __version__ 0.1.0 == pyproject.toml:7"
+  ],
+  "gaps": [
+    "No version invariant test: tests/test_smoke.py:18-20 only asserts __version__ is a non-empty string; nothing compares __version__ with server.json or pyproject.toml",
+    "Consequently no detuned-server.json counter-test, no editable-install hint in a failure message, no skip-without-install behaviour",
+    "Observation outside the criteria: src/discover_swiss_mcp/server.py:147-161 builds MCPServer without version=__version__; serverInfo.version on the wire is '' (stdio initialize from the wheel-installed entry point returned {'name': 'discover_swiss_mcp', 'version': ''})"
+  ],
+  "evaluator_notes": "5 of 10 criteria met: derivation is correct and literal-free, but no test holds the invariant, so the check's own counter-test cannot exist.",
+  "remediation": "Add tests/test_version.py: assert __version__ == json.loads(server.json)['version'] and == tomllib pyproject version (skip on '+source'), message mentions re-running pip install -e .; detune server.json once to see it fail. Pass version=__version__ to MCPServer.",
+  "effort": "S"
+}

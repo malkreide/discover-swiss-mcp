@@ -1,0 +1,22 @@
+{
+  "id": "DRIFT-004",
+  "status": "fail",
+  "category": "DRIFT",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/config.py:23 and client.py:154-171 — endpoint inventory: /search, /vertices/{id}, /status, 14 list collections (5 used by the fallback, tools.py:749-755)",
+    "tests/test_live.py:127-340 — live tests cover /search (via all search tools) and /vertices (test_detail_description_is_plain_text); none covers /status or any list endpoint",
+    "probes/PROBE_OPEN_discover-swiss.md:16-27 — the 15-field LIST_SELECT was verified on /lodgingbusinesses, /civicStructures, /webcams only; fallback also reads /places, /foodEstablishments, /localbusinesses",
+    "src/discover_swiss_mcp/client.py:123-126 — own comment: 'a field that is fine on /lodgingbusinesses can 400 on /webcams, and a 400 here fails the whole page'",
+    "tests/conftest.py:36 — mocks registered against the constant-derived PINNED_BASE"
+  ],
+  "gaps": [
+    "List endpoints (the whole fallback path) and /status are not covered by any live test; /places, /foodEstablishments, /localbusinesses have never been called with the current select",
+    "The live tests that exist have never been executed",
+    "Live tests do not explicitly separate 404 (endpoint gone) from 5xx (transient)",
+    "scripts/p3_stopgate_run.py and probes/probe_open.py are one-shot scripts, not a probe manifest run on a schedule"
+  ],
+  "evaluator_notes": "Mocks are bound to the constant (criterion 2 met), but coverage is incomplete (fallback endpoints, /status), three fallback endpoints were never checked with the current select, and nothing live has run.",
+  "remediation": "Add a parametrised @pytest.mark.live contract canary over /status and each FALLBACK_ENDPOINTS entry with top=1 and LIST_SELECT, asserting status != 404 (fail) and 5xx (xfail/skip), and run it once now.",
+  "effort": "S"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "DRIFT-005",
+  "status": "fail",
+  "category": "DRIFT",
+  "severity": "medium",
+  "evidence": [
+    ".github/workflows/ci.yml:67 — the only pytest step: `pytest -m \"not live\"`",
+    "grep schedule|cron in .github/workflows/*.yml — no hit (negative control: pattern fires on a sample 'schedule:/cron:' block); publish.yml has no pytest step",
+    "README.md:287-299 — live canaries documented as local-only ('never in CI'), no cadence, no owner",
+    "tests/test_live.py:1-10 — module docstring: 'CI ... never sees them; locally they run with a key'"
+  ],
+  "gaps": [
+    "No scheduled live run and no external auditor reference",
+    "No failure signal (issue/notification)",
+    "No workflow_dispatch entry point for the live suite",
+    "README/CONTRIBUTING name neither cadence nor responsible person"
+  ],
+  "evaluator_notes": "Only the 'PR run stays not live' criterion is met; the live suite runs nowhere.",
+  "remediation": "Add .github/workflows/live-tests.yml (weekly cron + workflow_dispatch, DISCOVER_SWISS_KEY from repository secrets, `pytest -m live -rA`, issue on failure) and a README paragraph with cadence and owner.",
+  "effort": "S"
+}

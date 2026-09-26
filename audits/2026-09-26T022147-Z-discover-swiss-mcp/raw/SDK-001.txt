@@ -1,0 +1,16 @@
+{
+  "id": "SDK-001",
+  "status": "pass",
+  "category": "SDK",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:103-104 — @asynccontextmanager async def app_lifespan(server: MCPServer)",
+    "src/discover_swiss_mcp/server.py:147-161 — MCPServer(..., lifespan=app_lifespan)",
+    "src/discover_swiss_mcp/server.py:125,135-140 — one DiscoverSwissClient per process, closed via await client.aclose() in finally",
+    "src/discover_swiss_mcp/client.py:644-650 — the only httpx.AsyncClient(...) in src/, created lazily once and reused; tools obtain it via ctx.request_context.lifespan_context (server.py:189)"
+  ],
+  "gaps": [],
+  "evaluator_notes": "Lifespan with asynccontextmanager, cleanup in finally, shared HTTP client; single-server setup so AsyncExitStack is not applicable.",
+  "remediation": "",
+  "effort": ""
+}

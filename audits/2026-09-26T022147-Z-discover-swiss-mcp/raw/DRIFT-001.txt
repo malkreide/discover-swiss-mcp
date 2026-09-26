@@ -1,0 +1,21 @@
+{
+  "id": "DRIFT-001",
+  "status": "pass",
+  "category": "DRIFT",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/config.py:23 — API_BASE_URL module constant",
+    "src/discover_swiss_mcp/client.py:698 — the only URL construction: f\"{self._settings.base_url}{path}\"",
+    "src/discover_swiss_mcp/client.py:846, 889, 946, 1101 — each resource path built once (/search, /vertices/{quote(id)}, /{name} from LIST_ENDPOINTS, /status)",
+    "src/discover_swiss_mcp/client.py:760, 791, 807 — error messages quote the same `path` variable that was fetched",
+    "src/discover_swiss_mcp/client.py:150-153, 223-226, 879-889 — rules documented: collections as frozenset, identifier gate, quote(safe='')",
+    "tests/conftest.py:36 — mocks bound to PINNED_BASE derived from API_BASE_URL, not a repeated literal"
+  ],
+  "gaps": [
+    "Host is held a second time in net.EGRESS_ALLOWLIST (net.py:34) — deliberate security allow-list, low risk",
+    "_call has no docstring line on URL rules; envelope carries no data_source_url (provenance coupling not applicable)"
+  ],
+  "evaluator_notes": "One construction point for all upstream URLs, error messages use the fetched path, base URL is a constant.",
+  "remediation": "",
+  "effort": ""
+}

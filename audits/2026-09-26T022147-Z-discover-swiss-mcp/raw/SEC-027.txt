@@ -1,0 +1,19 @@
+{
+  "id": "SEC-027",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "high",
+  "evidence": [
+    "src/ — grep -rniE 'x-mcp-header|custom_headers|extra_headers|passthrough_headers|headers=.*param' → no hit (control fires); server never reads inbound request headers (grep 'request\\.headers|Authorization|headers\\.get' → only net.py:146 upstream Location)",
+    "runtime (audit): tools/list of all 8 tools serialized — 'x-mcp-header' absent from every input schema (control string 'readOnlyHint' present in the same dump)",
+    "SDK mcp 2.2.0: .venv/.../mcp/shared/inbound.py:526-593 validate_mcp_param_headers only compares Mcp-Param-* headers for properties annotated with x-mcp-header and never exposes header values to the handler; no annotations → nothing to forward",
+    "src/discover_swiss_mcp/client.py:652-666 — the only parameter-derived upstream header is Accept-Language from `lang`, a Literal['de','fr','it','en'] (tools.py:59) — allow-listed values, no CR/LF possible",
+    "runtime (audit, in-process HTTP with captured upstream headers): request carrying Authorization: Bearer ATTACKER-TOKEN, Cookie and Mcp-Param-Evil → 200; upstream headers = accept, accept-language, categoryversion, ocp-apim-subscription-key, user-agent; no Authorization/Cookie, and the correct subscription key header is still present (the check's 'second assertion')"
+  ],
+  "gaps": [
+    "No in-repo regression test pinning that parameter/inbound headers are not forwarded (the evidence pair exists only as this audit's runtime probe) — low"
+  ],
+  "evaluator_notes": "x-mcp-header is not used; verified in server code, in the served schemas and in SDK 2.2.0 behaviour; the one tool-param-derived outbound header is Literal-constrained. Criteria 2-5 and 8 apply only on use. Missing regression test is below check severity.",
+  "remediation": "",
+  "effort": ""
+}

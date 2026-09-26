@@ -1,0 +1,21 @@
+{
+  "id": "ARCH-016",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:84 — CACHE_HINTS includes 'server/discover'; handler supplied by SDK (.venv/.../mcp/server/lowlevel/server.py:449,661-675), mcp 2.2.0 installed, pyproject.toml:34 mcp>=2,<3",
+    "runtime HTTP: server/discover → supportedVersions ['2026-07-28'], capabilities {prompts, resources, tools}, instructions, resultType complete, ttlMs 300000, cacheScope public",
+    "runtime stdio: same server/discover response via python -m discover_swiss_mcp",
+    "runtime: _meta io.modelcontextprotocol/serverInfo = {name: 'discover_swiss_mcp', version: ''}"
+  ],
+  "gaps": [
+    "Identity version is empty: MCPServer(...) at server.py:147-161 passes no version=; SDK default version '' (.venv/.../mcp/server/mcpserver/server.py:166) — package metadata version 0.1.0 is not used",
+    "No test calls server/discover and checks versions, capabilities and identity separately (grep tests/ → 0); no Gegenprobe",
+    "Capabilities advertise resources.subscribe/prompts although none exist (SDK default)",
+    "Whether mcp 2.0.0 (the pinned lower bound) already ships server/discover and cache_hints was not verifiable offline"
+  ],
+  "evaluator_notes": "RPC answers on both transports with a version list and capabilities; identity version is blank and no test holds the three parts.",
+  "remediation": "Pass version=__version__ (from package metadata) to MCPServer; add a test via mcp.Client asserting supportedVersions == ['2026-07-28'], 'tools' in capabilities, serverInfo.version == importlib.metadata.version('discover-swiss-mcp'); raise the lower bound to the first mcp 2.x that has cache_hints.",
+  "effort": "S"
+}

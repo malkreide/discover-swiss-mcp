@@ -229,7 +229,7 @@ The twelve findings of the live probe that shape how this server behaves
 5. **An open product is not an open licence.** All-rights-reserved and unlicensed objects are withheld and counted.
 6. **`ds-containedInPlaceFilter` is not a filter.** It trims the response; the hit filter is the query parameter.
 7. **Schweiz Tourismus already supplies data** (2,769 hotels) — the open channel carries their content.
-8. **Unknown facet names are dropped silently.** Only verified names are sent; drops are reported in `missing_facets`.
+8. **Misspelt facet names are dropped silently — an invented one fails the whole request with 400.** Only the eight verified names are sent; anything else is reported in `missing_facets`.
 9. **One hotel weighs 78 KB.** `get_details` trims to ~8 KB.
 10. **There is test data in the production index.** «Demo Event» is withheld and counted in `excluded_test_objects`.
 11. **Descriptions are HTML with entities.** Resolved to plain text server-side.

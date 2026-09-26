@@ -1,0 +1,18 @@
+{
+  "id": "OBS-004",
+  "status": "pass",
+  "category": "OBS",
+  "severity": "critical",
+  "evidence": [
+    "src/discover_swiss_mcp/logging_config.py:62 — logging.basicConfig(stream=sys.stderr, ...)",
+    "src/discover_swiss_mcp/logging_config.py:78 — structlog logger_factory=structlog.PrintLoggerFactory(file=sys.stderr) (stderr-bound equivalent of WriteLoggerFactory)",
+    "src/discover_swiss_mcp/server.py:354-356 — configure_logging() runs in main() before the transport branch: same config for stdio and streamable-http",
+    "grep -rnE '\\bprint\\(|sys\\.stdout' src/ --include='*.py' -> no hit (exit 1); negative control 'print(\"hi\")' matches (exit 0)",
+    "runtime: real stdio session (initialize, notifications/initialized, tools/list, 2x tools/call) against python -m discover_swiss_mcp -> 4 stdout lines, every line parses as JSON-RPC; control: a junk line 'hello' raises JSONDecodeError in the same parser",
+    "runtime: 6 s start with stdin held open -> stdout 0 bytes, stderr carries JSON log lines"
+  ],
+  "gaps": [],
+  "evaluator_notes": "Inspector-equivalent check done with a real stdio handshake instead of npx inspector. All criteria met.",
+  "remediation": "",
+  "effort": ""
+}

@@ -1,0 +1,22 @@
+{
+  "id": "DRIFT-003",
+  "status": "pass",
+  "category": "DRIFT",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/models.py:44 — structured degraded field (quota_exhausted | upstream_unreachable | search_unavailable)",
+    "tests/test_live.py:113-119 — every live canary calls _assert_live (degraded must be None) before reading counts",
+    "tests/test_tools.py:207-218 — success assertions on values only a success yields (upstream_count 53, identifier civ_px9-s28_bggg, teaser text); degraded envelopes have hits=[] and upstream_count=None",
+    "tests/test_tools.py:384-405, 476-503, 562; tests/test_tools_p3.py:169, 302-311, 397-402, 490-502 — success-path test for each of the 8 tools",
+    "tests/test_tools.py:337, 503; tests/test_tools_p3.py:311 — range assertions bound to a specific identifier",
+    "tests/test_tools.py:367, 375; tests/test_client.py:240, 322, 353 — degraded paths asserted separately",
+    "grep match=|assertRaisesRegex in tests/ — only keyword args match='name'/'all', no regex assertions (Modus 3 not applicable)"
+  ],
+  "gaps": [
+    "Unit success tests do not explicitly assert degraded is None first (low: their assertions cannot be met by a degraded envelope)",
+    "No tool-level counter-probe for upstream_unreachable (5xx/timeout) showing success values are absent"
+  ],
+  "evaluator_notes": "Degradation is a structured field, live tests exclude it explicitly, and unit assertions check success-only values.",
+  "remediation": "",
+  "effort": ""
+}

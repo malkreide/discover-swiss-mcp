@@ -1,0 +1,18 @@
+{
+  "id": "ARCH-006",
+  "status": "pass",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/server.py:230-349 — 8 tools (≤12); runtime tools/list returned 8",
+    "README.md:199-204 — seven of eight tools are use-case views on /search (not one tool per endpoint); /projects, /areas, /status etc. are not exposed as tools",
+    "docs/DEMO.md:37-41,59-63,84-87 — anchor queries answered in-server with search+search (Q1; get_details optional), find_tours+webcams_near (Q2), find_accommodation(+get_details) (Q3), i.e. ≤2 calls per sub-question",
+    "src/discover_swiss_mcp/tools.py:2106-2161 — explore_area aggregates facet counts so a model can scope before searching"
+  ],
+  "gaps": [
+    "Tool latency (<5 s) not measured (live API not called); normal path is one upstream call, retry path can take up to 25 s (client.py:248)"
+  ],
+  "evaluator_notes": "Use-case-oriented tool set within budget; no CRUD/endpoint mapping. Anchor Q1 is listed as a 3-step chain in DEMO.md, but the museum and restaurant sub-questions are each one call; get_details is optional depth.",
+  "remediation": "",
+  "effort": ""
+}

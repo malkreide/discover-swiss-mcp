@@ -1,0 +1,16 @@
+{
+  "id": "OPS-004",
+  "status": "not_verified",
+  "category": "OPS",
+  "severity": "high",
+  "evidence": [
+    "audits/2026-09-26T022147-Z-discover-swiss-mcp/ contains only audit-meta.json, checks-local/, raw/ — no audit-report.md or findings/ yet (this is step 4 of the run)",
+    "probes/PROBE_REPORT_discover-swiss-mcp.md:195 — '## 9. Offene Punkte' (repo-side reports do keep an open-points section)"
+  ],
+  "gaps": [
+    "The object of this check (audit-report.md with Gemessen/Geschlossen/Offen, findings) is produced by a later step and cannot be evaluated here"
+  ],
+  "evaluator_notes": "Looked for the report structure in the audit directory; it does not exist yet. For the raw results written in this step: every pass carries positive file:line or runtime evidence with a negative control, and unmeasurable items (published artefact) are recorded as not_verified rather than pass. Must be re-evaluated against the final report.",
+  "remediation": "",
+  "effort": ""
+}

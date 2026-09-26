@@ -1,0 +1,18 @@
+{
+  "id": "OPS-006",
+  "status": "pass",
+  "category": "OPS",
+  "severity": "high",
+  "evidence": [
+    "pyproject.toml:49-55 — ruff==0.16.4 pinned exactly in the dev extra, with rationale comment",
+    ".github/workflows/ci.yml:48-54 — CI installs via pip install -e \".[dev]\", i.e. exactly that pin; comment forbids a second pin",
+    ".github/workflows/ci.yml:56-62 — lint and format gates judge by exit code, not output text",
+    "No second pin location: no .pre-commit-config.yaml, Makefile or .devcontainer (ls/grep)",
+    "git log -S 'ruff==' -> pin introduced in b53a500 (scaffold), no silent bumps since",
+    "Audit-side: which -a ruff -> .venv/bin/ruff 0.16.4 first in PATH (== pin); /root/.local/bin/ruff 0.15.8 and /usr/local/bin/ruff 0.16.4 also present, local verdicts taken with the pinned binary; pip index shows latest 0.16.9, so the pin is real"
+  ],
+  "gaps": [],
+  "evaluator_notes": "Pin lives in the CI install path with a reason, one location only, gates read exit codes. Criteria 6/8/9 (text counting, pin-sync step) are not applicable because there is only one pin and no output parsing.",
+  "remediation": "",
+  "effort": ""
+}

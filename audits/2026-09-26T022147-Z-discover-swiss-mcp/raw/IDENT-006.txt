@@ -1,0 +1,22 @@
+{
+  "id": "IDENT-006",
+  "status": "partial",
+  "category": "IDENT",
+  "severity": "high",
+  "evidence": [
+    "https://pypi.org/pypi/discover-swiss-mcp/json -> 404, control https://pypi.org/pypi/swiss-culture-mcp/json -> 200 (comparison took place: code NOT_ON_INDEX)",
+    "git tag --list -> 0 tags; git ls-remote --tags origin -> none: no tag missing from the index",
+    "pyproject.toml:7 version 0.1.0; README.md:21-27 'pre-release ... Release | none; version 0.1.0 is not published'; README.md:36-38 release gate = written search confirmation from discover.swiss",
+    "CHANGELOG.md:8-11 — [Unreleased] 'Not released. Release gate: ...' describes exactly the unreleased state",
+    ".github/workflows/publish.yml:5-9 — publish pipeline exists (tag push v*, workflow_dispatch)",
+    "IDENT-007 answered separately (not_verified)"
+  ],
+  "gaps": [
+    "Never published (NOT_ON_INDEX): no index version and no release tag",
+    "User-facing work has been unreleased for more than 7 days: 'P1: complete client layer' committed 2026-09-18 (8 days), followed by P2/P3 feature commits",
+    "Release procedure (bump, tag vX.Y.Z, pypi environment approval) is not described in README or CONTRIBUTING; only the release gate condition is"
+  ],
+  "evaluator_notes": "4 of 7 criteria met. The gap is deliberate and documented (release held until discover.swiss confirms the search entitlement), and the release process is set up rather than missing, so this is NOT_ON_INDEX by design, not a forgotten publish. It stays a finding until the first release.",
+  "remediation": "Document the release steps (bump pyproject/server.json, CHANGELOG section, tag v0.1.0, approve the pypi environment, verify from the index) in CONTRIBUTING.md; publish as soon as the entitlement gate clears.",
+  "effort": "S"
+}

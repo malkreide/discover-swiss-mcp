@@ -1,0 +1,21 @@
+{
+  "id": "SCALE-008",
+  "status": "pass",
+  "category": "SCALE",
+  "severity": "high",
+  "evidence": [
+    ".venv/.../mcp/shared/inbound.py:447-472 (mcp 2.2.0) — modern ladder compares MCP-Protocol-Version, Mcp-Method == body.method and Mcp-Name == params.name for tools/call, prompts/get, resources/read (inbound.py:72-76), before dispatch; code HEADER_MISMATCH = -32020 (mcp_types.jsonrpc)",
+    "src/discover_swiss_mcp/server.py:364-368 — the server serves the SDK's streamable_http_app unmodified, so the ladder is on its only HTTP path",
+    "runtime (audit, 127.0.0.1:18766): (a) Mcp-Method tools/call + Mcp-Name get_details with matching body → HTTP 200, tool result returned",
+    "runtime (audit): (b) Mcp-Name get_details, body name 'search' → HTTP 400, error code -32020 'mcp-name header does not match…' (tool not executed)",
+    "runtime (audit): (c) no Mcp-Method/Mcp-Name → -32020; (c2) Mcp-Method present, Mcp-Name missing on tools/call → -32020 — missing headers are rejected, not filled from the body",
+    "negative control: same grep pattern 'mcp-method|mcp-name|HeaderMismatch|-32020' finds the implementation in the SDK (inbound.py:63,66,458-472) while src/ has 0 hits — the enforcement is SDK-provided"
+  ],
+  "gaps": [
+    "No in-repo test pins the header-mismatch behaviour; a future SDK change within mcp>=2,<3 would go unnoticed — low",
+    "Outgoing-header, gateway and reverse-proxy criteria not applicable (no outbound MCP calls, no gateway/proxy)"
+  ],
+  "evaluator_notes": "Enforcement comes from mcp 2.2.0 and is verified at runtime with the required pair (matching served, mismatching rejected with -32020) plus missing-header rejection. Server code does not bypass it.",
+  "remediation": "",
+  "effort": ""
+}

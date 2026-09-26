@@ -1,0 +1,20 @@
+{
+  "id": "IDENT-001",
+  "status": "not_verified",
+  "category": "IDENT",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/client.py:52 — USER_AGENT = f\"discover-swiss-mcp/{__version__} (+https://github.com/...)\"",
+    "src/discover_swiss_mcp/client.py:46 — __version__ imported from the package root (importlib.metadata, see IDENT-002)",
+    "src/discover_swiss_mcp/client.py:648, 662 — the single httpx.AsyncClient; USER_AGENT is the only UA source (grep AsyncClient|User-Agent|USER_AGENT over src/)",
+    "Normalised literal search grep -rniE 'discover[-_]?swiss[-_]?mcp/[0-9]+\\.[0-9]' src/ -> no hit (exit 1); control multi-line 'DiscoverSwissMCP/0.1.0' matches",
+    "Runtime (checkout install): DiscoverSwissClient.request_headers()['User-Agent'] == 'discover-swiss-mcp/0.1.0 (+...)', installed version 0.1.0",
+    "Supplementary: wheel built from HEAD, installed with --no-cache-dir into an empty venv -> USER_AGENT 'discover-swiss-mcp/0.1.0 (+...)'"
+  ],
+  "gaps": [
+    "Not measurable on the index artefact: https://pypi.org/pypi/discover-swiss-mcp/json -> 404 (control swiss-culture-mcp -> 200); the check requires resolution from the index-installed package, a clean repository is explicitly not evidence"
+  ],
+  "evaluator_notes": "Source side meets every source criterion (f-string from __version__, single client, normalised literal search with control, multi-strategy: literal search + module attribute + locally built wheel). The primary mode needs a published distribution, which does not exist (pre-release) — per the check's probe table that is not_verified.",
+  "remediation": "After the first release: install discover-swiss-mcp==<version> from PyPI into an empty venv and read the UA (published_probe.py).",
+  "effort": "S"
+}

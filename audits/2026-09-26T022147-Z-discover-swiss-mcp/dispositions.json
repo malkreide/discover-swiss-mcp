@@ -1,0 +1,251 @@
+{
+  "_about": "Disposition per finding of run 2026-09-26T022147-Z (target bd0e371). kind: fix-before-release = open, planned for the remediation phase (P5) and a release blocker; fix-later = open, planned, not a release blocker; accepted = accepted-risk with the reason given; fixed = closed after the audit, commit named in CHANGELOG. Single source for findings/*.md, AUDIT_2026-09-26.md and the CHANGELOG table.",
+  "ARCH-002": [
+    "fix-later",
+    "Add a 'when to use / not to use' line to the five tools that lack one; separate search from find_accommodation explicitly."
+  ],
+  "ARCH-003": [
+    "fix-later",
+    "Empty results already carry a concrete hint; a match_type field and term-based suggestions need upstream support that /search does not offer (no fuzzy flag). Revisit with FID-005."
+  ],
+  "ARCH-005": [
+    "fix-before-release",
+    "Add .env.example with placeholders and a '!.env.example' exception in .gitignore; add a secret scan step to CI."
+  ],
+  "ARCH-008": [
+    "fix-later",
+    "Tools-only is deliberate (a tourist question is an action, not a resource); the README will say so in one sentence."
+  ],
+  "ARCH-011": [
+    "fix-later",
+    "Split tools.py (2'384 lines) into a tools/ package per tool group. Deferred: pure refactor with tool-hash snapshot as guard, no behaviour change, not a release blocker."
+  ],
+  "ARCH-012": [
+    "fix-before-release",
+    "The pinned protocol version is not enforced and the comment in server.py promises a test that does not exist. Add the test against the SDK's LATEST_PROTOCOL_VERSION and correct the comment."
+  ],
+  "ARCH-013": [
+    "fix-later",
+    "Add a test for the main() to streamable_http_app(host=...) seam."
+  ],
+  "ARCH-014": [
+    "fix-before-release",
+    "The 25 s budget can reach about 55 s after a 429 and rate-limiter waits are outside it; count both into the budget. Jitter stays off by design (single process behind a token bucket) and the reason is written next to RETRY_DELAYS."
+  ],
+  "ARCH-015": [
+    "accepted",
+    "The SDK (mcp 2.2.0) still answers a legacy initialize over HTTP and issues mcp-session-id; the server keeps no state of its own. Accepted until the SDK offers a switch; re-check at the next SDK minor."
+  ],
+  "ARCH-016": [
+    "fix-before-release",
+    "serverInfo.version is empty: pass version=__version__ to MCPServer and test it on the wire."
+  ],
+  "ARCH-018": [
+    "fix-later",
+    "resultType is set by the SDK; add one wire-format test so an SDK change is noticed."
+  ],
+  "ARCH-020": [
+    "fix-later",
+    "Sort tools/list explicitly by name instead of relying on registration order; add a test."
+  ],
+  "ARCH-021": [
+    "fix-later",
+    "README: one sentence that the server carries no extensions."
+  ],
+  "ARCH-022": [
+    "fix-later",
+    "Move __version__ into a leaf _version.py so client.py does not import the package root."
+  ],
+  "DEP-001": [
+    "fix-before-release",
+    "Cap pydantic (<3) and httpx (<1); declare uvicorn explicitly with an upper bound; add pip to Dependabot."
+  ],
+  "DRIFT-002": [
+    "fix-before-release",
+    "The list fallback widens the answer (search ignores query, accommodation ignores stars/amenities/accessible). Report the ignored inputs as a structured field (ignored_parameters), not only in hint, and test the accommodation fallback."
+  ],
+  "DRIFT-004": [
+    "fix-before-release",
+    "Add live canaries for /status and for the list endpoints of the fallback (/places, /foodEstablishments, /localbusinesses, /civicStructures, /lodgingbusinesses) with the current select."
+  ],
+  "DRIFT-005": [
+    "accepted",
+    "No scheduled live run: CI deliberately holds no key (bring-your-own-key, 50'000 calls/month on the maintainer's subscription). Live canaries run locally at every phase gate; revisit if a dedicated CI key is issued by discover.swiss."
+  ],
+  "DRIFT-006": [
+    "fixed",
+    "CHANGELOG claimed an audit report not yet in the repo (now added), said the canaries cover all eight tool paths (six do; get_details and source_status are covered by the fidelity canary and not at all), and README limitation 8 said unknown facet names are always dropped silently (an invented name answers 400). Corrected after the audit."
+  ],
+  "DRIFT-008": [
+    "fix-later",
+    "Add a suite-wide guard: a conftest hook that fails a live-marked test if the documentation IP pin or test-key is active."
+  ],
+  "FID-001": [
+    "fix-before-release",
+    "Derive the default matrix from the spec for the members still unpinned (FacetRequest count/scope, includeAllPhotos on /vertices, Accept-Timezone) and state the facet value limit (count=30) used by resolve_area in the result."
+  ],
+  "FID-002": [
+    "fix-later",
+    "Web-UI ground truth exists only for list endpoints (zuerich.com vs datasource zht-cms, +8 %). Add one UI-count comparison against /search for the anchor queries."
+  ],
+  "FID-003": [
+    "fix-before-release",
+    "get_details reports any upstream 4xx as 'Unknown identifier'. Only 404 may say that; other 4xx become degraded with the status named."
+  ],
+  "FID-004": [
+    "fix-later",
+    "match='all' inherits the upstream default by omitting searchFields; send the explicit field list or pin the default with a live canary (the name/all canary covers half of it)."
+  ],
+  "FID-005": [
+    "fix-before-release",
+    "Name the query language of searchText and whether operators work (measure first), and remove the empty-result explanations from the find_events and webcams_near descriptions (they belong in hint). Changes the tool hashes."
+  ],
+  "FID-006": [
+    "fix-before-release",
+    "Confirm the root paths values/data/facets; a missing root key becomes a structural error (degraded: upstream_shape_changed), never an empty result."
+  ],
+  "FID-007": [
+    "fix-later",
+    "The list fallback drops rows with missing or invalid geo without counting them; add excluded_without_geo."
+  ],
+  "IDENT-001": [
+    "accepted",
+    "not_verified: nothing is published yet (release gate). Source side is clean. Re-run at the first release."
+  ],
+  "IDENT-002": [
+    "fix-later",
+    "Add a test that __version__ equals pyproject.toml and server.json."
+  ],
+  "IDENT-003": [
+    "fix-later",
+    "Extend the release check to packages[*].version in server.json."
+  ],
+  "IDENT-004": [
+    "fix-later",
+    "Enforce badge version against pyproject.toml, not only against the CHANGELOG heading."
+  ],
+  "IDENT-006": [
+    "accepted",
+    "Not published on purpose: the release waits for discover.swiss's written confirmation of the search entitlement (README Status)."
+  ],
+  "IDENT-007": [
+    "accepted",
+    "not_verified: no published artefact yet. Re-run at the first release."
+  ],
+  "OBS-001": [
+    "accepted",
+    "An unknown tool is answered as isError result instead of JSON-RPC -32601; this is mcp 2.2.0 MCPServer default behaviour, not server code. Revisit at the next SDK minor."
+  ],
+  "OBS-003": [
+    "fix-later",
+    "Emit debug events on the request path (cache hit/miss, fallback step)."
+  ],
+  "OBS-007": [
+    "fix-later",
+    "Name the attempt count and the endpoint path in the final error after exhausted retries."
+  ],
+  "OBS-008": [
+    "fix-later",
+    "Document the readiness marker 'Server lifespan started' in both READMEs."
+  ],
+  "OPS-001": [
+    "fix-before-release",
+    "Add a source_status live canary and give the live module one shared client and a test timeout."
+  ],
+  "OPS-002": [
+    "fix-later",
+    "Add a Mermaid architecture diagram (search-centred, list fallback) to the README; CONTRIBUTING stays English."
+  ],
+  "OPS-003": [
+    "fix-before-release",
+    "Declare the phase (read-only, P4 hardening) and the phase gates P1-P4 plus the release gate in the README."
+  ],
+  "OPS-004": [
+    "accepted",
+    "not_verified at audit time by construction: the check judges the audit report, which is written after it. The report of this run follows OPS-004's measured / closed / open split."
+  ],
+  "OPS-005": [
+    "fix-later",
+    "The copied portfolio scripts (validate_repo.py, check_release_artifacts.py) are format-stable only at line-length 100; shorten the long expressions so they pass at 88-120."
+  ],
+  "OPS-007": [
+    "fix-later",
+    "Name the supported platforms and add PowerShell equivalents for the env-var examples."
+  ],
+  "OPS-008": [
+    "fix-later",
+    "Add tests for validate_repo.py and check_release_artifacts.py; a check that did not run must not report OK."
+  ],
+  "OPS-009": [
+    "fix-later",
+    "Replace the most important of the 43 hand-written upstream payloads with recorded probe responses."
+  ],
+  "OPS-010": [
+    "fix-before-release",
+    "Mutation TOTAL_BUDGET 25 -> 1e9 survives all 215 tests. Add a real-time budget test, replace the global time.monotonic patch with an own seam, guard the _sleep seam, document the counter-test procedure in CONTRIBUTING."
+  ],
+  "SCALE-010": [
+    "fix-later",
+    "README: one sentence that the server emits no change notifications."
+  ],
+  "SDK-003": [
+    "fix-later",
+    "ctx.report_progress on the list fallback and on long retry waits."
+  ],
+  "SEC-002": [
+    "accepted",
+    "The HTTP transport has no inbound authentication; client tokens are never forwarded upstream (verified). The server is local-only by design (loopback default). Catalogue question recorded in the audit: auth_model 'API-Key' here means a bring-your-own upstream key, not inbound auth. Accepted together with the SEC-016 fix that refuses a non-loopback bind without explicit opt-in."
+  ],
+  "SEC-003": [
+    "accepted",
+    "No OAuth scopes: there is no inbound OAuth. Same reasoning and same condition as SEC-002."
+  ],
+  "SEC-004": [
+    "fix-before-release",
+    "IPv4-mapped IPv6 addresses bypass the blocklist (::ffff:169.254.169.254, ::ffff:127.0.0.1 verified). Unwrap ipv4_mapped before the check; add tests."
+  ],
+  "SEC-006": [
+    "fix-later",
+    "README: Claude Desktop configuration example for stdio."
+  ],
+  "SEC-007": [
+    "accepted",
+    "No container is shipped; the server runs as a local stdio process of the user. If a container image is ever published, it gets non-root, read-only FS and dropped capabilities in the same PR."
+  ],
+  "SEC-013": [
+    "accepted",
+    "Key in an environment variable, held as SecretStr, never logged (tested). No secret manager for a local bring-your-own-key tool; the reason goes into SECURITY.md."
+  ],
+  "SEC-016": [
+    "fix-before-release",
+    "A 0.0.0.0 bind is silent. Refuse a non-loopback bind unless DISCOVER_SWISS_MCP_ALLOW_REMOTE=1 is set, and log a warning when it is."
+  ],
+  "SEC-018": [
+    "fix-later",
+    "strict=True on input models and a control-character check on free-text inputs."
+  ],
+  "SEC-021": [
+    "accepted",
+    "Egress is restricted in code (frozenset allow-list, checked on every request and redirect, tested). Network-layer control is the host's business for a local process; SECURITY.md will name the single allowed host and how to change it."
+  ],
+  "SEC-024": [
+    "fix-before-release",
+    "Wire TransportSecuritySettings with a port-exact host and origin allow-list; SECURITY.md currently describes an allow-list the code does not have."
+  ],
+  "SEC-026": [
+    "accepted",
+    "not_verified by the check's own rule: there is no OAuth client registration in this server."
+  ],
+  "SEC-028": [
+    "fix-before-release",
+    "Split EgressError into a policy block and a resolution failure; retry only the latter, and stop status() from crashing on socket.gaierror."
+  ],
+  "FID-L02": [
+    "fix-before-release",
+    "resolve_area ignores missing_facets: a dropped containedInPlace/id facet reads as 'matched no area'. Report it as degraded with the facet named."
+  ],
+  "FID-L03": [
+    "fix-before-release",
+    "get_details returns a test object (Demo Event) in full and uncounted. Withhold it there too, with excluded_test_objects=1 and a hint."
+  ]
+}

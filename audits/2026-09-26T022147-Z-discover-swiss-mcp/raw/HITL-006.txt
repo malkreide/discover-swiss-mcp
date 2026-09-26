@@ -1,0 +1,19 @@
+{
+  "id": "HITL-006",
+  "status": "pass",
+  "category": "HITL",
+  "severity": "high",
+  "evidence": [
+    "src/ — grep 'sampling/createMessage|create_message|elicitation/create|elicit|roots/list|list_roots' → no hit (control fires on 3/3 lines); no server-initiated requests",
+    "src/ — grep 'input_required|inputRequests|inputResponses|requestState' → no hit (control fires); no tool returns input_required, so no pre-question side effects exist",
+    "src/discover_swiss_mcp/server.py:170-179 — all 8 tools readOnlyHint=True, destructiveHint=False, idempotentHint=True; write_capable false — the Modus-4 retry test is not mandatory",
+    "src/discover_swiss_mcp/tools.py:327-330, 384+, 433+ — missing inputs (e.g. radius without near, accommodation without near/locality) are ordinary validation errors (tests/test_tools.py:510-512), not input_required — criterion 7 respected",
+    "src/discover_swiss_mcp/server.py:200-222 — failures surface as ToolError (isError), not as input requests"
+  ],
+  "gaps": [
+    "Criteria on inputResponses validation, requestState correlation and idempotency tests are not applicable (MRTR not used; read-only)"
+  ],
+  "evaluator_notes": "The server uses neither the removed server-initiated flows nor MRTR, and all tools are read-only and idempotent, so a retry cannot duplicate side effects. Evidence: two verified-negative greps with controls, read-only annotations, and validation-error handling for missing input.",
+  "remediation": "",
+  "effort": ""
+}
