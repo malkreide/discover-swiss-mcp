@@ -26,6 +26,7 @@
 | Tools | all eight registered (P3), live canaries in place (P4) |
 | Phase | P5 — remediation of the audit of 2026-09-26 (see *Phases and gates*) |
 | Release | none; version 0.1.0 is not published |
+| Release P5 (PyPI, MCP registry, public reference instance) | **on hold since 2026-09-26** — waits for the written confirmation |
 
 The live probe of 2026-09-17 found that `/search` works for the Open
 subscription — full text, distance ranking, date filters, 31 facets — although
@@ -42,6 +43,14 @@ withdrawn without notice.
   without reading this file.
 - If the entitlement is withdrawn, the server keeps answering through a
   narrower list fallback (see *Architecture decision*).
+
+**Release on hold (2026-09-26).** The release step was started on 2026-09-26
+and stopped at its precondition: no written confirmation from discover.swiss is
+on record. Held until it arrives: the PyPI and MCP-registry release of 0.1.0,
+the public reference instance (it would run on the operator's key, which the
+confirmation has to cover), the portfolio status change and gate G1 over a
+remote endpoint. Until then the server runs **locally with your own key** —
+see [docs/DEMO.md](docs/DEMO.md#run-locally-with-your-own-key).
 
 ---
 

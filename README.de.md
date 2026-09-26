@@ -24,6 +24,7 @@
 | Tools | alle acht registriert (P3), Live-Canaries vorhanden (P4) |
 | Phase | P5 — Behebung der Audit-Findings vom 26.09.2026 (siehe *Phasen und Gates*) |
 | Release | keines; Version 0.1.0 ist nicht publiziert |
+| Release P5 (PyPI, MCP-Registry, öffentliche Referenzinstanz) | **zurückgestellt seit 26.09.2026** — wartet auf die schriftliche Bestätigung |
 
 Die Live-Probe vom 17.09.2026 hat gezeigt, dass `/search` für den Open-Zugang
 funktioniert — Volltext, Distanz-Ranking, Datumsfilter, 31 Facetten —, obwohl
@@ -40,6 +41,16 @@ widerspricht, kann ohne Ankündigung entzogen werden.
   sieht, ohne diese Datei zu lesen.
 - Wird die Berechtigung entzogen, antwortet der Server über einen schmaleren
   Listen-Fallback weiter (siehe *Architektur-Entscheid*).
+
+**Release zurückgestellt (26.09.2026).** Der Release-Schritt wurde am
+26.09.2026 begonnen und an seiner Vorbedingung angehalten: Eine schriftliche
+Bestätigung von discover.swiss liegt nicht vor. Bis sie eintrifft, bleiben
+zurückgestellt: der Release 0.1.0 auf PyPI und in der MCP-Registry, die
+öffentliche Referenzinstanz (sie liefe mit dem Key des Betreibers, den die
+Bestätigung abdecken muss), der Statuswechsel im Portfolio und Gate G1 über
+einen Remote-Endpoint. Bis dahin läuft der Server **lokal mit eigenem Key** —
+siehe [docs/DEMO.md](docs/DEMO.md#run-locally-with-your-own-key) (Abschnitt
+«Lokal ausführen mit eigenem Key»).
 
 ---
 
