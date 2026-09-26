@@ -61,7 +61,7 @@ dev = [
     # criterion, so any release that changes the formatter turns untouched code
     # red in every repo at once. A bump belongs in its own commit, together
     # with the reformatting it causes.
-    "ruff==0.16.4",
+    "ruff==0.16.8",
 ]
 
 [project.scripts]
