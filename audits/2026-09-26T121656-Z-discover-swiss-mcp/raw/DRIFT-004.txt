@@ -1,0 +1,32 @@
+{
+  "id": "DRIFT-004",
+  "status": "partial",
+  "category": "DRIFT",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/config.py:32 API_BASE_URL is the only URL constant; endpoints used: /search, /vertices/{id}, /status, five list endpoints (tools.py FALLBACK_ENDPOINTS)",
+    "tests/conftest.py:36,88-97 — respx router bound to PINNED_BASE derived from the imported API_BASE_URL (mocks bind to the constant)",
+    "tests/test_live.py:367-371 — new live canary for /status; :374-385 source_status; :388-402 each of places, civicStructures, foodEstablishments, localbusinesses, lodgingbusinesses with the current LIST_SELECT_FIELDS and a floor",
+    "tests/test_live.py:143-310 — /search and /vertices covered by existing canaries",
+    "tests/test_live.py:105-113 — one module-scoped client",
+    "pytest tests/test_live.py --collect-only — 25 collected; not executed (no key; the repo has no record of a run after these were added)"
+  ],
+  "gaps": [
+    "None of the live canaries, including the new /status and list-endpoint ones, has been executed — a live test nobody runs is not yet protection (DRIFT-005 accepted 'no scheduled run')",
+    "404 (endpoint gone) vs 5xx (transient) is not distinguished explicitly: client.status() swallows both into reachable=False (client.py:1206-1223), and the list/search canaries only differ by exception type in the traceback",
+    "No probe manifest run on a schedule"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "List endpoints (fallback path) and /status not covered by any live test — now covered, with the current select",
+    "Fallback endpoints never called with the current select — the canary asserts no field outside LIST_SELECT_FIELDS comes back (once run)"
+  ],
+  "previous_gaps_open": [
+    "Live tests have never been executed",
+    "404 vs 5xx not separated explicitly",
+    "No scheduled probe manifest"
+  ],
+  "evaluator_notes": "Coverage on paper is now complete and mocks bind to the constant (criteria 1, 2, 4 met in code). Criterion 3 only partly. Following the audit rule, an unexecuted live test cannot carry a pass. The check itself says a live test nobody runs is not protection.",
+  "remediation": "Run `pytest -m live -rA` once and commit the output as evidence; in the canaries assert on the status class (e.g. catch NotFoundError -> fail 'endpoint gone', UpstreamUnavailableError -> xfail/skip 'transient'); consider a scheduled run with a dedicated key.",
+  "effort": "S"
+}

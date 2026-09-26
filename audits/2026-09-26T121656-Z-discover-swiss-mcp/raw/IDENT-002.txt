@@ -1,0 +1,31 @@
+{
+  "id": "IDENT-002",
+  "status": "partial",
+  "category": "IDENT",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/_version.py:17-22 — importlib.metadata.version('discover-swiss-mcp'), fallback '0.0.0+source'",
+    "grep -rnE '__version__\\s*=\\s*\"[0-9]+\\.[0-9]' src/ | grep -v '+' -> none; control grep '__version__\\s*=\\s*\"' hits only _version.py:22 (fallback marker)",
+    "grep -rnE '__version__\\s*==\\s*\"[0-9]+\\.[0-9]|==\\s*\"v?[0-9]+\\.[0-9]+\\.[0-9]+\"' tests/ -> none; control grep '__version__\\s*==' hits tests/test_smoke.py:128",
+    "tests/test_smoke.py:120-130 — __version__ == pyproject version, server.json version == pyproject version, server.json packages[].version ⊆ {pyproject version}",
+    "runtime (scratch copy of f326260, repo untouched) — server.json detuned to '0.0.0-verstimmt': test_the_version_is_the_same_in_every_manifest FAILED; restored: 3 passed",
+    "tests/test_smoke.py:133-163 — serverInfo.version on the wire equals __version__ (was '' before; server.py:157 version=__version__)"
+  ],
+  "gaps": [
+    "The version test's failure message does not name the editable-install case (bare asserts at tests/test_smoke.py:128-130)",
+    "Not skipped without an installation: in a bare source checkout __version__ is '0.0.0+source' and the test fails instead of skipping"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "No version invariant test — tests/test_smoke.py:120-130 compares __version__/pyproject/server.json",
+    "No detuned-server.json counter-test — run in this re-audit, test turns red",
+    "serverInfo.version '' on the wire — now set and tested in a real stdio process"
+  ],
+  "previous_gaps_open": [
+    "No editable-install hint in the failure message",
+    "No skip-without-install behaviour"
+  ],
+  "evaluator_notes": "8 of 10 criteria met. The two open ones are low-impact test ergonomics. The pass on derivation says nothing about the published artefact (IDENT-006, IDENT-001 mode 3); nothing here is inferred about it.",
+  "remediation": "Skip when discover_swiss_mcp.__version__ endswith '+source'; give the pyproject assertion a message that names `pip install -e .` after a version bump.",
+  "effort": "S"
+}

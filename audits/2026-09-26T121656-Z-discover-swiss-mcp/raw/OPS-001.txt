@@ -1,0 +1,35 @@
+{
+  "id": "OPS-001",
+  "status": "partial",
+  "category": "OPS",
+  "severity": "high",
+  "evidence": [
+    "tests/ — unit suites test_client.py, test_tools.py, test_tools_p3.py, test_shape.py, test_defaults.py etc.; ≥5 unit tests per tool (collect-only: e.g. webcams_near 7, search 21 call sites)",
+    "tests/conftest.py:24,88-97 — respx router for HTTP mocking",
+    "tests/test_live.py:66 pytestmark live; pyproject.toml:82-84 marker registered; .github/workflows/ci.yml 'pytest -m \"not live\"'",
+    "tests/test_live.py:143-402 — at least one live test per tool, now including source_status (:374) and /status (:367)",
+    "tests/test_live.py:62-66,105-113 — module-scoped loop and client, aclose() in finally (cache and bucket shared, pool closed)",
+    ".github/workflows — only ci.yml and publish.yml (ls)",
+    "tests/test_live.py:90-96,109 — key read from DISCOVER_SWISS_KEY; client built with load_settings() → production TOTAL_BUDGET 25 s (client.py:249), REQUEST_TIMEOUT 20 s"
+  ],
+  "gaps": [
+    "No separate nightly or manual live-test workflow (only ci.yml and publish.yml)",
+    "No test-specific credential: the live suite uses the same DISCOVER_SWISS_KEY as production",
+    "No live workflow, hence no timeout-minutes for it",
+    "Live suite runs with production timeouts (TOTAL_BUDGET 25 s, 3 retries) — a dead source costs the full ladder per test, not a tighter test budget"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "No live test for source_status — added (tests/test_live.py:374-385)",
+    "Fresh client per test — now one module-scoped client with aclose()"
+  ],
+  "previous_gaps_open": [
+    "No nightly/manual live workflow",
+    "No test-specific credential",
+    "No timeout-minutes for a live workflow",
+    "Production timeouts in the live suite"
+  ],
+  "evaluator_notes": "7 of 11 criteria met (unit layout, respx, marker, registration, CI exclusion, live test per tool, shared client). The live-run infrastructure is still absent. CHANGELOG DRIFT-005 accepts the missing scheduled run as a deliberate BYOK decision, but OPS-001's criteria are not waived by that.",
+  "remediation": "Add .github/workflows/live.yml (workflow_dispatch plus optional schedule, timeout-minutes: 10) using a dedicated secret (e.g. DISCOVER_SWISS_LIVE_KEY); construct the live client with a tighter budget (make TOTAL_BUDGET/RETRY_DELAYS injectable via Settings or constructor).",
+  "effort": "S"
+}

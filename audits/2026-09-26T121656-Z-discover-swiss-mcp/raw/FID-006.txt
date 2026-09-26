@@ -1,0 +1,35 @@
+{
+  "id": "FID-006",
+  "status": "partial",
+  "category": "FID",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/client.py:311-319 — new UpstreamShapeError (degraded='upstream_shape_changed')",
+    "src/discover_swiss_mcp/client.py:590-618 — _confirm_envelope: root must be an object, rows key a list, count>0 without rows raises; zero count with rows missing stays empty",
+    "src/discover_swiss_mcp/client.py:940 (/search) and :1044 (list endpoints) use _confirm_envelope; :941-946 facets must be an object; :996-999 non-object /vertices payload raises",
+    "tests/test_shape.py:27-99 — five shifted /search envelopes -> upstream_shape_changed (not 'No hit'); counter-checks: four genuine-empty forms stay empty; three list-envelope variants raise",
+    "runtime (scratch copy of f326260, repo untouched) — mutations M8 (accept count>0 without rows), M19 (accept no rows and no count), M14 (accept non-dict facets) each turn a test_shape.py test red",
+    "runtime (scratch copy of f326260, repo untouched) — /search {count:53, values:[{server:{identifier,name,license}}]} (fields one level deeper) -> degraded=None, returned=0, excluded_by_license=1, hint 'All 1 hits ... withheld: not openly licensed'",
+    "runtime (scratch copy of f326260, repo untouched) — /vertices {data:{identifier,name,license}} -> degraded=None, hint 'publishes this object under «none», which is not an open licence', excluded_by_license=1",
+    "runtime (scratch copy of f326260, repo untouched) — list /webcams {count:3, data:[{item:{identifier,name}}]} -> accepted as a row without identifier/name; facet {leafType:{items:[...]}} -> facets={'leafType':[]}, missing_facets=[], no hint (client.py:542-549 facet_values defaults to [])"
+  ],
+  "gaps": [
+    "Fields read from the first entry (identifier, name, license, dataGovernance, geo, address, facet `values`) are still not confirmed: a row shifted one level is reported as 'withheld: not openly licensed' — a false statement about the data, not an empty result and not a shape error",
+    "The error message names the keys actually present only when both rows and count are missing (client.py:606-610); 'reports N results but carries no `values` list' and the /vertices/facets messages do not list the keys that arrived",
+    "No test holds structure or field names against a real response: the live canaries (tests/test_live.py:388-402 checks identifier/name/select on list rows) have never been executed",
+    "Facet inner shape (`values` renamed) reads as an empty facet with no hint and no missing_facets entry"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "Root paths not confirmed (values/data/facets now confirmed; count>0 without rows raises)",
+    "No structure error type (UpstreamShapeError with its own degraded state and hint)"
+  ],
+  "previous_gaps_open": [
+    "Fields read from hits never confirmed on the first entry",
+    "No test against a real response (live canaries unexecuted)",
+    "Error messages only partly name the arrived keys"
+  ],
+  "evaluator_notes": "The envelope half is done well, with counter-checks and mutation-detected tests. The field half is not: a one-level shift inside rows is now misreported as a licence exclusion, which is arguably worse than an empty result because it asserts something about the object. Casing normalisation is moot: the source is consistently camelCase and nothing indicates a casing change. Criteria met: 1, 3, 5, 6, 10 (envelope level); partly met: 4; not met: 2, 9. Advisory check.",
+  "remediation": "Define _READ_FIELDS per reader (search hit, list row, vertex, facet value) and check them on the first entry before screening. Raise UpstreamShapeError with sorted(row) in the message when `identifier` (and, for search, `name`/`license`) is absent. Add a shifted-row test with a counter-check. Execute the live list/field canary once.",
+  "effort": "S"
+}

@@ -1,0 +1,36 @@
+{
+  "id": "SEC-024",
+  "status": "partial",
+  "category": "SEC",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/http_app.py:41-60,83-84 — TransportSecuritySettings(enable_dns_rebinding_protection=True, allowed_hosts, allowed_origins) always built and passed explicitly to streamable_http_app",
+    "src/discover_swiss_mcp/config.py:151-162 — hosts from DISCOVER_SWISS_MCP_ALLOWED_HOSTS (deployment config), wildcards refused; loopback default port-exact (http_app.py:47)",
+    "src/discover_swiss_mcp/http_app.py:63-77 — non-loopback bind without the list is refused (stronger than the warning the check asks for)",
+    "tests/test_http_app.py:55-81,196-212 — pair tests: 127.0.0.1:9999 → 421 vs 127.0.0.1:8000 → passes Host check; mcp.example.ch → passes vs mcp.example.ch:8443 → 421",
+    "runtime loopback: Host 127.0.0.1:9999 → 421, default Host → past the check (400 from protocol layer), foreign Origin → 403",
+    "runtime (real app, 0.0.0.0, ALLOWED_HOSTS=mcp.example.ch:8443, fake verifier): exact+valid token → past Host check; wrong port+token → 421; evil.example.com+valid token → 421 (token does not rescue a foreign host); exact Host + foreign Origin → 403",
+    "mutation (scratch copy): removing transport_security= from build_http_app fails 3 tests; main() bypassing build_http_app fails test_main_hands_the_checked_app_to_uvicorn"
+  ],
+  "gaps": [
+    "Criterion 4 unmet: when DISCOVER_SWISS_MCP_ALLOWED_HOSTS is set, loopback entries are not added (http_app.py:44-47) — a Host-based health check against 127.0.0.1 would get 421 (the shipped k8s probes are TCP, so no current breakage)",
+    "Criterion 6 unmet: DISCOVER_SWISS_MCP_ALLOWED_ORIGINS is taken verbatim — '*' and 'http://x:*' are neither refused nor stripped (only ALLOWED_HOSTS rejects wildcards, config.py:153-162); the SDK honours ':*' port wildcards for origins",
+    "Criterion 9 unmet as a test: no test shows a valid token failing to rescue a foreign Host (tests/test_http_app.py:196-212 bypasses the OAuth layer via gate.app). Behaviour verified only by this audit's runtime probe",
+    "Low: /.well-known/oauth-protected-resource is answered by ScopeGate before the Host check — runtime Host: evil.example → 200 (static public document, no secret)"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "TransportSecuritySettings never wired — closed (http_app.py:84)",
+    "No deployment-configured allow-list — closed (DISCOVER_SWISS_MCP_ALLOWED_HOSTS)",
+    "Entries not port-exact — closed (loopback host:port; runtime 9999 → 421)",
+    "Non-loopback bind without list silent/fail-open — closed (refused at start-up)",
+    "No wrong-port / allowed-port tests — closed (tests/test_http_app.py:55-81,196-212)",
+    "SECURITY.md documents a control that does not exist — closed (SECURITY.md:43-61 matches the code)"
+  ],
+  "previous_gaps_open": [
+    "No test for 'valid auth token does not rescue a foreign host'"
+  ],
+  "evaluator_notes": "The substantive control is fixed and runtime-verified on the real app, including the token-plus-foreign-host case. Three criteria remain unmet (loopback not kept when a list is configured, origin wildcards not rejected, no test for the token case), all below high, so partial rather than pass.",
+  "remediation": "Always append 127.0.0.1:<port>/localhost:<port>/[::1]:<port> to a configured list; apply the wildcard refusal to ALLOWED_ORIGINS; add a test that runs the full ScopeGate+app with a valid fake token and a foreign/wrong-port Host and expects 421.",
+  "effort": "S"
+}

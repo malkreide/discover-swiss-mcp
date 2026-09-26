@@ -159,9 +159,15 @@ def test_with_oauth_the_real_app_demands_a_token_and_serves_metadata(monkeypatch
     settings = _settings(monkeypatch, **AUTH_ENV)
     app, _ = build_http_app(server.mcp, settings)
     with TestClient(app) as client:
-        metadata = client.get("/.well-known/oauth-protected-resource/mcp")
+        metadata = client.get(
+            "/.well-known/oauth-protected-resource/mcp", headers={"host": "127.0.0.1:8000"}
+        )
+        foreign = client.get(
+            "/.well-known/oauth-protected-resource/mcp", headers={"host": "evil.example"}
+        )
         anonymous = client.post("/mcp", json=INIT, headers={**HEADERS, "host": "127.0.0.1:8000"})
     assert metadata.status_code == 200
+    assert foreign.status_code == 421
     assert metadata.json()["scopes_supported"] == ["mcp:tools-basic", "tourism:read:public"]
     assert anonymous.status_code == 401
     assert "resource_metadata=" in anonymous.headers["www-authenticate"]
@@ -183,6 +189,13 @@ def test_oauth_urls_must_be_https(monkeypatch) -> None:
     for name, value in env.items():
         monkeypatch.setenv(name, value)
     with pytest.raises(ConfigError, match="https"):
+        load_settings(require_key=False)
+
+
+@pytest.mark.parametrize("entry", ["https://*.example.ch", "*"])
+def test_origin_entries_must_not_be_wildcards(monkeypatch, entry: str) -> None:
+    monkeypatch.setenv("DISCOVER_SWISS_MCP_ALLOWED_ORIGINS", entry)
+    with pytest.raises(ConfigError, match="wildcard"):
         load_settings(require_key=False)
 
 

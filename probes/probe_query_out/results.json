@@ -1,0 +1,84 @@
+{
+  "run_at": "2026-09-26",
+  "note": "Transcribed from the console output of `python probes/probe_query_syntax.py`, run by the maintainer on 2026-09-26 with their own key. The run's own results.json stayed on their machine; the sandbox this repository is built in cannot reach api.discover.swiss. Values are the `count` of /search with resultsPerPage=1.",
+  "rows": [
+    {
+      "case": "whole word (reference)",
+      "searchText": "Landesmuseum",
+      "all": 52,
+      "name": 7
+    },
+    {
+      "case": "prefix",
+      "searchText": "Landesmus",
+      "all": 0,
+      "name": 0
+    },
+    {
+      "case": "fragment inside a compound",
+      "searchText": "museum",
+      "all": 451,
+      "name": 128
+    },
+    {
+      "case": "wildcard *",
+      "searchText": "Landesmus*",
+      "all": 0,
+      "name": 0
+    },
+    {
+      "case": "wildcard ?",
+      "searchText": "Landesmuse?m",
+      "all": 0,
+      "name": 0
+    },
+    {
+      "case": "fuzzy ~",
+      "searchText": "Landesmusem~",
+      "all": 0,
+      "name": 0
+    },
+    {
+      "case": "two words",
+      "searchText": "Landesmuseum Zürich",
+      "all": 13,
+      "name": 1
+    },
+    {
+      "case": "quoted phrase",
+      "searchText": "\"Landesmuseum Zürich\"",
+      "all": 13,
+      "name": 1
+    },
+    {
+      "case": "AND",
+      "searchText": "Landesmuseum AND Zürich",
+      "all": 0,
+      "name": 0
+    },
+    {
+      "case": "OR",
+      "searchText": "Landesmuseum OR Kunsthaus",
+      "all": 0,
+      "name": 0
+    },
+    {
+      "case": "minus",
+      "searchText": "Landesmuseum -Shop",
+      "all": 4,
+      "name": 1
+    },
+    {
+      "case": "umlaut folded",
+      "searchText": "Zurich",
+      "all": 615,
+      "name": 176
+    },
+    {
+      "case": "lower case",
+      "searchText": "landesmuseum",
+      "all": 52,
+      "name": 7
+    }
+  ]
+}

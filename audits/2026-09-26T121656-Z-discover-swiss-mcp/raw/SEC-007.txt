@@ -1,0 +1,30 @@
+{
+  "id": "SEC-007",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "high",
+  "evidence": [
+    "Dockerfile:39-41,46 — groupadd/useradd UID/GID 10001, shell /usr/sbin/nologin, USER 10001:10001; Dockerfile:20,38 base pinned by digest; Dockerfile:44 PYTHONDONTWRITEBYTECODE=1 (read-only-root compatible)",
+    "deploy/k8s/deployment.yaml:30-37 — automountServiceAccountToken: false, pod runAsNonRoot, runAsUser/runAsGroup/fsGroup 10001, seccompProfile RuntimeDefault",
+    "deploy/k8s/deployment.yaml:73-86,102-106 — container allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, privileged: false, capabilities.drop [ALL], seccomp RuntimeDefault, /tmp as emptyDir medium Memory sizeLimit 16Mi",
+    "runtime (image rebuilt from f326260 as discover-swiss-mcp:reaudit, run with --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges): id → uid=10001(mcp) gid=10001(mcp); touch /etc/x and /opt/venv/x → Read-only file system; /tmp writable; CapPrm/CapEff 0000000000000000; NoNewPrivs 1; Seccomp 2",
+    "runtime control (same image without flags): NoNewPrivs 0 — the flags, not the image, produce that line; still uid 10001 and /opt/venv not writable (Permission denied)",
+    "runtime: stdio server in the hardened container with --network none answers server/discover (serverInfo version 0.1.0) and tools/list (8 tools)",
+    "docs/network-egress.md:62-109 — docker run flags and a Claude Desktop config for the sandboxed local-stdio case; tests/test_deploy.py:39-107 pin the Dockerfile and securityContext properties"
+  ],
+  "gaps": [
+    "The sandbox is opt-in: the README quickstart (README.md:152-161) still starts the server unsandboxed with python -m; the container route is documented but not the default for local-stdio",
+    "Read-only root, cap-drop and no-new-privileges are runtime flags the user must pass (docs), not enforceable from the image itself (inherent to Docker)",
+    "No image vulnerability scan (e.g. Trivy) in CI — remediation step, not a pass criterion"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "No container image or sandbox — closed (Dockerfile, deploy/k8s/deployment.yaml; runtime-verified)"
+  ],
+  "previous_gaps_open": [
+    "Server runs as the local user with access to that user's files when started the default way (python -m / console script) — mitigated only when the documented container route is used"
+  ],
+  "evaluator_notes": "All applicable criteria (1-5) are met and runtime-verified with a counter-check; criterion 6 is n/a (no file tools). The residual is that local users must choose the container route themselves.",
+  "remediation": "Optional: make the docker invocation the primary local-stdio instruction in README and add a Trivy step to CI.",
+  "effort": "S"
+}

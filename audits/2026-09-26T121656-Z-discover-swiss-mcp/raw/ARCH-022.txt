@@ -1,0 +1,25 @@
+{
+  "id": "ARCH-022",
+  "status": "pass",
+  "category": "ARCH",
+  "severity": "medium",
+  "evidence": [
+    "src/discover_swiss_mcp/_version.py:13-22 — leaf module: imports only importlib.metadata (grep -nE '^from|^import' -> lines 13-14), version from distribution metadata, '0.0.0+source' fallback",
+    "src/discover_swiss_mcp/__init__.py:7 — root re-exports `from discover_swiss_mcp._version import __version__` and computes nothing itself",
+    "src/discover_swiss_mcp/client.py:47 and server.py:31 — `from discover_swiss_mcp._version import __version__`; grep 'from discover_swiss_mcp import .*__version__' over src/ -> no hit (control: the _version grep hits both files)",
+    "KALT (fresh interpreter, cwd /tmp): `import discover_swiss_mcp.client` -> 'KALT client ok: 0.1.0', exit 0; `import discover_swiss_mcp.server` (console-script path, pyproject [project.scripts] discover-swiss-mcp = discover_swiss_mcp.server:main) -> 0.1.0, exit 0",
+    "WARM (fresh interpreter): `import discover_swiss_mcp; import discover_swiss_mcp.client` -> 'WARM ok: 0.1.0', exit 0",
+    "runtime (scratch copy of f326260, repo untouched) — order independence: root rewritten to `from discover_swiss_mcp.server import mcp` ABOVE the _version import -> KALT client exit 0, WARM exit 0 (the i14y-style reorder no longer breaks anything)",
+    "tests/test_smoke.py:133-163 — a subprocess test imports the package in its own process (`python -m discover_swiss_mcp`, root-first path) and checks serverInfo.version"
+  ],
+  "gaps": [],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "No leaf _version.py; client.py read __version__ from the package root",
+    "Root computed the version itself"
+  ],
+  "previous_gaps_open": [],
+  "evaluator_notes": "All criteria met. Two fresh-interpreter measurements were taken, cold (submodule first, including the console-script module) and warm. A negative control (reordering the root imports) shows that correctness no longer depends on line order. The subprocess test takes the warm `-m` path, which the check allows because it is optional ('sofern').",
+  "remediation": "",
+  "effort": ""
+}

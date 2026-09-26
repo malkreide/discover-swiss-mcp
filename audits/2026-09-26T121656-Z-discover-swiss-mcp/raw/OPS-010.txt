@@ -1,0 +1,31 @@
+{
+  "id": "OPS-010",
+  "status": "partial",
+  "category": "OPS",
+  "severity": "high",
+  "evidence": [
+    "CONTRIBUTING.md:48-88 — counter-test procedure, seam rule, table of 10 assurances with mutation and the test that must fail; 'Last run on 2026-09-26'",
+    "src/discover_swiss_mcp/client.py:280-281 — own seams _sleep and _monotonic; tests patch client_module._monotonic (tests/test_client.py:390,492,512), no longer time.monotonic",
+    "tests/test_client.py:600-611 — seam guards: real asyncio.sleep still waits after the sleeps fixture; seams default to the real clock",
+    "tests/test_client.py:578-597 — test_the_budget_holds_under_real_time: slow upstream on real time, TOTAL_BUDGET 0.3",
+    "runtime (scratch copy of f326260, repo untouched) — 26 mutations run; 25 detected, including M1 deadline+1e9, M2 asyncio.timeout(None) (caught only by the real-time test), M3 bucket ignores max_wait, M4 429 re-extends budget, M5 retry 4xx, M8/M19 shape acceptance, M11 get_details 4xx masking, M16 no network retry, M18 version='' on the wire",
+    "runtime (scratch copy of f326260, repo untouched) — SURVIVING mutation M20: Retry-After header read removed (client.py:638 raw = '') -> 325 passed; grep -n 'Retry-After|retry-after' tests/*.py -> no hit",
+    "runtime (scratch copy of f326260, repo untouched) — defect under real time that no test covers: TOTAL_BUDGET=0.6, bucket forced to wait ~0.55 s, slow upstream -> call ended after 1.15 s (UpstreamUnavailableError). The bucket-budget test (tests/test_client.py:507-520) runs on FakeClock + sleeps fixture, where the wait costs nothing — the fake-clock blind spot of variant (a)",
+    "grep -rnE 'monkeypatch\\.setattr\\(\\s*[A-Za-z_.]+\\.(asyncio|time|random|os|httpx)\\s*,' tests/ -> no hit; control grep 'monkeypatch.setattr' lists only own seams, uvicorn.run, and tests/test_net.py:66 (running loop's getaddrinfo, scoped to the test's own loop)"
+  ],
+  "gaps": [
+    "Surviving mutations are not recorded: CONTRIBUTING says 'every mutation below was detected' — the check requires the undetected ones to be in the record. This re-audit found one (M20: the Retry-After header path is untested)",
+    "The wall-clock assurance 'every wait counts against the budget' (client.py:251-257) is contradicted under real time: a bucket wait plus the stale `remaining` passed to asyncio.timeout lets a call run ~2x TOTAL_BUDGET. The only bucket test runs on a fake clock, so it cannot see this (see ARCH-014)"
+  ],
+  "previous_status": "fail",
+  "previous_gaps_closed": [
+    "TOTAL_BUDGET mutation survived — now caught by a real-time test and a bucket-budget test",
+    "Global patch of time.monotonic (client_module.time) — replaced by the _monotonic seam",
+    "No guard on the _sleep seam — tests/test_client.py:600-611",
+    "No documented counter-test procedure — CONTRIBUTING.md:48-88"
+  ],
+  "previous_gaps_open": [],
+  "evaluator_notes": "Most of the method now exists and works: 25 of 26 independent mutations were detected. Criteria met: 2, 5, 6, 7, 8, and 1 mostly. Criterion 3 is not met: the record lists only detected mutations. Criterion 4 is only partly met: one real-time test exists, but the budget/bucket combination is asserted only under a fake clock, and that combination is actually broken. Advisory check.",
+  "remediation": "Add a 'survived' column/row to the CONTRIBUTING table (M20 Retry-After header) and a test for the header path; add a real-time test 'bucket wait + slow upstream stays within TOTAL_BUDGET' (it fails today and drives the ARCH-014 fix).",
+  "effort": "S"
+}

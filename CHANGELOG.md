@@ -189,6 +189,41 @@ P5 — remediation of the audit of 2026-09-26. Each entry names its finding.
   failures are `ResolutionError`, retried like connection errors; `EgressError`
   is reserved for policy.
 
+Follow-ups from the targeted re-verification (see «Re-verification after P5»):
+
+- **An authorization-server outage locked valid tokens out for a minute**
+  (SEC-002, SEC-028 regression): an unreachable, non-200 or non-JSON
+  introspection answer is now `IntrospectionUnavailableError`, answered with
+  503 `temporarily_unavailable` and `Retry-After: 10`, never as
+  `invalid_token` and never cached.
+- **Introspection answers without `iss` were accepted** (SEC-002 criterion 5):
+  `iss` is required and must equal the configured issuer.
+- **The caller's identity is logged per call** (SEC-002 criterion 4):
+  `authorized_call` with `client_id`, `subject`, method and tool — never the
+  token.
+- **The OAuth client secret appeared in `repr(AuthConfig)`** (ARCH-005
+  regression): the field is excluded from the repr.
+- **The metadata document ignored the Host check** (SEC-024): a foreign `Host`
+  gets 421 before anything is answered, the metadata included.
+  `DISCOVER_SWISS_MCP_ALLOWED_ORIGINS` refuses wildcards like the host list.
+- **A bucket wait did not count against the budget** (ARCH-014, OPS-010): the
+  request after a rate-limiter wait got a fresh 25 s instead of what was left;
+  the remainder is now measured after the wait. The `Retry-After` header path
+  has its test.
+- **Rows nested one level deeper read as «withheld: not openly licensed»**
+  (FID-006): rows present but none with an `identifier` are
+  `upstream_shape_changed`.
+- **The query syntax of `search` is measured and stated** (FID-005):
+  `probes/probe_query_syntax.py`, report `probes/PROBE_QUERY_discover-swiss.md`.
+  Whole words, case-insensitive, all words required; no prefixes, `*`, `?`,
+  `~`, `AND`/`OR` or `-` exclusion; quotes change nothing. The description and
+  the `query` field say so; an empty result after such syntax starts its
+  `hint` with it. Changes the tool hash of `search`.
+- **The demo-event canary looked in a 30-day window** and skipped without
+  telling whether the record or the filter was gone. It now looks the record
+  up by name and skips only when the source itself reports none. A new canary
+  holds the measured query syntax.
+
 - **Every live search hit was withheld as unlicensed.** Search hits carry no
   root `license` and no `dataGovernance.provider`, only `origin`. The licence
   of a hit is now the one of its first origin — measured against the detail
@@ -276,6 +311,47 @@ Full mcp-audit run against `bd0e371`: 85 applicable checks, 25 pass, 38 partial,
 | SCALE-010 | medium | partial | planned | README: one sentence that the server emits no change notifications. |
 | SDK-003 | medium | partial | planned | ctx.report_progress on the list fallback and on long retry waits. |
 | IDENT-004 | low | partial | planned | Enforce badge version against pyproject.toml, not only against the CHANGELOG heading. |
+
+### Re-verification after P5 (2026-09-26)
+
+Targeted re-run of the 27 checks P5 addressed (run
+`audits/2026-09-26T121656-Z-discover-swiss-mcp`, target `f326260`), not a full
+audit. Live evidence from the maintainer's own runs (24 canaries passed, 1
+skipped; query-syntax probe). Result: 10 pass, 16 partial, 1 fail.
+
+| Check | Before | Re-verified | Follow-up in this change |
+|---|---|---|---|
+| SEC-003 | fail | pass | — |
+| SEC-004 | partial | pass | — |
+| SEC-007 | fail | pass | — |
+| SEC-016 | partial | pass | — |
+| SEC-021 | fail | pass | — |
+| ARCH-013 | partial | pass | — |
+| ARCH-022 | partial | pass | — |
+| DEP-001 | partial | pass | — |
+| FID-L02 | partial | pass | — |
+| FID-L03 | partial | pass | — |
+| SEC-002 | partial | partial | outage → 503 and uncached; `iss` required; identity logged per call |
+| SEC-024 | fail | partial | Host check before the metadata; origin wildcards refused; token + foreign Host tested |
+| SEC-028 | fail | partial | introspection outage separated from policy block; retry-pair test |
+| ARCH-005 | partial | partial | secret out of the repr |
+| ARCH-014 | partial | partial | remainder measured after the bucket wait; `Retry-After` header tested |
+| OPS-010 | fail | partial | the surviving mutation (header path) now detected; CONTRIBUTING lists survivors |
+| FID-005 | fail | fail | measured, stated in the description and the hint |
+| FID-006 | fail | partial | rows without `identifier` are a shape error |
+| ARCH-012 | fail | partial | open: the SDK accepts older protocol versions; CHANGELOG/README do not name the spec version |
+| ARCH-016 | partial | partial | open: no `server/discover` test; SDK default capabilities overstate prompts/resources |
+| DRIFT-002 | partial | partial | open: `_schedule_entry` may report another occurrence than the one that matched; `WebLink` as live image unproven |
+| DRIFT-004 | fail | partial | the canaries now ran (maintainer, 2026-09-26); open: 404 vs 5xx in `status()` |
+| FID-001 | partial | partial | open: recall delta for list `project` and the facet cuts not measured; `explore_area` says nothing when a facet came back full |
+| FID-003 | partial | partial | open: transport failures stay results with `degraded`, by design |
+| IDENT-002 | partial | partial | open: the version test does not skip in a bare checkout |
+| OPS-001 | fail | partial | open: no separate live workflow and no test key (DRIFT-005 accepted) |
+| OPS-003 | fail | partial | open: phases are build milestones, not the architecture phases the check names |
+
+Remaining partials of the follow-up rows are listed in the report. The
+statuses in the table are those of the re-verification run; the follow-ups
+were not re-audited, only tested (each with a counter-test, CONTRIBUTING).
 
 ### Known findings from the live probe (2026-09-17)
 

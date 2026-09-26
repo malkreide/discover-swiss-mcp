@@ -1,0 +1,39 @@
+{
+  "id": "ARCH-014",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/client.py:797-899 — own retry loop only; grep -rnE 'HTTPTransport\\(|max_retries|Retry\\(' src/ -> no transport retries (one layer)",
+    "src/discover_swiss_mcp/client.py:886-899 — 5xx retried, other 4xx raise UpstreamRejectedError at once; :823-838 httpx.RequestError (network, timeouts) retried",
+    "src/discover_swiss_mcp/client.py:249 TOTAL_BUDGET=25.0 (< MCP SDK 30 s); :808 asyncio.timeout(remaining) wall-clock deadline",
+    "src/discover_swiss_mcp/client.py:858 — a 429 wait no longer extends the deadline; one that does not fit raises RateLimitedError (tools.py:234 own hint)",
+    "src/discover_swiss_mcp/client.py:453 — bucket wait longer than the remaining budget raises instead of sleeping",
+    "tests/test_client.py:507-532,578-597 — bucket-beyond-budget, 429-beyond-budget and real-time slow-response tests; mutations M1-M5, M16, M22 detected (scratch run)",
+    "src/discover_swiss_mcp/client.py:236-242 — RETRY_DELAYS (2,4,8) 'deliberately without jitter'",
+    "src/discover_swiss_mcp/client.py:623-641 — Retry-After: body text then header, integer seconds only; HTTP-date not parsed; 503 never consults Retry-After (:886-895)",
+    "runtime (scratch copy of f326260, repo untouched) — TOTAL_BUDGET=0.6, bucket wait ~0.55 s, slow upstream: elapsed 1.15 s. Cause: `remaining` is computed at :800 before `await self._bucket.acquire(max_wait=remaining)` (:806), then reused unchanged in asyncio.timeout(remaining) (:808)",
+    "src/discover_swiss_mcp/tools.py:813 FALLBACK_MAX_CALLS=8 — the budget is per HTTP call (_call), not per tool call; one fallback tool call can issue up to 8 list calls plus the refused /search, region tools do resolve_area + search"
+  ],
+  "gaps": [
+    "Budget not held on the bucket path: after a bucket wait the request still gets the pre-wait `remaining`, so one _call can take up to ~2 x 25 s = ~50 s, well past the MCP client's 30 s (measured at scale: 1.15 s for a 0.6 s budget). The fix's claim 'every wait counts against TOTAL_BUDGET' (client.py:251-257) is only half true",
+    "The budget is per HTTP call, not per tool call: region lookups (2 calls) and the list fallback (up to 8 + 1 calls) can exceed 30 s in total even when each call keeps 25 s",
+    "No jitter in the backoff (deliberate, documented rationale; criterion still unmet)",
+    "Retry-After: 503 ignores it, the HTTP-date form is not parsed, and the header path has no test (mutation M20 survives)",
+    "The bucket lock wait (asyncio.Lock in TokenBucket.acquire) is not bounded by max_wait under concurrency"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "429 extending the deadline by up to 30 s — removed; the named wait now counts against the budget and is tested",
+    "Wall-clock budget has no test — test_the_budget_holds_under_real_time added and mutation-detected",
+    "Bucket wait of up to ~60 s entirely outside the budget — now refused when longer than the remaining budget (only partly closed, see gaps)"
+  ],
+  "previous_gaps_open": [
+    "No jitter",
+    "Retry-After only on 429, integer seconds only; 503 and HTTP-date ignored",
+    "Budget not bounded below the client timeout on all paths (bucket path still ~2x, now through the stale `remaining`)"
+  ],
+  "evaluator_notes": "Retry scope (what, one layer, network errors, 4xx abort, wall-clock deadline, error after exhaustion) is correct and mutation-guarded. The fix for the bucket path is incomplete: waits are bounded individually but not added up. The same holds at tool level, where several budgets stack. Jitter and full Retry-After handling are still missing. Criterion 10 (writes) is not applicable.",
+  "remediation": "Recompute remaining after acquire (remaining = deadline - _monotonic(); if remaining <= 0: raise) before asyncio.timeout; count lock wait via asyncio.timeout around acquire; carry one deadline per tool call (contextvar or parameter) so resolve_area+search and the fallback scan share it; add jitter (delay*(0.5+random())) capped after jittering; parse Retry-After as seconds or HTTP-date on 429 and 503; add real-time tests for bucket+request and a header-only Retry-After test.",
+  "effort": "S"
+}

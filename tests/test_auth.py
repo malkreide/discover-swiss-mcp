@@ -17,6 +17,7 @@ from mcp.server.auth.provider import AccessToken
 from discover_swiss_mcp import auth
 from discover_swiss_mcp.auth import (
     AuthConfig,
+    IntrospectionUnavailableError,
     IntrospectionVerifier,
     Scope,
     ScopeGate,
@@ -222,6 +223,40 @@ async def test_a_body_over_the_limit_is_refused_before_the_app() -> None:
     assert downstream.bodies == []
 
 
+class DownVerifier:
+    async def verify_token(self, token: str) -> AccessToken | None:
+        raise IntrospectionUnavailableError("down")
+
+
+async def test_an_authorization_server_outage_is_503_not_invalid_token() -> None:
+    downstream = Recorder()
+    gate = ScopeGate(downstream, CONFIG, DownVerifier())
+    transport = httpx.ASGITransport(app=gate)
+    async with httpx.AsyncClient(transport=transport, base_url="http://mcp") as client:
+        response = await client.post("/mcp", json=_call("search"), headers=_bearer("reader"))
+    assert response.status_code == 503
+    assert response.json()["error"] == "temporarily_unavailable"
+    assert response.headers["retry-after"] == "10"
+    assert "www-authenticate" not in response.headers
+    assert downstream.bodies == []
+
+
+@pytest.mark.parametrize("path", ["/.well-known/oauth-protected-resource/mcp", "/mcp"])
+async def test_a_foreign_host_is_refused_before_metadata_or_token(path: str) -> None:
+    """The metadata document follows the same Host rule as the MCP endpoint."""
+    downstream = Recorder()
+    config = AuthConfig(**{**CONFIG.__dict__, "allowed_hosts": ("mcp.example.ch",)})
+    gate = ScopeGate(downstream, config, FakeVerifier({"reader": READ}))
+    transport = httpx.ASGITransport(app=gate)
+    async with httpx.AsyncClient(transport=transport, base_url="http://evil.example") as client:
+        foreign = await client.get(path, headers=_bearer("reader"))
+    async with httpx.AsyncClient(transport=transport, base_url="http://mcp.example.ch") as client:
+        own = await client.get(path, headers=_bearer("reader"))
+    assert foreign.status_code == 421
+    assert own.status_code == 200
+    assert len(downstream.bodies) == (1 if path == "/mcp" else 0)
+
+
 # ---------------------------------------------------------------------------
 # Token introspection (RFC 7662)
 # ---------------------------------------------------------------------------
@@ -283,14 +318,61 @@ async def test_tokens_not_for_this_resource_are_refused(overrides: dict[str, Any
         await verifier.aclose()
 
 
+@pytest.mark.parametrize(
+    "outage",
+    [
+        httpx.Response(503),
+        httpx.Response(200, text="<html>maintenance</html>"),
+        httpx.ConnectError("refused"),
+    ],
+)
 @respx.mock
-async def test_an_unreachable_authorization_server_lets_nothing_through() -> None:
-    respx.post(PINNED_INTROSPECT).mock(return_value=httpx.Response(503))
+async def test_an_unreachable_authorization_server_lets_nothing_through(outage) -> None:
+    """No verdict is not «invalid»: it raises, so the gate can answer 503."""
+    if isinstance(outage, Exception):
+        respx.post(PINNED_INTROSPECT).mock(side_effect=outage)
+    else:
+        respx.post(PINNED_INTROSPECT).mock(return_value=outage)
+    verifier = IntrospectionVerifier(CONFIG)
+    try:
+        with pytest.raises(IntrospectionUnavailableError):
+            await verifier.verify_token("abc")
+    finally:
+        await verifier.aclose()
+
+
+@respx.mock
+async def test_an_outage_is_not_cached_so_a_valid_token_works_after_recovery() -> None:
+    """Re-verification of SEC-002: an outage cached as «invalid» locked a valid token out."""
+    route = respx.post(PINNED_INTROSPECT).mock(
+        side_effect=[httpx.Response(503), httpx.Response(200, json=_introspection())]
+    )
+    verifier = IntrospectionVerifier(CONFIG)
+    try:
+        with pytest.raises(IntrospectionUnavailableError):
+            await verifier.verify_token("abc")
+        assert await verifier.verify_token("abc") is not None
+    finally:
+        await verifier.aclose()
+    assert route.call_count == 2
+
+
+@respx.mock
+async def test_an_answer_without_issuer_is_refused() -> None:
+    """`iss` is optional in RFC 7662 and required here."""
+    answer = _introspection()
+    del answer["iss"]
+    respx.post(PINNED_INTROSPECT).mock(return_value=httpx.Response(200, json=answer))
     verifier = IntrospectionVerifier(CONFIG)
     try:
         assert await verifier.verify_token("abc") is None
     finally:
         await verifier.aclose()
+
+
+def test_the_client_secret_is_not_in_the_config_repr() -> None:
+    assert "s3cret" not in repr(CONFIG)
+    assert "s3cret" not in str(CONFIG)
 
 
 @respx.mock

@@ -32,6 +32,8 @@ from discover_swiss_mcp.tools import (
         {"count": 53, "values": {"identifier": "civ_x"}},  # object instead of list
         {"results": [], "total": 53},  # a different envelope altogether
         [{"identifier": "civ_x"}],  # no envelope at all
+        {"count": 2, "values": [{"item": {"identifier": "a"}}, {"item": {"identifier": "b"}}]},
+        {"count": 1, "values": ["civ_x"]},  # rows reduced to bare strings
     ],
 )
 async def test_an_unrecognised_search_answer_is_not_an_empty_result(
@@ -82,12 +84,36 @@ async def test_facets_that_are_not_an_object_are_a_shape_error(api_mock, client)
         {"count": 12, "hasNextPage": False},  # rows gone
         {"count": 12, "data": {"identifier": "x"}},
         {"items": [], "hasNextPage": False},
+        {"count": 1, "data": [{"webcam": {"identifier": "x"}}]},  # rows nested one deeper
     ],
 )
 async def test_an_unrecognised_list_answer_raises(api_mock, client, payload) -> None:
     api_mock.get("/webcams").mock(return_value=json_response(payload))
     with pytest.raises(client_module.UpstreamShapeError):
         await client.list_endpoint("webcams")
+
+
+async def test_rows_nested_one_deeper_are_not_read_as_licence_withheld(api_mock, client) -> None:
+    """Re-verification of FID-006: every row fell to the licence filter as «withheld»."""
+    api_mock.post("/search").mock(
+        return_value=json_response(
+            {"count": 2, "values": [{"doc": {"identifier": "a"}}, {"doc": {"identifier": "b"}}]}
+        )
+    )
+    response = await search_impl(client, SearchInput(query="Landesmuseum"))
+    assert response.degraded == "upstream_shape_changed"
+    assert "licen" not in (response.hint or "").lower()
+
+
+async def test_one_row_with_an_identifier_is_enough(api_mock, client) -> None:
+    """The counter-check: a single odd row among good ones is not a changed shape."""
+    api_mock.get("/webcams").mock(
+        return_value=json_response(
+            {"count": 2, "data": [{"identifier": "x"}, {"note": "odd"}], "hasNextPage": False}
+        )
+    )
+    page = await client.list_endpoint("webcams")
+    assert len(page.data) == 2
 
 
 async def test_an_empty_list_page_stays_empty(api_mock, client) -> None:
@@ -167,3 +193,39 @@ async def test_a_real_object_named_like_a_test_is_not_withheld(api_mock, client)
     response = await get_details_impl(client, GetDetailsInput(identifier="evt_real"))
     assert response.excluded_test_objects == 0
     assert response.detail is not None
+
+
+# ---------------------------------------------------------------------------
+# Query syntax the source does not understand (FID-005, PROBE_QUERY 2026-09-26)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "Landesmus*",
+        "Landesmuse?m",
+        "Landesmusem~",
+        "Landesmuseum AND Zürich",
+        "Landesmuseum OR Kunsthaus",
+        "Landesmuseum -Shop",
+        '"Landesmuseum Zürich"',
+    ],
+)
+async def test_an_empty_result_after_unsupported_syntax_names_the_syntax(
+    api_mock, client, query
+) -> None:
+    api_mock.post("/search").mock(return_value=json_response({"count": 0, "values": []}))
+    response = await search_impl(client, SearchInput(query=query))
+    assert response.hint is not None
+    assert response.hint.startswith("The query uses syntax the source does not understand")
+    assert "No hit" in response.hint
+
+
+@pytest.mark.parametrize("query", ["Landesmuseum", "Kloster St. Gallen", "Rhein-Falls", "Andorra"])
+async def test_plain_words_get_the_ordinary_empty_hint(api_mock, client, query) -> None:
+    """The counter-check: hyphenated words and names containing «and»/«or» are not operators."""
+    api_mock.post("/search").mock(return_value=json_response({"count": 0, "values": []}))
+    response = await search_impl(client, SearchInput(query=query))
+    assert response.hint is not None
+    assert response.hint.startswith("No hit")

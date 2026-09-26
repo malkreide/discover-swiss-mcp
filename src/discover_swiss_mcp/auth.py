@@ -41,7 +41,7 @@ from __future__ import annotations
 import hashlib
 import json
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 from urllib.parse import urlparse
@@ -139,7 +139,11 @@ class AuthConfig:
     resource_url: str
     introspection_url: str
     client_id: str
-    client_secret: str
+    # Out of the dataclass repr: a traceback or a debug print must not carry it.
+    client_secret: str = field(repr=False)
+    # The Host values the metadata document is served under — the same list
+    # the MCP endpoint enforces. Empty: no check here (tests, loopback).
+    allowed_hosts: tuple[str, ...] = ()
 
     @property
     def metadata_url(self) -> str:
@@ -177,6 +181,16 @@ class AuthConfig:
         )
 
 
+class IntrospectionUnavailableError(Exception):
+    """The authorization server could not answer: no verdict about the token.
+
+    Kept apart from «invalid token» on purpose (audit re-verification of
+    SEC-028/SEC-002): an outage answered as `invalid_token` sends a client
+    into re-authorisation for nothing, and caching it locked out a valid token
+    for a minute. It becomes a 503 and is never cached.
+    """
+
+
 class IntrospectionVerifier:
     """Checks a bearer token at the authorization server (RFC 7662).
 
@@ -206,7 +220,7 @@ class IntrospectionVerifier:
         if cached is not None and cached[0] > now:
             return cached[1]
 
-        result = await self._introspect(token)
+        result = await self._introspect(token)  # raises on an outage; nothing cached
         expiry = now + INTROSPECTION_CACHE_SECONDS
         if result is not None and result.expires_at is not None:
             expiry = min(expiry, now + max(0.0, result.expires_at - time.time()))
@@ -226,17 +240,22 @@ class IntrospectionVerifier:
                 allowlist=self._allowlist,
                 headers={"Accept": "application/json"},
             )
-        except (net.EgressError, httpx.HTTPError) as exc:
-            logger.error("introspection_failed", reason=type(exc).__name__)
-            return None
+        except net.EgressError as exc:
+            # A policy block is a configuration error, not a transient one —
+            # logged as such, and still no verdict about the token.
+            logger.error("introspection_blocked", reason=str(exc))
+            raise IntrospectionUnavailableError("introspection blocked by egress policy") from exc
+        except httpx.HTTPError as exc:
+            logger.error("introspection_unreachable", reason=type(exc).__name__)
+            raise IntrospectionUnavailableError("authorization server unreachable") from exc
         if response.status_code != 200:
-            logger.error("introspection_failed", status=response.status_code)
-            return None
+            logger.error("introspection_unreachable", status=response.status_code)
+            raise IntrospectionUnavailableError(f"introspection answered {response.status_code}")
         try:
             data = response.json()
-        except ValueError:
-            logger.error("introspection_failed", reason="not_json")
-            return None
+        except ValueError as exc:
+            logger.error("introspection_unreachable", reason="not_json")
+            raise IntrospectionUnavailableError("introspection answer is not JSON") from exc
         return self._access_token(token, data)
 
     def _access_token(self, token: str, data: Any) -> AccessToken | None:
@@ -245,9 +264,11 @@ class IntrospectionVerifier:
         exp = data.get("exp")
         if isinstance(exp, int | float) and exp <= time.time():
             return None
-        # `iss` is optional in RFC 7662; when present, it must be ours.
+        # `iss` is optional in RFC 7662 but required here: without it, nothing
+        # ties the answer to the one authorization server this resource trusts
+        # (audit SEC-002, criterion 5).
         issuer = data.get("iss")
-        if issuer is not None and str(issuer).rstrip("/") != self._config.issuer.rstrip("/"):
+        if issuer is None or str(issuer).rstrip("/") != self._config.issuer.rstrip("/"):
             logger.warning("token_rejected", reason="issuer")
             return None
         # `aud` is required here (RFC 8707): without it, a token issued for any
@@ -267,7 +288,7 @@ class IntrospectionVerifier:
             expires_at=int(exp) if isinstance(exp, int | float) else None,
             resource=self._config.resource_url,
             subject=str(data["sub"]) if data.get("sub") is not None else None,
-            claims={"iss": issuer} if issuer is not None else None,
+            claims={"iss": issuer},
         )
 
 
@@ -305,6 +326,12 @@ class ScopeGate:
             await self.app(scope, receive, send)
             return
 
+        if self.config.allowed_hosts and _host(scope) not in self.config.allowed_hosts:
+            # Same rule as the MCP endpoint, applied before anything is
+            # answered — the metadata document included.
+            await _json(send, 421, {"error": "invalid host"})
+            return
+
         if scope["path"] in self.config.metadata_paths and scope["method"] == "GET":
             await _json(send, 200, self.config.metadata())
             return
@@ -313,7 +340,19 @@ class ScopeGate:
         if token is None:
             await self._challenge(send, 401, error=None, needed=BASE_SCOPES)
             return
-        access = await self.verifier.verify_token(token)
+        try:
+            access = await self.verifier.verify_token(token)
+        except IntrospectionUnavailableError:
+            await _json(
+                send,
+                503,
+                {
+                    "error": "temporarily_unavailable",
+                    "error_description": "token check unavailable",
+                },
+                extra_headers=[(b"retry-after", b"10")],
+            )
+            return
         if access is None:
             await self._challenge(send, 401, error="invalid_token", needed=BASE_SCOPES)
             return
@@ -338,6 +377,15 @@ class ScopeGate:
             await self._challenge(send, 403, error="insufficient_scope", needed=needed)
             return
 
+        # Who called what — the caller's identity per call (audit SEC-002,
+        # criterion 4). Never the token itself.
+        logger.info(
+            "authorized_call",
+            client_id=access.client_id,
+            subject=access.subject,
+            method=message.get("method") if isinstance(message, dict) else None,
+            tool=_tool_name(message),
+        )
         await self.app(scope, _replay(body, receive), send)
 
     async def _challenge(
@@ -353,6 +401,21 @@ class ScopeGate:
         await _json(
             send, status, body, extra_headers=[(b"www-authenticate", ", ".join(parts).encode())]
         )
+
+
+def _host(scope: ASGIScope) -> str | None:
+    for name, value in scope.get("headers", []):
+        if name == b"host":
+            return value.decode("latin-1")
+    return None
+
+
+def _tool_name(message: Any) -> str | None:
+    if isinstance(message, dict) and message.get("method") == "tools/call":
+        params = message.get("params")
+        name = params.get("name") if isinstance(params, dict) else None
+        return name if isinstance(name, str) else None
+    return None
 
 
 def _bearer(scope: ASGIScope) -> str | None:

@@ -1,0 +1,29 @@
+{
+  "id": "ARCH-016",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "high",
+  "evidence": [
+    "runtime stdio (hardened container, --network none): server/discover → supportedVersions ['2026-07-28'] (list), capabilities {prompts, resources, tools}, _meta io.modelcontextprotocol/serverInfo {name: discover_swiss_mcp, version: 0.1.0}",
+    "runtime HTTP (127.0.0.1:8005): server/discover answers with the same result structure",
+    "src/discover_swiss_mcp/server.py:153-157 + _version.py:16-17 — version=__version__ from importlib.metadata of the installed distribution, not a literal",
+    "pyproject.toml:34 — mcp>=2,<3; runtime: in a clean venv with mcp==2.0.0 (the lower bound) the server starts and answers server/discover — the lower bound ships the RPC and cache_hints",
+    "tests/test_smoke.py:133-164 — serverInfo version checked on the wire (via a legacy initialize)"
+  ],
+  "gaps": [
+    "No test calls server/discover and checks versions, capabilities and identity separately (grep tests/ for 'server/discover' and 'supportedVersions' → none; control: the grep for 'discover' hits many package imports); consequently no Gegenprobe (criteria 6, 7)",
+    "Capabilities still advertise prompts.listChanged and resources.subscribe/listChanged although the server registers neither prompts nor resources (SDK defaults) — the discover answer overstates the server"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "Identity version empty — closed (serverInfo.version 0.1.0 from package metadata, runtime)",
+    "Whether mcp 2.0.0 ships server/discover and cache_hints not verifiable — closed (clean venv with mcp==2.0.0 answers server/discover)"
+  ],
+  "previous_gaps_open": [
+    "No test calls server/discover checking the three parts; no Gegenprobe",
+    "Capabilities advertise resources.subscribe/prompts although none exist"
+  ],
+  "evaluator_notes": "Criteria 1-5 now hold (identity version fixed, lower SDK bound verified). The dedicated three-part test and its counter-check are still missing, and the capability block overstates features — partial.",
+  "remediation": "Add a test that sends server/discover over stdio (and the HTTP app) and asserts supportedVersions == ['2026-07-28'], 'tools' in capabilities and serverInfo.version == __version__; run it once against a build without the handler. Suppress or correct the unused prompts/resources capabilities if the SDK allows.",
+  "effort": "S"
+}

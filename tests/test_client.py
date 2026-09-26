@@ -17,6 +17,7 @@ import pytest
 from conftest import json_response, probe_fixture
 
 from discover_swiss_mcp import client as client_module
+from discover_swiss_mcp import net
 from discover_swiss_mcp.client import (
     RETRY_DELAYS,
     SEARCH_SELECT_FIELDS,
@@ -287,6 +288,23 @@ async def test_429_waits_the_named_seconds_and_retries_once(api_mock, client, sl
     assert len(page.data) == 1
 
 
+async def test_429_reads_retry_after_from_the_header_when_the_body_names_none(
+    api_mock, client, sleeps
+) -> None:
+    """The header is the fallback; a mutation that drops it falls to the 60 s default."""
+    api_mock.get("/webcams").mock(
+        side_effect=[
+            httpx.Response(
+                429, json={"message": "Too many requests."}, headers={"Retry-After": "7"}
+            ),
+            json_response({"data": [{"identifier": "a"}]}),
+        ]
+    )
+    page = await client.list_endpoint("webcams")
+    assert sleeps == [8.0]
+    assert len(page.data) == 1
+
+
 async def test_429_twice_gives_up_instead_of_looping(api_mock, client, sleeps) -> None:
     api_mock.get("/webcams").mock(
         return_value=json_response(
@@ -520,6 +538,43 @@ async def test_a_bucket_wait_beyond_the_budget_is_not_taken(
     assert state["rate_limited_for"] > client_module.TOTAL_BUDGET
 
 
+async def test_the_request_gets_only_what_the_bucket_wait_left_of_the_budget(
+    api_mock, client, monkeypatch
+) -> None:
+    """Re-verification of OPS-010: `remaining` was measured before the bucket wait.
+
+    The bucket takes a wait of 24.99 s out of 25; the request that follows may
+    use the 0.01 s left, not a fresh 25 s. The slow upstream (1 s, real time)
+    must therefore be cut off at once.
+    """
+    clock = FakeClock()
+    monkeypatch.setattr(client_module, "_monotonic", clock)
+    waits: list[float] = []
+
+    async def _advancing_sleep(seconds: float) -> None:
+        waits.append(seconds)
+        clock.now += seconds
+
+    monkeypatch.setattr(client_module, "_sleep", _advancing_sleep)
+    api_mock.get("/status").mock(return_value=httpx.Response(204))
+    for _ in range(client_module.RATE_LIMIT_PER_MINUTE):
+        await client._call("GET", "/status")
+
+    # The oldest slot frees 24.99 s from now: inside the 25 s budget, so taken.
+    clock.now += client_module.RATE_LIMIT_WINDOW_SECONDS + 0.05 - 24.99
+
+    async def _slow(_request):
+        await asyncio.sleep(1.0)
+        return httpx.Response(204)
+
+    api_mock.get("/webcams").mock(side_effect=_slow)
+    started = time.perf_counter()
+    with pytest.raises(UpstreamUnavailableError):
+        await client._call("GET", "/webcams")
+    assert time.perf_counter() - started < 0.5
+    assert waits and 24.9 < waits[0] < 25.0
+
+
 async def test_a_429_wait_beyond_the_budget_ends_the_call_at_once(api_mock, client, sleeps) -> None:
     """The first version let a 429 extend the budget to about 55 s."""
     api_mock.get("/webcams").mock(
@@ -545,6 +600,30 @@ async def test_source_status_reports_a_rate_limit_as_such(api_mock, client, slee
     status = await source_status_impl(client)
     assert status.degraded == "rate_limited"
     assert "41 seconds" in (status.hint or "")
+
+
+async def test_a_dns_failure_is_retried_but_an_egress_block_is_not(
+    api_mock, client, sleeps, monkeypatch
+) -> None:
+    """The retry pair of SEC-028: transient resolution vs. policy decision."""
+
+    async def _no_dns(_host: str, _port: int) -> list[str]:
+        raise net.ResolutionError("no answer")
+
+    monkeypatch.setattr(net, "_resolve", _no_dns)
+    with pytest.raises(UpstreamUnavailableError):
+        await client._call("GET", "/status")
+    assert sleeps == [2.0, 4.0, 8.0]
+
+    sleeps.clear()
+
+    async def _private(_host: str, _port: int) -> list[str]:
+        return ["10.0.0.5"]
+
+    monkeypatch.setattr(net, "_resolve", _private)
+    with pytest.raises(net.EgressError):
+        await client._call("GET", "/status")
+    assert sleeps == []
 
 
 # --------------------------------------------------------------------------

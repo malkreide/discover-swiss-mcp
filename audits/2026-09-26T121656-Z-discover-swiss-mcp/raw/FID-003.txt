@@ -1,0 +1,31 @@
+{
+  "id": "FID-003",
+  "status": "partial",
+  "category": "FID",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/client.py:346-353 — new InvalidIdentifierError (shape gate only); tools.py:1153-1158 get_details maps only that to 'Unknown identifier'",
+    "src/discover_swiss_mcp/server.py:222-226 — any other UpstreamRejectedError/NotFoundError reaches the model via ToolError: 'rejected the request as malformed ... not an empty result'",
+    "tests/test_shape.py:107-133 — upstream 400 raises (not unknown), non-object detail is degraded upstream_shape_changed, invalid id and 404 stay 'unknown' (counter-check)",
+    "runtime (scratch copy of f326260, repo untouched) — mutation M11 (get_details catches every UpstreamRejectedError again) turns test_an_upstream_400_is_not_reported_as_unknown_identifier red",
+    "src/discover_swiss_mcp/server.py (webcams_near docstring) — 'Outside Eastern Switzerland this tool returns nothing — say so' removed; git diff bd0e371..f326260 confirms; registered descriptions printed via mcp.list_tools() carry no empty-result explanation",
+    "src/discover_swiss_mcp/tools.py:229-237 — new degraded states upstream_shape_changed and rate_limited carry their own next-step hints ('not an empty result', 'absence cannot be inferred')",
+    "runtime (scratch copy of f326260, repo untouched) — POST /search 503x4 and ConnectError: SearchResponse(degraded='upstream_unreachable', returned=0, upstream_count=None, hint='did not answer ... says nothing about whether matching objects exist')"
+  ],
+  "gaps": [
+    "Transport failures (5xx, timeout, connect error), refused /search, rate limit and shape errors still end as well-formed results with returned=0 plus `degraded`, not in the error channel; criterion 7 / Modus 3 counts any returned:0 result as fail regardless of hint quality — mitigated by the distinct degraded field and hint",
+    "Only `search`'s description and the server instructions (server.py:166) say to follow the hint before concluding; get_details, find_accommodation, find_tours, find_events, webcams_near, explore_area descriptions do not state that no guessed answer may replace a missing hit (the webcams 'do not invent' sentence was moved into the hint, not into the other descriptions)"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "get_details masking upstream 4xx / non-object payload as 'Unknown identifier' (now InvalidIdentifierError only; non-object is upstream_shape_changed)",
+    "webcams_near description licensing a conclusion from an empty result (sentence removed)"
+  ],
+  "previous_gaps_open": [
+    "5xx/timeouts/429/refused search end as returned=0 results with `degraded` instead of the error channel",
+    "Explicit 'no guessed answer' only in search's description"
+  ],
+  "evaluator_notes": "The concrete defect (4xx masked as unknown identifier) is fixed and mutation-guarded. The remaining gap is a deliberate design: degraded envelopes with returned=0 and a separate hint rather than isError. That is well-signalled but does not meet the check's literal Modus-3 criterion. MRTR/input_required criteria not applicable (server never returns input_required).",
+  "remediation": "Either return isError (ToolError) for upstream_unreachable/rate_limited/upstream_shape_changed/search_unavailable, or omit `returned`/`hits` from degraded envelopes so len(hits)==0 cannot be read as 'nothing found'; add one sentence 'An empty result is not evidence of absence — follow the hint, never substitute a guess' to each data tool's description.",
+  "effort": "S"
+}

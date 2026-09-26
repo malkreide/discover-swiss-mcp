@@ -1,0 +1,30 @@
+{
+  "id": "SEC-004",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "critical",
+  "evidence": [
+    "src/discover_swiss_mcp/net.py:126-143 — assert_url_allowed: scheme must be https, host on frozenset allow-list, host resolved once, every resolved IP checked before any request; safe_request (net.py:154-201) re-runs the chain on every redirect hop",
+    "src/discover_swiss_mcp/net.py:74-97 — _is_blocked_ip unwraps IPv4-mapped, 6to4 and Teredo forms, blocks loopback/link-local/multicast/reserved/unspecified plus the explicit list (net.py:47-61: 0/8, 10/8, 100.64/10, 127/8, 169.254/16, 172.16/12, 192.168/16, ::1, fc00::/7, fe80::/10)",
+    "tests/test_net.py:28-43,74-92 — blocks 127.0.0.1, 10.0.0.5, 192.168.1.1, 169.254.169.254, ::1, ::ffff:169.254.169.254, ::ffff:127.0.0.1, ::ffff:10.1.2.3, 2002:a9fe:a9fe::1, ::, 0.0.0.0, 224.0.0.1, 240.0.0.1; control tests/test_net.py:95-97 lets 8.8.8.8, ::ffff:8.8.8.8, 2a00:1450::1 pass",
+    "runtime (audit): _is_blocked_ip → True for 169.254.169.254, ::ffff:169.254.169.254, ::ffff:127.0.0.1, 2002:a9fe:a9fe::1, 64:ff9b::a9fe:a9fe, fd00:ec2::254 (AWS IPv6 IMDS), fe80::1, ::; False (control) for 8.8.8.8 and a Teredo address wrapping a public IPv4",
+    "src/discover_swiss_mcp/auth.py:220-228 — the new introspection egress path goes through the same net.safe_request chain (grep: safe_request has exactly two callers, client.py:809 and auth.py:220)",
+    "deploy/k8s/networkpolicy.yaml:47-60 — network-layer defence in depth: egress only TCP 443 to 0.0.0.0/0 minus 0/8, 10/8, 100.64/10, 127/8, 169.254/16, 172.16/12, 192.168/16; deploy/k8s/cilium-networkpolicy.yaml:89-95 narrows to FQDNs"
+  ],
+  "gaps": [
+    "Low: 198.18.0.0/15 (benchmark), 192.0.0.0/24 (IETF protocol assignments) and fec0::/10 (deprecated site-local) are not blocked (runtime: False). Not reachable via tool arguments because the host allow-list admits only api.discover.swiss and the configured introspection host",
+    "Criterion 5 (egress proxy) is satisfied only in the Kubernetes deployment (NetworkPolicy/Cilium); a local stdio run has no network-layer control (documented in docs/network-egress.md:43-46)"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "IPv4-mapped IPv6 answers bypass the blocklist — closed (net.py:89-92, tests, runtime)",
+    "Unspecified, multicast and reserved ranges not blocked — closed (net.py:93-96); NAT64 64:ff9b::/96 now also blocked (runtime)",
+    "No egress proxy — closed for the container deployment via NetworkPolicy/Cilium FQDN policy"
+  ],
+  "previous_gaps_open": [
+    "Benchmark range 198.18.0.0/15 still not blocked (low, compensated by the host allow-list)"
+  ],
+  "evaluator_notes": "All five criteria are met with code, tests and runtime evidence; the mapped-IPv6 bypass is closed and the introspection path reuses the same guard. Residual unblocked ranges are low-value and unreachable through the host allow-list.",
+  "remediation": "Optional: add 198.18.0.0/15, 192.0.0.0/24 and fec0::/10 to BLOCKED_NETWORKS or use ip.is_private minus the documentation ranges.",
+  "effort": "S"
+}

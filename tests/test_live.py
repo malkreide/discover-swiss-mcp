@@ -280,6 +280,27 @@ async def test_match_name_narrows_the_search(client: DiscoverSwissClient) -> Non
     assert by_name.upstream_count < everywhere.upstream_count
 
 
+async def test_the_measured_query_syntax_still_holds(client: DiscoverSwissClient) -> None:
+    """The `search` description states what PROBE_QUERY measured; this keeps it true.
+
+    Case does not matter, a prefix finds nothing. If the index starts to match
+    prefixes, the description understates the tool — rerun
+    `probes/probe_query_syntax.py` and rewrite it.
+    """
+    upper = await search_impl(client, SearchInput(query="Landesmuseum", match="name"))
+    lower = await search_impl(client, SearchInput(query="landesmuseum", match="name"))
+    prefix = await search_impl(client, SearchInput(query="Landesmus", match="name"))
+    for response in (upper, lower, prefix):
+        _assert_live(response)
+    _measure(
+        "search Landesmuseum / landesmuseum / Landesmus (name)",
+        f"{upper.upstream_count} / {lower.upstream_count} / {prefix.upstream_count}",
+        "equal / equal / 0",
+    )
+    assert upper.upstream_count and upper.upstream_count == lower.upstream_count
+    assert prefix.upstream_count == 0
+
+
 async def test_facet_odata_name_comes_back(client: DiscoverSwissClient) -> None:
     """`containedInPlace/id` is the name the API answers to.
 
@@ -331,20 +352,25 @@ async def test_nearest_hotel_to_interlaken_is_in_interlaken(client: DiscoverSwis
 async def test_demo_event_is_filtered_and_counted(client: DiscoverSwissClient) -> None:
     """«Demo Event» is withheld and counted, not dropped silently.
 
-    One page of 50 covers the whole event stock (21), so the counter sees the
-    demo record wherever the ranking puts it. At 0 the test skips: either the
-    record was removed upstream, or the filter stopped matching — the skip
-    reason says to find out which.
+    Looked up by name rather than through `find_events`: the events tool reads
+    a 30-day window, so a demo record dated outside it made the earlier canary
+    skip without saying whether the record or the filter was gone (live run of
+    2026-09-26). Here the source's own `upstream_count` decides: 0 means the
+    record is gone upstream (skip); anything above means the filter must count
+    it.
     """
-    response = await find_events_impl(client, FindEventsInput(page_size=50))
+    response = await search_impl(
+        client, SearchInput(query="Demo", types=["Event"], match="name", page_size=50)
+    )
     _assert_live(response)
-    _measure("find_events().excluded_test_objects", response.excluded_test_objects, 1)
-    if response.excluded_test_objects == 0:
-        pytest.skip(
-            "excluded_test_objects == 0 — Demo-Event entfernt? Check upstream for «Demo Event» "
-            "before concluding the filter broke."
-        )
-    assert response.excluded_test_objects >= 1
+    _measure("search('Demo', Event).upstream_count", response.upstream_count, 1)
+    if not response.upstream_count:
+        pytest.skip("No event named «Demo» upstream any more — the record was removed.")
+    _measure("search('Demo', Event).excluded_test_objects", response.excluded_test_objects, 1)
+    assert response.excluded_test_objects >= 1, (
+        f"{response.upstream_count} event(s) named «Demo» upstream, none withheld: "
+        "the test-object filter stopped matching."
+    )
     assert all("demo" not in (hit.name or "").lower() for hit in response.hits)
 
 

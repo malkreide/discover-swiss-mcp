@@ -21,6 +21,7 @@ wraps it when OAuth is configured.
 
 from __future__ import annotations
 
+import dataclasses
 from typing import Any
 
 from mcp.server.transport_security import TransportSecuritySettings
@@ -95,6 +96,7 @@ def build_http_app(mcp_server: Any, settings: Settings) -> tuple[Any, Introspect
     config = AuthConfig.from_settings(settings)
     if config is None:
         return app, None
+    config = dataclasses.replace(config, allowed_hosts=tuple(security.allowed_hosts))
     verifier = IntrospectionVerifier(config)
     logger.info(
         "oauth_resource_server",

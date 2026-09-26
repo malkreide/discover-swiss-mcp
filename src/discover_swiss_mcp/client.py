@@ -617,6 +617,15 @@ def _confirm_envelope(payload: Any, path: str, rows_key: str) -> tuple[int | Non
         raise UpstreamShapeError(
             f"{path} answered `{rows_key}` as {type(rows).__name__}, not a list."
         )
+    # Rows that are there but that no reader can use — each one nested one
+    # level deeper, say — would all fall to the licence filter and read as
+    # «withheld» (re-verification of FID-006). Every row the server reads
+    # carries `identifier`: the select lists always ask for it. Not one row
+    # with it is a changed shape, not a licence decision.
+    if rows and not any(isinstance(row, dict) and row.get("identifier") for row in rows):
+        raise UpstreamShapeError(
+            f"{path} answered {len(rows)} rows in `{rows_key}`, none with an `identifier`."
+        )
     return count, rows
 
 
@@ -804,6 +813,14 @@ class DiscoverSwissClient:
                 )
 
             await self._bucket.acquire(max_wait=remaining)
+            # The bucket may have waited — for the window, or behind another
+            # caller on its lock. What is left is measured again, not assumed
+            # (re-verification of OPS-010): the request gets only that.
+            remaining = deadline - _monotonic()
+            if remaining <= 0:
+                raise UpstreamUnavailableError(
+                    f"discover.swiss did not answer within {TOTAL_BUDGET:.0f} s."
+                )
             try:
                 async with asyncio.timeout(remaining):
                     response, _final_url = await net.safe_request(

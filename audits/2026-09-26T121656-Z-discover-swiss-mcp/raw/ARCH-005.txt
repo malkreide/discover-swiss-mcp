@@ -1,0 +1,30 @@
+{
+  "id": "ARCH-005",
+  "status": "partial",
+  "category": "ARCH",
+  "severity": "critical",
+  "evidence": [
+    "runtime: gitleaks v8.30.1 with .gitleaks.toml over the full history (17 commits) → 'no leaks found', exit 0; negative control: a scratch repo with a planted 32-hex DISCOVER_SWISS_KEY → 'leaks found: 1', exit 1",
+    "src/discover_swiss_mcp/config.py:54,78,118,167,221 — API key and OAuth client secret loaded from the environment only, default '' (no real fallback), held as SecretStr in Settings; config.py:89-103 safe_summary logs neither",
+    "runtime: server logs of the 0.0.0.0/OAuth run contain no occurrence of the client secret value; tests/test_http_app.py:215-220, tests/test_smoke.py:60-68",
+    ".gitignore:15-18 — .env and .env.* ignored with '!.env.example'; git check-ignore: .env and .env.local ignored, .env.example not; git ls-files lists .env.example",
+    ".env.example:22,44 — placeholders only (replace-with-your-subscription-key, replace-with-your-client-secret)",
+    ".github/workflows/ci.yml:78-90 — secret-scan job: gitleaks pinned by digest, full history (fetch-depth: 0), on push and pull_request; .gitleaks.toml:9-14 adds the discover.swiss key format",
+    "deploy/k8s/deployment.yaml:63-72 — secrets via secretKeyRef, none in the manifest; Dockerfile has no ENV with secrets and .dockerignore is deny-by-default"
+  ],
+  "gaps": [
+    "REGRESSION, criterion 4: the OAuth client secret is unwrapped at start-up into a plain str field of the frozen dataclass AuthConfig (auth.py:134-142,176). Its default repr prints it — runtime: repr(AuthConfig.from_settings(...)) → \"...client_secret='topsecretvalue')\". Not logged today (structlog uses format_exc_info without locals), but one debug log of the config or a locals-rendering traceback would leak it",
+    "Settings are hand-rolled from os.environ rather than pydantic-settings (accepted as 'o.ä.', noted only)"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    ".env.example missing and would have been ignored — closed (.env.example tracked, '!.env.example' in .gitignore)",
+    "No gitleaks/trufflehog in CI — closed (ci.yml:78-90, locally reproduced with a positive control)"
+  ],
+  "previous_gaps_open": [
+    "Settings hand-rolled rather than pydantic-settings (note only)"
+  ],
+  "evaluator_notes": "Both previous gaps are closed and verified (gitleaks run with a negative control). The fix added a second secret and kept it as SecretStr in Settings, but copies it into a plain-str dataclass whose repr exposes it — criterion 4 is therefore not fully met. Low exploitability today, but on a critical check an unmet criterion keeps it at partial; the fix is a one-liner.",
+  "remediation": "Keep client_secret as SecretStr in AuthConfig (unwrap only in the httpx auth tuple) or declare the field with field(repr=False).",
+  "effort": "S"
+}

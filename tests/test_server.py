@@ -27,9 +27,9 @@ SNAPSHOT = ROOT / "docs" / "tool-hashes.json"
 #
 # Three were reworded after the audit of 2026-09-26 (FID-005), against the P4
 # session rule that no description explains or apologises for an empty result:
-# `search` no longer claims an unmeasured matching granularity («whole words»,
-# «compounds are not found by their parts») and states that the query syntax is
-# undocumented; `find_events` and `webcams_near` lost the sentence about what to
+# `search` states the query syntax measured by `probes/probe_query_syntax.py`
+# on 2026-09-26 (PROBE_QUERY) and leaves open only what the probe could not
+# settle (compound parts); `find_events` and `webcams_near` lost the sentence about what to
 # do when they return nothing — that sentence lives in their `hint`.
 VERBATIM = {
     "search": (
@@ -37,9 +37,12 @@ VERBATIM = {
         "nationwide; museums, restaurants, shops, tours, webcams, ski resorts for Zurich, "
         "Eastern Switzerland, Liechtenstein, Engadin). `query` is matched in name AND "
         "descriptions by default (`match='all'`), so a hit count includes objects that merely "
-        "mention the term; use `match='name'` to match names only. Query syntax: plain words. "
-        "The source documents no operators; wildcards (*, ?), quotes, AND/OR and prefixes are "
-        "untested — send whole words, not fragments or operators. `near` ranks by distance "
+        "mention the term; use `match='name'` to match names only. Query syntax (measured): "
+        "whole words, case-insensitive; several words must all match. Not supported: prefixes "
+        "or fragments ('Landesmus' finds nothing), wildcards (*, ?), fuzzy (~), AND/OR, "
+        "exclusion with '-' — these return 0 or fewer hits, never an error; quotes change "
+        "nothing. Send whole words; for alternatives run one search each. Whether part of a "
+        "compound matches (museum in Landesmuseum) is not established. `near` ranks by distance "
         "from a coordinate; `locality` filters by the "
         "exact municipality name in the address. Rooms and meeting rooms are excluded unless "
         "requested via `types`. Every hit carries its own licence and attribution — cite the "

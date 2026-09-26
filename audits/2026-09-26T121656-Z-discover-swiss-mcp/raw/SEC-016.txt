@@ -1,0 +1,29 @@
+{
+  "id": "SEC-016",
+  "status": "pass",
+  "category": "SEC",
+  "severity": "critical",
+  "evidence": [
+    "src/discover_swiss_mcp/config.py:58,171 — host default '127.0.0.1', overridable via DISCOVER_SWISS_MCP_HOST; grep src/ for a host='0.0.0.0' assignment → none (control: plain grep for 0.0.0.0 does hit net.py:50, so the search works)",
+    "src/discover_swiss_mcp/server.py:380-384 + http_app.py:84 — the configured host reaches both the app builder (streamable_http_app(host=…)) and the listener (uvicorn.run(host=…, port=…))",
+    "runtime default: 'INFO: Uvicorn running on http://127.0.0.1:8000' (uvicorn's own line)",
+    "runtime configured: DISCOVER_SWISS_MCP_HOST=0.0.0.0 PORT=8001 with OAuth + ALLOWED_HOSTS → 'INFO: Uvicorn running on http://0.0.0.0:8001' — the value reaches the listener",
+    "runtime: 0.0.0.0 without OAuth/host list → structured error http_start_refused, no listener (http_app.py:63-77); tests/test_http_app.py:89-113 (refusal, main() exits 2 before uvicorn)",
+    "runtime + http_app.py:86-93: an allowed non-loopback bind logs the WARNING http_bind_non_loopback with host, port, allowed_hosts; tests/test_http_app.py:130-150",
+    "deploy/k8s/deployment.yaml:49-50 — 0.0.0.0 set explicitly in the deployment manifest, not in code",
+    "README.md:159-171 and SECURITY.md:43-61 — loopback default, refusal of other binds, container case explained; docs/network-egress.md:107-109"
+  ],
+  "gaps": [
+    "Minor: README does not literally warn against 0.0.0.0 on a laptop; the code makes that moot by refusing an unauthenticated non-loopback bind"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "Non-loopback bind is silent — closed: refused without OAuth+host list, warning when allowed (runtime)",
+    "README does not explain local vs container differentiation — closed (README.md:167-176, SECURITY.md:50-61)",
+    "No deployment configuration with explicit 0.0.0.0 — closed (deploy/k8s/deployment.yaml:49-50)"
+  ],
+  "previous_gaps_open": [],
+  "evaluator_notes": "All seven criteria met; both start-log runs (default and configured) show the bound address from uvicorn itself. The bind policy goes beyond the check: an unauthenticated network bind is refused, not merely warned about.",
+  "remediation": "",
+  "effort": ""
+}

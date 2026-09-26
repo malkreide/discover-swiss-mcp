@@ -161,6 +161,13 @@ def load_settings(require_key: bool = True) -> Settings:
                 "exact Host values instead (mcp.example.ch, or mcp.example.ch:8443)."
             )
 
+    for origin in allowed_origins:
+        if "*" in origin:
+            raise ConfigError(
+                f"DISCOVER_SWISS_MCP_ALLOWED_ORIGINS entry {origin!r} contains a wildcard; list "
+                "the exact origins instead (https://app.example.ch)."
+            )
+
     auth = _load_auth()
 
     return Settings(

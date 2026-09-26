@@ -1,0 +1,32 @@
+{
+  "id": "DRIFT-002",
+  "status": "partial",
+  "category": "DRIFT",
+  "severity": "high",
+  "evidence": [
+    "src/discover_swiss_mcp/tools.py:510-513 — _PagedResponse.ignored_parameters: 'Parameters the caller set that this answer did not apply ... a field says so'",
+    "src/discover_swiss_mcp/tools.py:967 search fallback sets ['query']; :1379 accommodation fallback passes _ignored_accommodation_filters; hint now says 'NOT filtered by them and are wider than asked for'",
+    "tests/test_tools_p3.py:622 asserts ignored_parameters == ['query']; :730-759 accommodation fallback names ['stars_min','amenities','accessible'] and [] without filters",
+    "runtime (scratch copy of f326260, repo untouched) — mutations M10 (search fallback ignored_parameters=[]) and M24 (accommodation ignored_parameters=[]) each turn a named test red",
+    "src/discover_swiss_mcp/tools.py:1775-1785 — _schedule_entry unchanged: first entry with end >= from_date, else entries[0]",
+    "runtime (scratch copy of f326260, repo untouched) — _schedule_entry({schedule:[2027-03-01, 2026-10-01]}, 2026-09-26) returns the 2027-03-01 entry although only the 2026-10-01 entry lies in a 30-day range; description says start/end come 'from the schedule entry that overlaps the range'",
+    "src/discover_swiss_mcp/tools.py:1914 — LIVE_LINK_TYPES still includes 'WebLink'; only 'WebDetail' is evidenced as a live image"
+  ],
+  "gaps": [
+    "_schedule_entry picks the first entry ending on/after from_date without checking it starts before to_date, and falls back to entries[0]; an event's start/end can be a different occurrence than the one that matched, reported as the overlapping one — a same-entity, different-period substitution with no field saying so",
+    "webcams live_url accepts link type 'WebLink' as a live image without evidence",
+    "The selection helpers (_schedule_entry, LIVE_LINK_TYPES) do not document what they deliberately refuse to take (criterion 5)"
+  ],
+  "previous_status": "partial",
+  "previous_gaps_closed": [
+    "Ignored query/filters stated only in hint prose: now a structured `ignored_parameters` field",
+    "_accommodation_fallback / _ignored_accommodation_filters untested: now tested and mutation-guarded"
+  ],
+  "previous_gaps_open": [
+    "_schedule_entry falls back to entries[0] / may report a non-overlapping entry",
+    "webcams live_url accepts 'WebLink'"
+  ],
+  "evaluator_notes": "The main fallback substitution is now declared in a field and tested. The event schedule selector still substitutes a different occurrence under a label that claims overlap, and the webcam live-link selector still accepts an unverified type. Criteria met: 2, 3, 4; 1 and 5 partly.",
+  "remediation": "In _schedule_entry pick an entry with start <= to_date and end >= from_date; return None (and set date_open or a flag) otherwise instead of entries[0]; test the no-overlap case. Restrict LIVE_LINK_TYPES to 'WebDetail' or label WebLink as unverified. Document in each docstring what is deliberately not taken.",
+  "effort": "S"
+}
