@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Not released. Release gate: written confirmation of the search entitlement by
 discover.swiss (README «Status»).
 
+### Release status
+
+- **2026-09-26 — release on hold.** The release step (PyPI and MCP registry
+  0.1.0, public reference instance on Railway, portfolio status, gate G1 over
+  the remote endpoint) stopped at its precondition: discover.swiss's written
+  confirmation of search on Infocenter Open, and of operating a public,
+  non-commercial reference instance, is not on record.
+  `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED` stays `pending`. Nothing was tagged or
+  published. Instead `docs/DEMO.md` gained *Run locally with your own key*.
+
 ### Security
 
 P5 — remediation of the audit of 2026-09-26. Each entry names its finding.
