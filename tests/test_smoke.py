@@ -103,3 +103,62 @@ def test_windows_install_carries_the_time_zone_database() -> None:
     pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
     dependencies = tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["dependencies"]
     assert any(d.replace(" ", "").startswith("tzdata;sys_platform=='win32'") for d in dependencies)
+
+
+# ---------------------------------------------------------------------------
+# Identity on the wire (audit ARCH-012, ARCH-016, IDENT-002)
+# ---------------------------------------------------------------------------
+
+
+def test_the_protocol_pin_follows_the_sdk() -> None:
+    """An SDK update that moves the protocol fails here instead of drifting silently."""
+    import mcp_types
+
+    assert MCP_PROTOCOL_VERSION == mcp_types.LATEST_PROTOCOL_VERSION
+
+
+def test_the_version_is_the_same_in_every_manifest() -> None:
+    import json
+    import tomllib
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+    manifest = json.loads((root / "server.json").read_text(encoding="utf-8"))
+    assert __version__ == project["version"]
+    assert manifest["version"] == project["version"]
+    assert {p["version"] for p in manifest.get("packages", [])} <= {project["version"]}
+
+
+def test_server_info_carries_the_version_on_the_wire() -> None:
+    """A real stdio process, a real initialize — the SDK default was an empty string."""
+    import json
+    import os
+    import subprocess
+    import sys
+
+    request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2025-11-25",
+            "capabilities": {},
+            "clientInfo": {"name": "test", "version": "0"},
+        },
+    }
+    env = {**os.environ, "DISCOVER_SWISS_MCP_TRANSPORT": "stdio"}
+    result = subprocess.run(
+        [sys.executable, "-m", "discover_swiss_mcp"],
+        input=json.dumps(request) + "\n",
+        capture_output=True,
+        text=True,
+        timeout=30,
+        env=env,
+    )
+    answers = [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
+    (answer,) = [a for a in answers if a.get("id") == 1]
+    info = answer["result"]["serverInfo"]
+    assert info["name"] == "discover_swiss_mcp"
+    assert info["version"] == __version__
+    assert info["version"]

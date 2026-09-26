@@ -1,0 +1,8 @@
+# Only pyproject.toml, README.md, LICENSE and src/ enter the build context.
+# Everything else stays out — above all anything that could hold a secret.
+*
+!pyproject.toml
+!README.md
+!LICENSE
+!src/
+src/**/__pycache__

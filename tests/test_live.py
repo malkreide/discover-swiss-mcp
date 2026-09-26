@@ -35,6 +35,7 @@ import re
 from datetime import timedelta
 
 import pytest
+import pytest_asyncio
 
 from discover_swiss_mcp.client import DiscoverSwissClient
 from discover_swiss_mcp.config import load_settings
@@ -54,10 +55,15 @@ from discover_swiss_mcp.tools import (
     find_tours_impl,
     get_details_impl,
     search_impl,
+    source_status_impl,
     webcams_near_impl,
 )
 
-pytestmark = pytest.mark.live
+# One event loop and one client for the whole module (audit OPS-001): the
+# client's cache then answers repeated questions, its rate bucket sees every
+# call, and a `search_unavailable` state reached in one test is visible — and
+# fails — in the next, instead of each test starting from a clean slate.
+pytestmark = [pytest.mark.live, pytest.mark.asyncio(loop_scope="module")]
 
 # Reference points, WGS84. Interlaken as in the probe (Höheweg); St. Gallen at
 # the main station.
@@ -96,8 +102,10 @@ def _pin_dns() -> None:
     return None
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(scope="module", loop_scope="module")
 async def client():
+    if not os.environ.get("DISCOVER_SWISS_KEY", "").strip():
+        pytest.skip("DISCOVER_SWISS_KEY is not set; live canaries need a real key.")
     instance = DiscoverSwissClient(load_settings(require_key=True))
     try:
         yield instance
@@ -338,3 +346,57 @@ async def test_demo_event_is_filtered_and_counted(client: DiscoverSwissClient) -
         )
     assert response.excluded_test_objects >= 1
     assert all("demo" not in (hit.name or "").lower() for hit in response.hits)
+
+
+# ---------------------------------------------------------------------------
+# The endpoints behind status and the list fallback (audit DRIFT-004, OPS-001)
+# ---------------------------------------------------------------------------
+
+# Collection sizes of 2026-09-17 (PROBE_REPORT section 2), halved. These are the
+# endpoints the list fallback reads when /search is refused — the day it is
+# needed is the wrong day to find out that one of them changed.
+LIST_FLOORS = {
+    "places": 224,  # 448
+    "civicStructures": 700,  # 1'407
+    "foodEstablishments": 700,  # 1'438
+    "localbusinesses": 790,  # 1'593
+    "lodgingbusinesses": 2600,  # 5'275
+}
+
+
+async def test_status_endpoint_answers(client: DiscoverSwissClient) -> None:
+    state = await client.status()
+    _measure("status().reachable", state["reachable"], True)
+    assert state["reachable"] is True
+    assert state["rate_limited_for"] is None
+
+
+async def test_source_status_reports_a_healthy_source(client: DiscoverSwissClient) -> None:
+    response = await source_status_impl(client)
+    _measure(
+        "source_status",
+        f"reachable={response.reachable} search={response.search_available} "
+        f"index_total={response.index_total}",
+        "reachable, search available, index_total >= 15000",
+    )
+    assert response.degraded is None, response.hint
+    assert response.reachable is True
+    assert response.search_available is True
+    assert response.index_total is not None and response.index_total >= 15000
+
+
+@pytest.mark.parametrize("endpoint", sorted(LIST_FLOORS))
+async def test_each_fallback_list_endpoint_with_the_current_select(
+    client: DiscoverSwissClient, endpoint: str
+) -> None:
+    """The five collections answer the list select, with rows the fallback can use."""
+    from discover_swiss_mcp.client import LIST_SELECT_FIELDS
+
+    page = await client.list_endpoint(endpoint, params={"top": 5})
+    _measure(f"list {endpoint}.total", page.total, LIST_FLOORS[endpoint])
+    assert page.total is not None and page.total >= LIST_FLOORS[endpoint]
+    assert page.data, "no rows"
+    row = page.data[0]
+    assert row.get("identifier") and row.get("name")
+    unknown = set(row) - set(LIST_SELECT_FIELDS) - {"@context", "@type", "_type"}
+    assert not unknown, f"fields outside the select came back: {sorted(unknown)}"

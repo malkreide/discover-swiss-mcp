@@ -17,6 +17,14 @@ Redirects are followed manually so that **every** hop runs the full chain
 again. A redirect on a POST is refused outright instead: replaying a request
 body at a new target is a decision, not a detail, and the Infocenter does not
 redirect its ``/search`` endpoint.
+
+**Two kinds of failure, two types** (audit SEC-028). A request the policy
+forbids raises :class:`EgressError` and is never retried: asking again cannot
+make a forbidden host allowed. A name that does not resolve raises
+:class:`ResolutionError`, a :class:`httpx.ConnectError`, so the client's retry
+ladder treats it like any other connection failure. Sharing one type made an
+empty DNS answer read as "blocked by egress policy" and let a raw
+``socket.gaierror`` escape untyped.
 """
 
 from __future__ import annotations
@@ -56,26 +64,57 @@ MAX_REDIRECTS = 5
 
 
 class EgressError(ValueError):
-    """An outbound request was stopped by one of the defences above."""
+    """An outbound request was stopped by the egress policy. Never retried."""
+
+
+class ResolutionError(httpx.ConnectError):
+    """The target name did not resolve. Transient, retried like a connect error."""
 
 
 def _is_blocked_ip(ip_str: str) -> bool:
+    """Whether an address lies in a range this server must never contact.
+
+    IPv6 forms that carry an IPv4 address are unwrapped first — mapped
+    (``::ffff:169.254.169.254``), 6to4 (``2002::/16``) and Teredo. Unwrapped,
+    ``ipaddress`` compares across versions as not-contained, so the mapped form
+    of the metadata endpoint passed the list unchanged (audit SEC-004).
+
+    The address properties are checked besides the list, so a range the list
+    does not spell out (multicast, reserved, unspecified) is caught too.
+    ``is_private`` is deliberately not among them: it also covers the
+    documentation ranges (TEST-NET), which the unit tests pin to and which
+    carry no internal service.
+    """
     ip = ipaddress.ip_address(ip_str)
+    if isinstance(ip, ipaddress.IPv6Address):
+        embedded = ip.ipv4_mapped or ip.sixtofour or (ip.teredo[1] if ip.teredo else None)
+        if embedded is not None:
+            ip = embedded
+    if ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_reserved:
+        return True
+    if ip.is_unspecified:
+        return True
     return any(ip in net for net in BLOCKED_NETWORKS)
 
 
-def assert_host_allowed(host: str) -> None:
-    """Raise :class:`EgressError` if the host is not on the allow-list."""
-    if host not in EGRESS_ALLOWLIST:
-        raise EgressError(
-            f"Host {host!r} is not on the egress allow-list ({sorted(EGRESS_ALLOWLIST)})."
-        )
+def assert_host_allowed(host: str, allowlist: frozenset[str] = EGRESS_ALLOWLIST) -> None:
+    """Raise :class:`EgressError` if the host is not on the allow-list.
+
+    ``allowlist`` defaults to the Infocenter. The only other caller is the
+    OAuth token introspection (:mod:`discover_swiss_mcp.auth`), which passes a
+    frozenset of exactly the one introspection host, fixed at start-up.
+    """
+    if host not in allowlist:
+        raise EgressError(f"Host {host!r} is not on the egress allow-list ({sorted(allowlist)}).")
 
 
 async def _resolve(host: str, port: int) -> list[str]:
     """Resolve a host **once**, preserving the order the resolver returned."""
     loop = asyncio.get_running_loop()
-    infos = await loop.getaddrinfo(host, port, type=socket.SOCK_STREAM)
+    try:
+        infos = await loop.getaddrinfo(host, port, type=socket.SOCK_STREAM)
+    except (socket.gaierror, UnicodeError) as exc:
+        raise ResolutionError(f"DNS lookup for {host!r} failed ({type(exc).__name__}).") from exc
     ips: list[str] = []
     for info in infos:
         ip = info[4][0]
@@ -84,7 +123,7 @@ async def _resolve(host: str, port: int) -> list[str]:
     return ips
 
 
-async def assert_url_allowed(url: str) -> list[str]:
+async def assert_url_allowed(url: str, allowlist: frozenset[str] = EGRESS_ALLOWLIST) -> list[str]:
     """Check scheme, host allow-list and every resolved IP. Returns the IPs."""
     parsed = urlparse(url)
     host = parsed.hostname
@@ -92,10 +131,10 @@ async def assert_url_allowed(url: str) -> list[str]:
         raise EgressError(f"URL without a host: {url!r}.")
     if parsed.scheme != "https":
         raise EgressError(f"Scheme {parsed.scheme!r} is not allowed; HTTPS is required.")
-    assert_host_allowed(host)
+    assert_host_allowed(host, allowlist)
     ips = await _resolve(host, parsed.port or 443)
     if not ips:
-        raise EgressError(f"No DNS answer for {host!r}.")
+        raise ResolutionError(f"No DNS answer for {host!r}.")
     for ip in ips:
         if _is_blocked_ip(ip):
             raise EgressError(
@@ -120,6 +159,9 @@ async def safe_request(
     headers: dict[str, str] | None = None,
     params: dict[str, Any] | None = None,
     json_body: Any | None = None,
+    form_body: dict[str, str] | None = None,
+    auth: tuple[str, str] | None = None,
+    allowlist: frozenset[str] = EGRESS_ALLOWLIST,
     max_redirects: int = MAX_REDIRECTS,
 ) -> tuple[httpx.Response, str]:
     """HTTPS + allow-list + IP block + DNS pinning + redirect gate.
@@ -131,7 +173,7 @@ async def safe_request(
     method = method.upper()
     current = url
     for _ in range(max_redirects + 1):
-        ips = await assert_url_allowed(current)
+        ips = await assert_url_allowed(current, allowlist)
         host = urlparse(current).hostname or ""
         pinned = _pin_url(current, ips[0])
         request_headers = {**(headers or {}), "Host": host}
@@ -141,6 +183,8 @@ async def safe_request(
             headers=request_headers,
             params=params,
             json=json_body,
+            data=form_body,
+            auth=auth,
             extensions={"sni_hostname": host},
         )
         if response.is_redirect and response.headers.get("location"):

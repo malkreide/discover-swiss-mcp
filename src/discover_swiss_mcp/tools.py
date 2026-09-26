@@ -37,10 +37,11 @@ from discover_swiss_mcp.client import (
     AreaLookup,
     DiscoverSwissClient,
     DiscoverSwissError,
+    InvalidIdentifierError,
     SearchResult,
     SearchUnavailableError,
-    UpstreamRejectedError,
     distance_km,
+    facet_request,
     facet_values,
     filter_by_distance,
     partition_facet_names,
@@ -50,6 +51,7 @@ from discover_swiss_mcp.licenses import (
     attribution,
     is_no_derivatives,
     is_servable,
+    is_test_object,
     license_of,
     screen,
 )
@@ -200,6 +202,11 @@ UNKNOWN_IDENTIFIER_HINT = (
 
 REMOVED_HINT = "Object was removed upstream; data may be stale."
 
+TEST_OBJECT_HINT = (
+    "This object is a test record in the production index (placeholder name or address); its "
+    "content is withheld. Do not present it as a real offer."
+)
+
 WITHHELD_LICENSE_HINT = (
     "The provider publishes this object under «{license}», which is not an open licence. "
     "Its content is withheld; name it and link to the provider, do not describe it."
@@ -218,6 +225,15 @@ DEGRADED_HINTS: dict[str, str] = {
     "search_unavailable": (
         "discover.swiss refused its search endpoint for this key. No result was computed, "
         "so absence cannot be inferred; tell the user the search is unavailable."
+    ),
+    "upstream_shape_changed": (
+        "discover.swiss answered in a structure this server does not recognise, so nothing "
+        "could be read from it. This is not an empty result — do not conclude that nothing "
+        "exists; tell the user the source changed and the server needs an update."
+    ),
+    "rate_limited": (
+        "The call rate is exhausted for the moment; retry in about {seconds} seconds. No "
+        "result was computed, so absence cannot be inferred — say the source is busy."
     ),
 }
 
@@ -282,8 +298,9 @@ class SearchInput(_PagedInput):
         default=None,
         max_length=200,
         description=(
-            "Search words. Whole words only: 'Landesmuseum' matches, 'Landesmus' and parts "
-            "of compounds do not. Omit to list by type/place alone."
+            "Plain search words, e.g. 'Landesmuseum'. No operators: wildcards, quotes, "
+            "AND/OR and word fragments are undocumented and untested. Omit to list by "
+            "type/place alone."
         ),
     )
     types: list[str] | None = Field(
@@ -490,6 +507,10 @@ class _PagedResponse(Envelope):
     has_more: bool = False
     # The scope actually sent upstream, so the model can see what it asked.
     applied: dict[str, Any] = Field(default_factory=dict)
+    # Parameters the caller set that this answer did not apply — the list
+    # fallback cannot filter by them. The hits are wider than asked for, and a
+    # field says so where a sentence in `hint` could be skimmed (DRIFT-002).
+    ignored_parameters: list[str] = Field(default_factory=list)
 
 
 class SearchResponse(_PagedResponse):
@@ -701,7 +722,9 @@ def degraded_envelope_fields(exc: DiscoverSwissError) -> dict[str, Any]:
         "retrieved_at": _now(),
         "source_freshness": None,
         "degraded": exc.degraded,
-        "hint": DEGRADED_HINTS.get(exc.degraded or "", str(exc)),
+        "hint": DEGRADED_HINTS.get(exc.degraded or "", str(exc)).format(
+            seconds=f"{getattr(exc, 'retry_after', 0):.0f}"
+        ),
     }
 
 
@@ -941,7 +964,8 @@ def _slice(rows: list[dict[str, Any]], page: int, page_size: int) -> list[dict[s
 
 async def _search_fallback(client: DiscoverSwissClient, params: SearchInput) -> SearchResponse:
     project = client.settings.project
-    ignored = "`query` was ignored." if params.query else None
+    ignored_parameters = ["query"] if params.query else []
+    ignored = _ignored_text(ignored_parameters)
     if params.near is None and not params.locality:
         return SearchResponse(
             project=project,
@@ -952,6 +976,7 @@ async def _search_fallback(client: DiscoverSwissClient, params: SearchInput) -> 
             page=params.page,
             page_size=params.page_size,
             applied={"mode": "list_fallback", "endpoints": []},
+            ignored_parameters=ignored_parameters,
             hint=" ".join(
                 p
                 for p in (
@@ -1026,6 +1051,7 @@ async def _search_fallback(client: DiscoverSwissClient, params: SearchInput) -> 
         applied=_fallback_applied(
             scan, endpoints, area_id, params.near, radius, params.locality, params.types
         ),
+        ignored_parameters=ignored_parameters,
         hits=hits,
     )
 
@@ -1124,9 +1150,11 @@ async def get_details_impl(client: DiscoverSwissClient, params: GetDetailsInput)
 
     try:
         obj = await client.get_vertex(identifier, lang=params.lang)
-    except UpstreamRejectedError:
+    except InvalidIdentifierError:
         # The identifier failed the client's shape gate: nothing was sent, and
-        # to the model this is the same situation as a 404.
+        # to the model this is the same situation as a 404. Only this case —
+        # a 4xx from discover.swiss itself is not «unknown identifier» and
+        # reaches the caller as an error (audit FID-003).
         obj = None
     except DiscoverSwissError as exc:
         if exc.degraded is None:
@@ -1165,6 +1193,22 @@ async def get_details_impl(client: DiscoverSwissClient, params: GetDetailsInput)
             source_freshness=last_modified,
             excluded_by_license=1,
             hint=WITHHELD_LICENSE_HINT.format(license=licence or "none"),
+        )
+
+    if is_test_object(obj):
+        # «Demo Event» at «Strasse 1, PLZ Ort» is withheld by every list tool;
+        # a detail call by identifier must not be the way round it (FID-L03).
+        return DetailResponse(
+            identifier=identifier,
+            name=name,
+            license=licence,
+            attribution=credit,
+            project=project,
+            provenance=provenance,
+            retrieved_at=retrieved_at,
+            source_freshness=last_modified,
+            excluded_test_objects=1,
+            hint=TEST_OBJECT_HINT,
         )
 
     removed = obj.get("removed") is True
@@ -1302,10 +1346,10 @@ async def find_accommodation_impl(
     )
 
 
-def _ignored_accommodation_filters(params: FindAccommodationInput) -> str | None:
+def _ignored_accommodation_filters(params: FindAccommodationInput) -> list[str]:
     """The filters a list row cannot answer: the list ``select`` has no star rating,
     price band, amenities or accessibility partner."""
-    ignored = [
+    return [
         name
         for name, active in (
             ("stars_min", params.stars_min is not None),
@@ -1316,11 +1360,15 @@ def _ignored_accommodation_filters(params: FindAccommodationInput) -> str | None
         )
         if active
     ]
+
+
+def _ignored_text(ignored: list[str]) -> str | None:
     if not ignored:
         return None
     return (
         f"Ignored in this mode: {', '.join(ignored)} — the lists do not carry them, so the "
-        "hits below are not filtered by them; check each with `get_details`."
+        "hits below are NOT filtered by them and are wider than asked for; check each with "
+        "`get_details`."
     )
 
 
@@ -1328,6 +1376,7 @@ async def _accommodation_fallback(
     client: DiscoverSwissClient, params: FindAccommodationInput
 ) -> AccommodationResponse:
     project = client.settings.project
+    ignored = _ignored_accommodation_filters(params)
     endpoints: tuple[str, ...] = ("lodgingbusinesses",)
     radius = params.radius_km or FALLBACK_DEFAULT_RADIUS_KM
     try:
@@ -1376,7 +1425,7 @@ async def _accommodation_fallback(
             if hits
             else None
         ),
-        hint=_fallback_hint(scan, _ignored_accommodation_filters(params), len(hits), page_hint),
+        hint=_fallback_hint(scan, _ignored_text(ignored), len(hits), page_hint),
         excluded_by_license=screened.excluded_by_license,
         excluded_test_objects=screened.excluded_test_objects,
         upstream_count=len(scan.matched),
@@ -1388,6 +1437,7 @@ async def _accommodation_fallback(
         applied=_fallback_applied(
             scan, endpoints, area_id, params.near, radius, params.locality, None
         ),
+        ignored_parameters=ignored,
         hits=hits,
     )
 
@@ -1559,7 +1609,8 @@ def _unresolved_area_hint(lookup: AreaLookup, what: str) -> str:
 # ---------------------------------------------------------------------------
 
 EVENTS_EMPTY_HINT = (
-    "No open-licensed event in range. Widen the date range; then point the user to the "
+    "No open-licensed event in range. This source holds only about 20 events, so an empty "
+    "answer says little about what is on. Widen the date range; then point the user to the "
     "regional calendar (e.g. zuerich.com/events for Zurich) — do not guess events."
 )
 
@@ -2172,7 +2223,7 @@ def build_explore_body(
         "resultsPerPage": 1,
         "select": "identifier",
         "facets": (
-            [{"name": name, "count": EXPLORE_FACET_VALUES} for name in facet_names]
+            [facet_request(name, EXPLORE_FACET_VALUES) for name in facet_names]
             if facet_names
             else None
         ),
@@ -2296,6 +2347,7 @@ STATUS_HINTS: dict[str, str] = {
         "DISCOVER_SWISS_KEY is not set; no call was made. Every other tool fails until it is."
     ),
     "quota_exhausted": DEGRADED_HINTS["quota_exhausted"],
+    "rate_limited": DEGRADED_HINTS["rate_limited"],
     "upstream_unreachable": (
         "discover.swiss did not answer its status endpoint. Results from other tools are not "
         "evidence about the data until it does."
@@ -2359,6 +2411,8 @@ async def source_status_impl(client: DiscoverSwissClient) -> SourceStatusRespons
     degraded: str | None = None
     if state["quota_exhausted_since"] is not None:
         degraded = "quota_exhausted"
+    elif state.get("rate_limited_for") is not None:
+        degraded = "rate_limited"
     elif not state["reachable"]:
         degraded = "upstream_unreachable"
     elif not search_available:
@@ -2370,7 +2424,14 @@ async def source_status_impl(client: DiscoverSwissClient) -> SourceStatusRespons
         source_freshness=None,
         project=state["project"],
         degraded=degraded,
-        hint=STATUS_HINTS.get(degraded) if degraded else None,
+        hint=(
+            STATUS_HINTS.get(degraded, "").format(
+                seconds=f"{state.get('rate_limited_for') or 0:.0f}"
+            )
+            or None
+            if degraded
+            else None
+        ),
         api_key_configured=True,
         reachable=state["reachable"],
         search_available=search_available,

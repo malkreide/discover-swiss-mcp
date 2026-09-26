@@ -32,9 +32,16 @@ dependencies = [
     # resolver make that migration decision silently, on a fresh install, in
     # CI. The variant this server is built against is 2.x (spec 2026-07-28).
     "mcp>=2,<3",
-    "httpx>=0.27.0",
-    "pydantic>=2",
+    # Every range is capped (audit DEP-001): an uncapped range lets a resolver
+    # take the next major on a fresh install, in CI, without anyone deciding
+    # it. Dependabot (pip) proposes the next major as a pull request instead.
+    "httpx>=0.27.0,<1",
+    "pydantic>=2,<3",
     "structlog>=24.1.0,<27",
+    # Imported directly — the HTTP transport (uvicorn) and the OAuth layer
+    # (starlette types) — so declared directly, not left to `mcp`'s ranges.
+    "uvicorn>=0.30,<1",
+    "starlette>=0.40,<2",
     # `find_events` computes «today» in Europe/Zurich via `zoneinfo`. Linux
     # and macOS ship the IANA database; Windows does not, and without this
     # package importing the tools fails with ZoneInfoNotFoundError.
@@ -46,6 +53,8 @@ dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "respx>=0.21.0",
+    # tests/test_deploy.py reads the Kubernetes manifests.
+    "pyyaml>=6,<7",
     # Pinned exactly, and pinned HERE rather than in the workflow. A format
     # gate is only an assurance if the version that runs locally is the one
     # that runs in CI. `ruff format` has no `select` — its output *is* the

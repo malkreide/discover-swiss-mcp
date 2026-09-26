@@ -24,6 +24,7 @@
 |---|---|
 | Search entitlement (written confirmation by discover.swiss) | **pending** — release gate |
 | Tools | all eight registered (P3), live canaries in place (P4) |
+| Phase | P5 — remediation of the audit of 2026-09-26 (see *Phases and gates*) |
 | Release | none; version 0.1.0 is not published |
 
 The live probe of 2026-09-17 found that `/search` works for the Open
@@ -41,6 +42,23 @@ withdrawn without notice.
   without reading this file.
 - If the entitlement is withdrawn, the server keeps answering through a
   narrower list fallback (see *Architecture decision*).
+
+---
+
+## Phases and gates
+
+The server is **read-only in every phase** — no tool writes, and none will
+before a phase that says so explicitly. Each phase ends at a gate: what was
+built, what is open, and a decision to continue or to discard.
+
+| Phase | Content | Gate |
+|---|---|---|
+| P1 | Live probe, scaffold, client | probe report, architecture decision |
+| P2 | Core tools `search`, `get_details`, `find_accommodation`, `find_tours` | anchor queries live |
+| P3 | `find_events`, `webcams_near`, `explore_area`, `source_status`, list fallback | stop-gate run live |
+| P4 | Live canaries, audit, documentation | canaries green, audit published |
+| P5 | Remediation of the audit findings marked *fix before release* | targeted re-audit, canaries green |
+| Release | 0.1.0 on PyPI and in the MCP registry | written search confirmation by discover.swiss, no open release blocker |
 
 ---
 
@@ -145,6 +163,17 @@ DISCOVER_SWISS_MCP_TRANSPORT=streamable-http python -m discover_swiss_mcp
 
 The key is read from the environment only. It is held as a secret value, is
 never written to a log line, and belongs in no file that gets committed.
+`.env.example` lists every variable with placeholders.
+
+The HTTP transport answers only under its exact `host:port`. Binding to any
+other address than loopback is refused at start-up unless inbound OAuth and
+`DISCOVER_SWISS_MCP_ALLOWED_HOSTS` are configured — see
+[SECURITY.md](SECURITY.md).
+
+**Container.** A hardened image (non-root, read-only root filesystem, no
+capabilities) and Kubernetes manifests with an egress NetworkPolicy are in
+`Dockerfile` and `deploy/k8s/`; commands and a Claude Desktop configuration are
+in [docs/network-egress.md](docs/network-egress.md).
 
 ---
 
@@ -248,6 +277,9 @@ The twelve findings of the live probe that shape how this server behaves
 | `DISCOVER_SWISS_MCP_PORT` | no | `8000` | TCP port for HTTP transport |
 | `DISCOVER_SWISS_MCP_LOG_LEVEL` | no | `INFO` | structlog level; JSON goes to stderr |
 | `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED` | no | `pending` | Date (`YYYY-MM-DD`) of discover.swiss's written search confirmation; reported by `source_status` |
+| `DISCOVER_SWISS_MCP_ALLOWED_HOSTS` | for a non-loopback bind | loopback `host:port` | Exact Host values the HTTP transport answers to; no wildcards |
+| `DISCOVER_SWISS_MCP_ALLOWED_ORIGINS` | no | loopback origins | Browser origins the HTTP transport accepts |
+| `DISCOVER_SWISS_MCP_AUTH_*` (five) | for a non-loopback bind | — | Inbound OAuth: issuer, resource URL, introspection URL, client id and secret — see [SECURITY.md](SECURITY.md) |
 
 ---
 
@@ -263,14 +295,19 @@ discover-swiss-mcp/
 │   ├── models.py          # the response envelope
 │   ├── licenses.py        # licence whitelist, attribution, test-object filter
 │   ├── transform.py       # HTML to text, detail trimming
-│   ├── net.py             # SSRF guard, DNS pinning
-│   ├── client.py          # API client: rate limit, retries, cache, list fallback
+│   ├── net.py             # SSRF guard, DNS pinning, egress allow-list
+│   ├── client.py          # API client: rate limit, retries, budget, cache, list fallback
+│   ├── http_app.py        # HTTP transport: bind policy, Host/Origin lists
+│   ├── auth.py            # inbound OAuth: scopes, token introspection, 401/403
+│   ├── _version.py        # the package version, a leaf module
 │   └── logging_config.py  # structlog, JSON to stderr
 ├── tests/                 # unit tests; test_live.py is the `live` marker, not run by CI
 ├── probes/                # live probe: scripts, raw responses, report
 ├── audits/                # audit reports (mcp-audit)
-├── docs/                  # LICENSES.md, DEMO.md, tool-hashes.json
-└── scripts/               # repo validation, release gate, tool hashes
+├── deploy/k8s/            # Deployment, NetworkPolicy, CiliumNetworkPolicy
+├── docs/                  # LICENSES, DEMO, DEFAULTS, network-egress, tool-hashes.json
+├── scripts/               # repo validation, release gate, tool hashes, default matrix
+└── Dockerfile             # hardened image, base pinned by digest
 ```
 
 ---
@@ -283,6 +320,9 @@ pytest -m "not live"
 ruff check .
 ruff format --check .
 python scripts/validate_repo.py .
+python scripts/default_matrix.py --check     # docs/DEFAULTS.md matches the spec
+# secrets over the whole history (what the CI job runs)
+docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --config /repo/.gitleaks.toml --redact
 
 # Live canaries — real API, key from the environment, never in CI
 export DISCOVER_SWISS_KEY="your-subscription-key"

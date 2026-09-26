@@ -9,6 +9,9 @@ failure to retry.
 
 from __future__ import annotations
 
+import asyncio
+import time
+
 import httpx
 import pytest
 from conftest import json_response, probe_fixture
@@ -290,9 +293,11 @@ async def test_429_twice_gives_up_instead_of_looping(api_mock, client, sleeps) -
             {"message": "Rate limit is exceeded. Try again in 5 seconds."}, status=429
         )
     )
-    with pytest.raises(UpstreamUnavailableError):
+    with pytest.raises(client_module.RateLimitedError) as excinfo:
         await client.list_endpoint("webcams")
     assert sleeps == [6.0]
+    assert excinfo.value.retry_after == 6.0
+    assert excinfo.value.degraded == "rate_limited"
 
 
 async def test_4xx_is_not_retried(api_mock, client, sleeps) -> None:
@@ -382,7 +387,7 @@ async def test_search_becomes_available_again_after_the_window(
     # once, up front: the `search_available` property clears the field as soon as
     # it has passed, so a lambda reading it lazily reads `None` on the next call.
     expiry = client._search_unavailable_until
-    monkeypatch.setattr(client_module.time, "monotonic", lambda: expiry + 1.0)
+    monkeypatch.setattr(client_module, "_monotonic", lambda: expiry + 1.0)
     result = await client.search({"searchText": "x"})
     assert result.count == 1
     assert client.search_available is True
@@ -470,16 +475,76 @@ async def test_status_reports_reachability_and_counters(api_mock, client) -> Non
     assert status["last_success"] is not None
 
 
-async def test_the_bucket_brakes_before_the_gateway_does(api_mock, client, sleeps) -> None:
+class FakeClock:
+    """A clock that moves only when told to — or when a wait is taken."""
+
+    def __init__(self) -> None:
+        self.now = 1000.0
+
+    def __call__(self) -> float:
+        return self.now
+
+
+async def test_the_bucket_brakes_before_the_gateway_does(
+    api_mock, client, sleeps, monkeypatch
+) -> None:
+    clock = FakeClock()
+    monkeypatch.setattr(client_module, "_monotonic", clock)
     api_mock.get("/status").mock(return_value=httpx.Response(204))
     for _ in range(client_module.RATE_LIMIT_PER_MINUTE):
         await client.status()
     assert sleeps == []
 
-    await client.status()
-    # The 56th call inside a minute waits for the window instead of earning a 429.
+    # 50 s later the oldest slot frees in about 10 s — inside the budget, so
+    # the 56th call waits for the window instead of earning a 429.
+    clock.now += 50.0
+    state = await client.status()
+    assert state["reachable"] is True
     assert len(sleeps) == 1
-    assert 0 < sleeps[0] <= client_module.RATE_LIMIT_WINDOW_SECONDS + 1
+    assert 9 < sleeps[0] < 11
+
+
+async def test_a_bucket_wait_beyond_the_budget_is_not_taken(
+    api_mock, client, sleeps, monkeypatch
+) -> None:
+    """Waiting a full minute for a slot would outlive the MCP client (audit ARCH-014)."""
+    clock = FakeClock()
+    monkeypatch.setattr(client_module, "_monotonic", clock)
+    api_mock.get("/status").mock(return_value=httpx.Response(204))
+    for _ in range(client_module.RATE_LIMIT_PER_MINUTE):
+        await client.status()
+    # Same instant: the next slot is a full minute away.
+    state = await client.status()
+    assert sleeps == []
+    assert state["reachable"] is False
+    assert state["rate_limited_for"] > client_module.TOTAL_BUDGET
+
+
+async def test_a_429_wait_beyond_the_budget_ends_the_call_at_once(api_mock, client, sleeps) -> None:
+    """The first version let a 429 extend the budget to about 55 s."""
+    api_mock.get("/webcams").mock(
+        return_value=json_response(
+            {"message": "Rate limit is exceeded. Try again in 29 seconds."}, status=429
+        )
+    )
+    with pytest.raises(client_module.RateLimitedError) as excinfo:
+        await client.list_endpoint("webcams")
+    assert sleeps == []
+    assert excinfo.value.retry_after == 30.0
+
+
+async def test_source_status_reports_a_rate_limit_as_such(api_mock, client, sleeps) -> None:
+    """A pause the source asked for is not an outage."""
+    from discover_swiss_mcp.tools import source_status_impl
+
+    api_mock.get("/status").mock(
+        return_value=json_response(
+            {"message": "Rate limit is exceeded. Try again in 40 seconds."}, status=429
+        )
+    )
+    status = await source_status_impl(client)
+    assert status.degraded == "rate_limited"
+    assert "41 seconds" in (status.hint or "")
 
 
 # --------------------------------------------------------------------------
@@ -503,3 +568,44 @@ def test_filter_by_distance_sorts_and_drops_the_coordinateless() -> None:
     ]
     kept = filter_by_distance(rows, 47.378914, 8.540993, radius_km=25)
     assert [row["identifier"] for row in kept] == ["near", "mid"]
+
+
+# --------------------------------------------------------------------------
+# Time seams under real time (audit OPS-010)
+# --------------------------------------------------------------------------
+
+
+async def test_the_budget_holds_under_real_time(api_mock, client, monkeypatch) -> None:
+    """A slow upstream ends the call at the budget — measured on the wall clock.
+
+    Every other budget test runs on the `sleeps` fixture, where a wait costs
+    nothing; there, TOTAL_BUDGET = 1e9 survived all 215 tests. This one uses
+    real time and fails under that mutation.
+    """
+    monkeypatch.setattr(client_module, "TOTAL_BUDGET", 0.3)
+
+    async def _slow(_request):
+        await asyncio.sleep(2.0)
+        return httpx.Response(204)
+
+    api_mock.get("/status").mock(side_effect=_slow)
+    started = time.perf_counter()
+    with pytest.raises(UpstreamUnavailableError):
+        await client._call("GET", "/status")
+    elapsed = time.perf_counter() - started
+    # Upper bound with room for a slow CI runner; the slow upstream takes 2 s.
+    assert 0.25 < elapsed < 1.5
+
+
+async def test_the_sleep_fixture_does_not_silence_real_sleep(sleeps) -> None:
+    """The fixture replaces the client's seam, not asyncio.sleep for everyone."""
+    started = time.perf_counter()
+    await asyncio.sleep(0.05)
+    assert time.perf_counter() - started >= 0.04
+    await client_module._sleep(7.0)
+    assert sleeps == [7.0]
+
+
+def test_the_time_seams_default_to_the_real_clock() -> None:
+    assert client_module._monotonic is time.monotonic
+    assert client_module._sleep is asyncio.sleep

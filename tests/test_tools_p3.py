@@ -618,7 +618,8 @@ async def test_search_refused_answers_from_the_lists(api_mock, client) -> None:
     assert result.degraded == "search_unavailable"
     assert result.hint is not None
     assert result.hint.startswith(FALLBACK_HINT)
-    assert "`query` was ignored." in result.hint
+    assert "Ignored in this mode: query" in result.hint
+    assert result.ignored_parameters == ["query"]
     assert [h.identifier for h in result.hits] == ["civ_wow"]
     assert result.hits[0].distance_km is not None and result.hits[0].distance_km < 2
     assert result.hits[0].attribution.copyright_notice == "Zürich Tourismus www.zuerich.com"
@@ -724,3 +725,35 @@ async def test_accommodation_refused_answers_from_lodging_list(api_mock, client)
     assert [h.name for h in result.hits] == ["Hotel Du Nord"]
     assert result.hits[0].stars is None  # the list does not carry it; never guessed
     assert result.disclaimer
+
+
+async def test_accommodation_fallback_names_the_filters_it_could_not_apply(
+    api_mock, client
+) -> None:
+    """The hits are wider than asked for; a field says so, not only a sentence (DRIFT-002)."""
+    api_mock.post("/search").mock(return_value=httpx.Response(401))
+    hotel = _list_row("lod_nord", "Hotel Du Nord", 46.6866, 7.8621)
+    routes = _mock_lists(api_mock, {"lodgingbusinesses": _list_page([hotel])})
+    result = await find_accommodation_impl(
+        client,
+        FindAccommodationInput(
+            near=GeoPoint(lat=46.6863, lon=7.8632), stars_min=3, accessible=True, amenities=["WiFi"]
+        ),
+    )
+    assert result.provenance == "list_fallback"
+    assert result.degraded == "search_unavailable"
+    assert result.ignored_parameters == ["stars_min", "amenities", "accessible"]
+    assert result.hint and "NOT filtered" in result.hint
+    assert [h.identifier for h in result.hits] == ["lod_nord"]
+    assert routes["lodgingbusinesses"].call_count == 1
+    assert routes["civicStructures"].call_count == 0
+
+
+async def test_a_fallback_without_ignored_filters_says_nothing_is_ignored(api_mock, client) -> None:
+    """The counter-check: an empty list when every parameter was applied."""
+    api_mock.post("/search").mock(return_value=httpx.Response(401))
+    _mock_lists(api_mock, {})
+    result = await find_accommodation_impl(
+        client, FindAccommodationInput(near=GeoPoint(lat=46.6863, lon=7.8632))
+    )
+    assert result.ignored_parameters == []

@@ -24,14 +24,23 @@ SNAPSHOT = ROOT / "docs" / "tool-hashes.json"
 
 # The sentences the P2 and P3 briefs fix verbatim. The descriptions may add to
 # them, never reword them.
+#
+# Three were reworded after the audit of 2026-09-26 (FID-005), against the P4
+# session rule that no description explains or apologises for an empty result:
+# `search` no longer claims an unmeasured matching granularity («whole words»,
+# «compounds are not found by their parts») and states that the query syntax is
+# undocumented; `find_events` and `webcams_near` lost the sentence about what to
+# do when they return nothing — that sentence lives in their `hint`.
 VERBATIM = {
     "search": (
         "Full-text and geo search over discover.swiss open tourism data (~20k objects: hotels "
         "nationwide; museums, restaurants, shops, tours, webcams, ski resorts for Zurich, "
-        "Eastern Switzerland, Liechtenstein, Engadin). `query` matches whole words in name AND "
+        "Eastern Switzerland, Liechtenstein, Engadin). `query` is matched in name AND "
         "descriptions by default (`match='all'`), so a hit count includes objects that merely "
-        "mention the term; use `match='name'` for exact lookups. Compounds are not found by "
-        "their parts. `near` ranks by distance from a coordinate; `locality` filters by the "
+        "mention the term; use `match='name'` to match names only. Query syntax: plain words. "
+        "The source documents no operators; wildcards (*, ?), quotes, AND/OR and prefixes are "
+        "untested — send whole words, not fragments or operators. `near` ranks by distance "
+        "from a coordinate; `locality` filters by the "
         "exact municipality name in the address. Rooms and meeting rooms are excluded unless "
         "requested via `types`. Every hit carries its own licence and attribution — cite the "
         "provider when you present it. Empty result: follow the `hint` before concluding "
@@ -47,15 +56,12 @@ VERBATIM = {
     ),
     "find_events": (
         "Event coverage in this source is thin (about 20 objects, mostly Eastern Switzerland; "
-        "Zurich events are not included because their provider is not open-licensed). Treat "
-        "this tool as a supplement: if it returns nothing, name a regional event calendar "
-        "rather than concluding nothing is on."
+        "Zurich events are not included because their provider is not open-licensed)."
     ),
     "webcams_near": (
         "73 webcams, all in Eastern Switzerland (St. Gallen, Thurgau, Toggenburg, Heidiland, "
         "Glarnerland, Appenzell). `live_url` opens the provider's live image; `snapshot_url` "
-        "is a stored still and may be hours old. Outside Eastern Switzerland this tool returns "
-        "nothing — say so and do not invent a webcam."
+        "is a stored still and may be hours old."
     ),
     "explore_area": (
         "Overview of what exists in a region before searching: counts by object type, data "

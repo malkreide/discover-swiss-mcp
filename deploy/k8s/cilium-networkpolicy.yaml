@@ -1,0 +1,35 @@
+# Host-name-exact egress (audit SEC-021), for clusters running Cilium.
+#
+# Replaces the port-443-to-anywhere rule of networkpolicy.yaml with the two
+# names the code-layer allow-list permits. Cilium learns the addresses from
+# the DNS answers it proxies, which is why the DNS rule below must stay.
+# login.example.ch stands for the introspection host of your authorization
+# server; drop it if inbound OAuth is not used.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: discover-swiss-mcp-egress
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: discover-swiss-mcp
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+          rules:
+            dns:
+              - matchName: api.discover.swiss
+              - matchName: login.example.ch
+    - toFQDNs:
+        - matchName: api.discover.swiss
+        - matchName: login.example.ch
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

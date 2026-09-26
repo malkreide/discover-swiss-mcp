@@ -2,11 +2,18 @@
 
 from __future__ import annotations
 
+import asyncio
+import socket
+
 import httpx
 import pytest
 import respx
 
 from discover_swiss_mcp import net
+
+# Captured at import, before the autouse fixture in conftest.py replaces
+# `net._resolve` for every test — the only way to exercise the real resolver.
+_REAL_RESOLVE = net._resolve
 
 
 async def test_only_the_infocenter_host_is_reachable() -> None:
@@ -35,13 +42,59 @@ async def test_private_and_metadata_addresses_are_blocked(monkeypatch, ip: str) 
     assert ip in str(excinfo.value)
 
 
-async def test_a_host_that_resolves_to_nothing_is_an_error(monkeypatch) -> None:
+async def test_a_host_that_resolves_to_nothing_is_a_resolution_error(monkeypatch) -> None:
+    """An empty DNS answer is transient, not a policy decision (audit SEC-028)."""
+
     async def _resolve(_host: str, _port: int) -> list[str]:
         return []
 
     monkeypatch.setattr(net, "_resolve", _resolve)
+    with pytest.raises(net.ResolutionError) as excinfo:
+        await net.assert_url_allowed("https://api.discover.swiss/info/v2/status")
+    assert not isinstance(excinfo.value, net.EgressError)
+    # The client's retry ladder catches `httpx.RequestError`; this is what
+    # makes a resolution failure retried rather than fatal.
+    assert isinstance(excinfo.value, httpx.RequestError)
+
+
+async def test_a_resolver_error_is_typed_not_raw(monkeypatch) -> None:
+    """`socket.gaierror` used to escape untyped; now it is a ResolutionError."""
+
+    async def _fail(*_args, **_kwargs):
+        raise socket.gaierror(socket.EAI_NONAME, "Name or service not known")
+
+    monkeypatch.setattr(asyncio.get_running_loop(), "getaddrinfo", _fail)
+    with pytest.raises(net.ResolutionError) as excinfo:
+        await _REAL_RESOLVE("api.discover.swiss", 443)
+    assert isinstance(excinfo.value.__cause__, socket.gaierror)
+
+
+@pytest.mark.parametrize(
+    "ip",
+    [
+        "::ffff:169.254.169.254",  # IPv4-mapped metadata endpoint (audit SEC-004)
+        "::ffff:127.0.0.1",
+        "::ffff:10.1.2.3",
+        "2002:a9fe:a9fe::1",  # 6to4 wrapping 169.254.169.254
+        "::",
+        "0.0.0.0",
+        "224.0.0.1",
+        "240.0.0.1",
+    ],
+)
+async def test_embedded_and_special_addresses_are_blocked(monkeypatch, ip: str) -> None:
+    async def _resolve(_host: str, _port: int) -> list[str]:
+        return [ip]
+
+    monkeypatch.setattr(net, "_resolve", _resolve)
     with pytest.raises(net.EgressError):
         await net.assert_url_allowed("https://api.discover.swiss/info/v2/status")
+
+
+@pytest.mark.parametrize("ip", ["203.0.113.10", "8.8.8.8", "::ffff:8.8.8.8", "2a00:1450::1"])
+def test_public_and_documentation_addresses_pass(ip: str) -> None:
+    """The counter-check: the extra rules do not block ordinary addresses."""
+    assert net._is_blocked_ip(ip) is False
 
 
 def test_pin_url_keeps_the_path_and_brackets_ipv6() -> None:

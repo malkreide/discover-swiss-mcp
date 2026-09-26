@@ -43,7 +43,8 @@ from urllib.parse import quote
 import httpx
 from pydantic import BaseModel, Field
 
-from discover_swiss_mcp import __version__, net
+from discover_swiss_mcp import net
+from discover_swiss_mcp._version import __version__
 from discover_swiss_mcp.config import Settings
 from discover_swiss_mcp.logging_config import get_logger
 
@@ -247,14 +248,13 @@ RETRY_DELAYS: tuple[float, ...] = (2.0, 4.0, 8.0)
 # nobody is listening any more, while the load still lands on the source.
 TOTAL_BUDGET = 25.0
 
-# A 429 names its own wait («Try again in N seconds»), and that wait is allowed
-# to run past `TOTAL_BUDGET`: the budget guards against an upstream that has
-# stopped answering, and a 429 is the opposite — the source saying exactly when
-# it will answer again. Sitting out a named wait beats spending the call on a
-# failure. The cap is where that stops being true: beyond 30 s the MCP client
-# has given up first, so the call fails immediately instead, with the seconds in
-# the message so the tool can say «try again in N seconds» rather than «error».
-RATE_LIMIT_MAX_WAIT = 30.0
+# Every wait counts against `TOTAL_BUDGET` — the retry ladder, a 429's named
+# wait («Try again in N seconds») and the client-side token bucket alike. The
+# first version let a 429 extend the budget by up to 30 s, which put one tool
+# call at about 55 s — past the MCP client's own 30 s, so the answer arrived
+# for nobody (audit ARCH-014). A wait that no longer fits ends the call at once
+# as `RateLimitedError`, carrying the seconds, so the tool can say «try again
+# in N seconds» instead of hanging and then failing.
 
 # Cache TTLs. Search results move slowly (the index is rebuilt, not edited
 # live), detail objects even more slowly, and facet distributions are a shape
@@ -272,11 +272,13 @@ CACHE_MAX_ENTRIES = 512
 
 Provenance = Literal["live_api", "cached", "list_fallback"]
 
-# Indirection so tests can null the waiting without patching `asyncio.sleep`
-# itself. Patching the stdlib function looks local and is not: it silences
-# every sleep in the process, including those of unrelated tests that then hand
-# the event loop the floor and measure nothing.
+# Indirections so tests can control time without patching the stdlib. Patching
+# `asyncio.sleep` or `time.monotonic` looks local and is not: it changes every
+# caller in the process — the event loop reads `time.monotonic` too — and a
+# test then measures its own patch (audit OPS-010). `tests/test_client.py`
+# guards both seams.
 _sleep = asyncio.sleep
+_monotonic = time.monotonic
 
 
 # ---------------------------------------------------------------------------
@@ -294,6 +296,27 @@ class UpstreamUnavailableError(DiscoverSwissError):
     """Network failure, timeout, or 5xx that survived the retry ladder."""
 
     degraded = "upstream_unreachable"
+
+
+class RateLimitedError(DiscoverSwissError):
+    """A wait — the upstream's 429 or our own bucket — does not fit the budget."""
+
+    degraded = "rate_limited"
+
+    def __init__(self, message: str, retry_after: float) -> None:
+        super().__init__(message)
+        self.retry_after = retry_after
+
+
+class UpstreamShapeError(DiscoverSwissError):
+    """The answer does not have the structure the reader relies on (audit FID-006).
+
+    Raised instead of reading an empty list out of a shape we do not
+    recognise: a moved root key would otherwise arrive as «no hit» — the one
+    outcome a model cannot tell from a real empty result.
+    """
+
+    degraded = "upstream_shape_changed"
 
 
 class QuotaExhaustedError(DiscoverSwissError):
@@ -318,6 +341,16 @@ class AuthorizationError(DiscoverSwissError):
 
 class UpstreamRejectedError(DiscoverSwissError):
     """A 4xx that says the request was wrong. Retrying sends the same request."""
+
+
+class InvalidIdentifierError(UpstreamRejectedError):
+    """The identifier failed the shape gate; nothing was sent upstream.
+
+    The one rejection `get_details` may report as «unknown identifier»: it is
+    the server's own verdict about the input. A 4xx *from discover.swiss* is
+    not — it says the request was wrong, not that the object is absent
+    (audit FID-003).
+    """
 
 
 class NotFoundError(DiscoverSwissError):
@@ -403,21 +436,31 @@ class TokenBucket:
 
     @property
     def calls_last_minute(self) -> int:
-        self._prune(time.monotonic())
+        self._prune(_monotonic())
         return len(self._stamps)
 
-    async def acquire(self) -> None:
-        """Wait, if needed, until a call fits inside the window."""
+    async def acquire(self, max_wait: float | None = None) -> None:
+        """Wait, if needed, until a call fits inside the window.
+
+        ``max_wait`` is what is left of the caller's budget. A wait longer than
+        that is not taken: it raises :class:`RateLimitedError` at once.
+        """
         async with self._lock:
-            now = time.monotonic()
+            now = _monotonic()
             self._prune(now)
             if len(self._stamps) >= self._limit:
                 wait = self._window - (now - self._stamps[0]) + 0.05
+                if max_wait is not None and wait > max_wait:
+                    raise RateLimitedError(
+                        f"Client-side rate limit ({self._limit} calls/minute): the next call "
+                        f"is possible in {wait:.0f} s.",
+                        retry_after=wait,
+                    )
                 if wait > 0:
                     logger.info("rate_limit_wait", seconds=round(wait, 2))
                     await _sleep(wait)
-                self._prune(time.monotonic())
-            self._stamps.append(time.monotonic())
+                self._prune(_monotonic())
+            self._stamps.append(_monotonic())
 
 
 class TTLCache:
@@ -432,14 +475,14 @@ class TTLCache:
         if entry is None:
             return None
         expires_at, value = entry
-        if expires_at <= time.monotonic():
+        if expires_at <= _monotonic():
             del self._entries[key]
             return None
         self._entries.move_to_end(key)
         return value
 
     def set(self, key: str, value: Any, ttl: float) -> None:
-        now = time.monotonic()
+        now = _monotonic()
         self._entries[key] = (now + ttl, value)
         self._entries.move_to_end(key)
         # Expired first, oldest after — dropping a live entry while a dead one
@@ -455,7 +498,7 @@ class TTLCache:
 
     def live_entries(self) -> int:
         """Entries that have not expired — what ``source_status`` reports."""
-        now = time.monotonic()
+        now = _monotonic()
         return sum(1 for expires_at, _ in self._entries.values() if expires_at > now)
 
     def __len__(self) -> int:  # pragma: no cover - diagnostics
@@ -478,6 +521,22 @@ def _as_suggestion(value: dict[str, Any]) -> AreaSuggestion:
         name=str(value.get("name")),
         count=value.get("count") if isinstance(value.get("count"), int) else None,
     )
+
+
+# Values per facet in an area lookup. The facet is ordered by content volume,
+# so these are the 30 areas holding the most matches for the name.
+AREA_FACET_VALUES = 30
+
+
+def facet_request(name: str, count: int) -> dict[str, Any]:
+    """One FacetRequest, with the ordering the readers rely on sent explicitly.
+
+    `resolve_area` takes the largest areas and suggests the first three;
+    `explore_area` reports «the top N». Both depend on count-descending order,
+    which is the documented default — and a default this code relies on is
+    sent, not inherited (audit FID-001; see docs/DEFAULTS.md).
+    """
+    return {"name": name, "count": count, "orderBy": "count", "orderDirection": "desc"}
 
 
 def facet_values(facets: dict[str, Any], name: str) -> list[dict[str, Any]]:
@@ -526,6 +585,39 @@ def filter_by_distance(
             scored.append((distance, row))
     scored.sort(key=lambda pair: pair[0])
     return [row for _, row in scored]
+
+
+def _confirm_envelope(payload: Any, path: str, rows_key: str) -> tuple[int | None, list[Any]]:
+    """The count and the rows of a response — or :class:`UpstreamShapeError`.
+
+    Checks only what the reader touches: the root is an object, the rows key
+    holds a list, and a positive count comes with rows to read. A zero count
+    with the rows key missing or null stays a legitimate empty result; the
+    recorded responses never show which of the two the source sends for zero,
+    so both are accepted. What is refused is the silent case this exists for:
+    the source says 53, the reader finds nothing, and «no hit» goes out.
+    """
+    if not isinstance(payload, dict):
+        raise UpstreamShapeError(f"{path} answered {type(payload).__name__}, not an object.")
+    raw_count = payload.get("count")
+    count = raw_count if isinstance(raw_count, int) and not isinstance(raw_count, bool) else None
+    rows = payload.get(rows_key)
+    if rows is None:
+        if rows_key not in payload and "count" not in payload:
+            raise UpstreamShapeError(
+                f"{path} answered without `{rows_key}` and without `count`; "
+                f"keys were {sorted(payload)[:8]}."
+            )
+        if count:
+            raise UpstreamShapeError(
+                f"{path} reports {count} results but carries no `{rows_key}` list."
+            )
+        return count, []
+    if not isinstance(rows, list):
+        raise UpstreamShapeError(
+            f"{path} answered `{rows_key}` as {type(rows).__name__}, not a list."
+        )
+    return count, rows
 
 
 def _retry_after_seconds(payload: Any, headers: httpx.Headers | None) -> float:
@@ -636,7 +728,7 @@ class DiscoverSwissClient:
         """Whether ``/search`` is believed to work right now."""
         if self._search_unavailable_until is None:
             return True
-        if time.monotonic() >= self._search_unavailable_until:
+        if _monotonic() >= self._search_unavailable_until:
             self._search_unavailable_until = None
             return True
         return False
@@ -700,18 +792,18 @@ class DiscoverSwissClient:
         client = self._client()
         headers = self.request_headers(lang)
 
-        deadline = time.monotonic() + TOTAL_BUDGET
+        deadline = _monotonic() + TOTAL_BUDGET
         retry_index = 0
         rate_limit_retries = 0
 
         while True:
-            remaining = deadline - time.monotonic()
+            remaining = deadline - _monotonic()
             if remaining <= 0:
                 raise UpstreamUnavailableError(
                     f"discover.swiss did not answer within {TOTAL_BUDGET:.0f} s."
                 )
 
-            await self._bucket.acquire()
+            await self._bucket.acquire(max_wait=remaining)
             try:
                 async with asyncio.timeout(remaining):
                     response, _final_url = await net.safe_request(
@@ -738,7 +830,7 @@ class DiscoverSwissClient:
                     ) from exc
                 delay = RETRY_DELAYS[retry_index]
                 retry_index += 1
-                if delay >= deadline - time.monotonic():
+                if delay >= deadline - _monotonic():
                     raise UpstreamUnavailableError(
                         f"discover.swiss is not reachable ({type(exc).__name__})."
                     ) from exc
@@ -761,15 +853,15 @@ class DiscoverSwissClient:
 
             if status == 429:
                 wait = _retry_after_seconds(payload, response.headers)
-                if rate_limit_retries >= 1 or wait > RATE_LIMIT_MAX_WAIT:
-                    raise UpstreamUnavailableError(
-                        f"discover.swiss rate limit reached; it asks for {wait:.0f} s."
+                # The named wait counts against the budget (see TOTAL_BUDGET);
+                # one that does not fit, or a second 429, ends the call.
+                if rate_limit_retries >= 1 or wait >= deadline - _monotonic():
+                    raise RateLimitedError(
+                        f"discover.swiss rate limit reached; it asks to wait {wait:.0f} s.",
+                        retry_after=wait,
                     )
                 rate_limit_retries += 1
                 logger.warning("rate_limited", path=path, seconds=wait)
-                # The named wait buys itself room in the budget; see
-                # RATE_LIMIT_MAX_WAIT.
-                deadline += wait
                 await _sleep(wait)
                 continue
 
@@ -782,7 +874,7 @@ class DiscoverSwissClient:
 
             if status in (401, 403):
                 if search_endpoint:
-                    self._search_unavailable_until = time.monotonic() + SEARCH_UNAVAILABLE_SECONDS
+                    self._search_unavailable_until = _monotonic() + SEARCH_UNAVAILABLE_SECONDS
                     logger.error("search_unavailable", status=status)
                     raise SearchUnavailableError(
                         f"discover.swiss refused /search with HTTP {status}."
@@ -796,7 +888,7 @@ class DiscoverSwissClient:
                     raise UpstreamUnavailableError(f"discover.swiss answered HTTP {status}.")
                 delay = RETRY_DELAYS[retry_index]
                 retry_index += 1
-                if delay >= deadline - time.monotonic():
+                if delay >= deadline - _monotonic():
                     raise UpstreamUnavailableError(f"discover.swiss answered HTTP {status}.")
                 logger.warning("upstream_retry", path=path, status=status, delay=delay)
                 await _sleep(delay)
@@ -845,9 +937,13 @@ class DiscoverSwissClient:
         payload = await self._call(
             "POST", "/search", json_body=request, lang=lang, search_endpoint=True
         )
-        payload = payload if isinstance(payload, dict) else {}
+        count, values = _confirm_envelope(payload, "/search", rows_key="values")
         facets = payload.get("facets")
-        facets = facets if isinstance(facets, dict) else {}
+        if facets is not None and not isinstance(facets, dict):
+            raise UpstreamShapeError(
+                f"/search answered `facets` as {type(facets).__name__}, not an object."
+            )
+        facets = facets or {}
         missing = [name for name in requested_facets if name not in facets]
         if missing:
             # An unknown facet name is dropped without an error. Logging it is
@@ -855,10 +951,9 @@ class DiscoverSwissClient:
             # envelope, so the model is told what it is not seeing.
             logger.warning("facets_missing", requested=requested_facets, missing=missing)
 
-        values = payload.get("values")
         result = SearchResult(
-            count=payload.get("count") if isinstance(payload.get("count"), int) else None,
-            values=[v for v in values if isinstance(v, dict)] if isinstance(values, list) else [],
+            count=count,
+            values=[v for v in values if isinstance(v, dict)],
             facets=facets,
             missing_facets=missing,
             provenance="live_api",
@@ -877,7 +972,7 @@ class DiscoverSwissClient:
         make a withdrawn museum indistinguishable from a typo in the id.
         """
         if not _IDENTIFIER_PATTERN.match(identifier or ""):
-            raise UpstreamRejectedError(f"{identifier!r} is not a discover.swiss identifier.")
+            raise InvalidIdentifierError(f"{identifier!r} is not a discover.swiss identifier.")
 
         key = _cache_key("vertex", lang, identifier)
         cached = self._cache.get(key)
@@ -887,15 +982,17 @@ class DiscoverSwissClient:
         payload = await self._call(
             "GET",
             f"/vertices/{quote(identifier, safe='')}",
-            params={"project": self._settings.project},
+            # includeAllPhotos: the documented default (false) skips
+            # low-confidence images; sent so it is not inherited (FID-001).
+            params={"project": self._settings.project, "includeAllPhotos": "false"},
             lang=lang,
             allow_404=True,
         )
         if payload is None:
             return None
         if not isinstance(payload, dict):
-            raise UpstreamRejectedError(
-                "discover.swiss returned a detail object that is not an object."
+            raise UpstreamShapeError(
+                f"/vertices answered {type(payload).__name__}, not a detail object."
             )
         self._cache.set(key, payload, VERTEX_TTL_SECONDS)
         return payload
@@ -944,10 +1041,9 @@ class DiscoverSwissClient:
             merged["includeCount"] = "false" if merged.get("continuationToken") else "true"
 
         payload = await self._call("GET", f"/{name}", params=merged, lang=lang)
-        payload = payload if isinstance(payload, dict) else {}
-        rows = payload.get("data")
+        _count, rows = _confirm_envelope(payload, f"/{name}", rows_key="data")
         return ListPage(
-            data=[r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else [],
+            data=[r for r in rows if isinstance(r, dict)],
             next_token=_next_token_from(payload),
             has_next_page=bool(payload.get("hasNextPage")),
             total=_total_from(payload),
@@ -1025,10 +1121,17 @@ class DiscoverSwissClient:
                 "searchText": name,
                 "resultsPerPage": 1,
                 "select": "identifier",
-                "facets": [{"name": "containedInPlace/id", "count": 30}],
+                "facets": [facet_request("containedInPlace/id", AREA_FACET_VALUES)],
             },
             lang=lang,
         )
+        if "containedInPlace/id" in result.missing_facets:
+            # The area index did not come back. «No area is named X» would be a
+            # statement about the data the server never saw (audit FID-L02).
+            raise UpstreamShapeError(
+                "/search did not return the containedInPlace/id facet; area names cannot "
+                "be resolved until it does."
+            )
         values = facet_values(result.facets, "containedInPlace/id")
         wanted = name.strip().casefold()
 
@@ -1083,6 +1186,13 @@ class DiscoverSwissClient:
             if suggestions
             else "The search text matched no area at all."
         )
+        if len(values) >= AREA_FACET_VALUES:
+            # The comparison ran over a truncated list; say so, or the hint
+            # claims more than was checked.
+            hint += (
+                f" Only the {AREA_FACET_VALUES} areas holding the most matches were compared; "
+                "a smaller area of that exact name may exist — try `near` with a coordinate."
+            )
         return AreaLookup(
             query=name,
             suggestions=suggestions,
@@ -1096,10 +1206,16 @@ class DiscoverSwissClient:
     async def status(self) -> dict[str, Any]:
         """What ``source_status`` reports: reachability and the client's own state."""
         reachable = False
+        rate_limited_for: float | None = None
         if self._quota_exhausted_since is None:
             try:
                 await self._call("GET", "/status")
                 reachable = True
+            except RateLimitedError as exc:
+                # Not an outage: the source (or our own brake) asked for a
+                # pause. Reported as such rather than as «unreachable».
+                rate_limited_for = exc.retry_after
+                logger.warning("status_rate_limited", seconds=round(exc.retry_after))
             except DiscoverSwissError as exc:
                 logger.warning("status_unreachable", reason=type(exc).__name__)
             except net.EgressError as exc:
@@ -1107,6 +1223,7 @@ class DiscoverSwissClient:
 
         return {
             "reachable": reachable,
+            "rate_limited_for": rate_limited_for,
             "search_available": self.search_available,
             "project": self._settings.project,
             "base_url": self._settings.base_url,
