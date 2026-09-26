@@ -59,7 +59,9 @@ Dazu drei Lücken, die im selben Zug geschlossen wurden: `iss` ist Pflicht (`SEC
 
 ## Live-Evidenz
 
-Die Sandbox erreicht `api.discover.swiss` nicht (DNS-Pinning umgeht den Proxy). Live-Evidenz sind die Läufe des Maintainers vom 2026-09-26, Windows, Python 3.14.7: `pytest -m live -rA` 24 bestanden, 1 übersprungen (`live-evidence-2026-09-26.md`), und `probes/probe_query_syntax.py` (`probes/probe_query_out/results.json`, aus der Konsolenausgabe übertragen).
+Die Sandbox erreicht `api.discover.swiss` nicht (DNS-Pinning umgeht den Proxy). Live-Evidenz sind die Läufe des Maintainers vom 2026-09-26, Windows, Python 3.14.7: `pytest -m live -rA` 24 bestanden, 1 übersprungen (`live-evidence-2026-09-26.md`), und `probes/probe_query_syntax.py` (`probes/probe_query_out/results.json`, gegen die Originaldatei geprüft).
+
+Nach den Folgekorrekturen, auf `421f5c6`: **26 von 26 bestanden**, darunter die zwei neuen Canaries. Die gemessene Suchsyntax gilt weiterhin (7 / 7 / 0 für `Landesmuseum` / `landesmuseum` / `Landesmus`, nur Name). Das Demo-Event ist in der Quelle vorhanden und wird vorenthalten und gezählt (1 von 1).
 
 ## Abweichungen vom Verfahren
 
