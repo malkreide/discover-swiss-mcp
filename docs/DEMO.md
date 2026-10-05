@@ -1,5 +1,13 @@
 # Demo — the three anchor queries, step by step
 
+> **Search is not allowed on Infocenter Open.** discover.swiss answered in
+> writing (recorded 2026-10-05) that the Open product may not use `/search`;
+> the endpoint answering an Open key is a fault. Every chain below relies on
+> search. With an Open key the server does not call it, and these demos answer
+> from typed lists (`search`, `find_accommodation`) or degraded (all other
+> search-based tools). They run as written only with a key whose product
+> includes search and `DISCOVER_SWISS_SEARCH_ENTITLED=true`. See README «Status».
+
 The three questions from the probe report (section 8), each as the tool chain
 an assistant is expected to run: which tool, in which order, with which
 parameters, and what to check in the answer. Anyone with a subscription key
@@ -31,10 +39,11 @@ nothing exists. `degraded` set means *no measurement*, not *no result*.
 
 ## Run locally with your own key
 
-*Lokal ausführen mit eigenem Key.* Until discover.swiss has confirmed the
-search entitlement in writing (README «Status»), there is no PyPI package and
-no public instance. The server runs on your machine, with your own key, and
-every call counts against your own quota.
+*Lokal ausführen mit eigenem Key.* There is no PyPI package and no public
+instance (README «Status»). The server runs on your machine, with your own key,
+and every call counts against your own quota. With an Infocenter Open key,
+search stays off — leave `DISCOVER_SWISS_SEARCH_ENTITLED` at `false`; setting it
+to `true` on an Open key uses search against discover.swiss's terms.
 
 **1. Key.** Self-service at [portal.discover.swiss](https://portal.discover.swiss/),
 product *Infocenter Open*: 60 calls per minute, 50,000 per month. The key goes
@@ -103,13 +112,14 @@ PY
 ```
 
 Expected: the eight tool names, then `source_status` with
-`"api_key_configured": true`, `"reachable": true` and an `entitlement_note`
-that ends in «written confirmation from discover.swiss: pending». Without a key
+`"api_key_configured": true`, `"reachable": true`, `"search_available": false`
+and an `entitlement_note` that starts with «Search disabled» (with an Open key). Without a key
 it still answers (`api_key_configured: false`, a `hint`, no upstream call).
 
 **4. The anchor query in four languages.** The rainy-day question (section 1)
-is the query gate G1 will run over the public instance once the release is
-cleared. Locally, anyone can run it now. The tool chain is the same in every
+is the query gate G1 would run over a public instance. It needs search: with an
+Open key, step 1 answers from the museum list (radius filter, sorted by
+distance) and step 3 (full text «vegetarisch») cannot be answered. The tool chain is the same in every
 language; only `lang` changes, and the attribution per hit must be visible in
 each answer:
 

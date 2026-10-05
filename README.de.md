@@ -16,41 +16,42 @@
 
 ## Status
 
-**Pre-Release — Bestätigung der Search-Berechtigung durch discover.swiss: ausstehend (pending).**
+**Eingefroren — Search ist im Infocenter Open nicht erlaubt. Release zurückgestellt.**
 
 | Punkt | Stand |
 |---|---|
-| Search-Berechtigung (schriftliche Bestätigung durch discover.swiss) | **pending** — Release-Gate |
-| Tools | alle acht registriert (P3), Live-Canaries vorhanden (P4) |
-| Phase | P5 — Behebung der Audit-Findings vom 26.09.2026 (siehe *Phasen und Gates*) |
+| Search im Infocenter Open | **nicht erlaubt** — schriftliche Antwort von discover.swiss, festgehalten am 05.10.2026 |
+| Search in diesem Server | **standardmässig aus**; nur mit einem Key, dessen Produkt Search enthält (`DISCOVER_SWISS_SEARCH_ENTITLED=true`) |
+| Öffentliche Referenzinstanz mit Search | **angefragt** — Anfrage an discover.swiss offen |
+| Tools | alle acht registriert; ohne Search antworten `search` und `find_accommodation` aus den Listen, die übrigen Search-basierten Tools antworten degradiert |
 | Release | keines; Version 0.1.0 ist nicht publiziert |
-| Release P5 (PyPI, MCP-Registry, öffentliche Referenzinstanz) | **zurückgestellt seit 26.09.2026** — wartet auf die schriftliche Bestätigung |
 
-Die Live-Probe vom 17.09.2026 hat gezeigt, dass `/search` für den Open-Zugang
-funktioniert — Volltext, Distanz-Ranking, Datumsfilter, 31 Facetten —, obwohl
-die offizielle Doku das Gegenteil behauptet («You can't use the search
-functionality»). Der ganze Server steht auf diesem Endpoint, und genau das
-macht den Widerspruch zum Hauptrisiko: Eine Berechtigung, die der Doku
-widerspricht, kann ohne Ankündigung entzogen werden.
+Die Live-Probe vom 17.09.2026 hat gezeigt, dass `/search` dem Open-Zugang
+antwortet — Volltext, Distanz-Ranking, Datumsfilter, 31 Facetten —, obwohl die
+offizielle Doku das Gegenteil sagt («You can't use the search functionality»).
+discover.swiss hat inzwischen schriftlich geantwortet: **Die Doku stimmt.**
+Search gehört nicht zum Infocenter Open; dass der Endpoint einem Open-Key
+antwortet, ist ein Fehler, den discover.swiss korrigiert (eigentlich müsste
+`403` kommen). Für Search braucht es einen bezahlten Key.
 
-- Die schriftliche Bestätigung durch discover.swiss ist ein **Release-Gate**.
-  Kein Release, bevor dieses Gespräch stattgefunden hat. Danach
-  `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED=JJJJ-MM-TT` setzen; dieser Abschnitt
-  wechselt dann von *pending* auf *confirmed* mit diesem Datum.
-- `source_status` meldet denselben Stand zur Laufzeit, damit ein Host ihn
-  sieht, ohne diese Datei zu lesen.
-- Wird die Berechtigung entzogen, antwortet der Server über einen schmaleren
-  Listen-Fallback weiter (siehe *Architektur-Entscheid*).
+Was daraus folgt:
 
-**Release zurückgestellt (26.09.2026).** Der Release-Schritt wurde am
-26.09.2026 begonnen und an seiner Vorbedingung angehalten: Eine schriftliche
-Bestätigung von discover.swiss liegt nicht vor. Bis sie eintrifft, bleiben
-zurückgestellt: der Release 0.1.0 auf PyPI und in der MCP-Registry, die
-öffentliche Referenzinstanz (sie liefe mit dem Key des Betreibers, den die
-Bestätigung abdecken muss), der Statuswechsel im Portfolio und Gate G1 über
-einen Remote-Endpoint. Bis dahin läuft der Server **lokal mit eigenem Key** —
-siehe [docs/DEMO.md](docs/DEMO.md#run-locally-with-your-own-key) (Abschnitt
-«Lokal ausführen mit eigenem Key»).
+- **Der Server ruft `/search` mit einem Open-Key nie auf** — auch nicht einmal
+  zur Probe. Search ist aus, ausser der Betreiber setzt
+  `DISCOVER_SWISS_SEARCH_ENTITLED=true`; das ist nur bei einem Key richtig,
+  dessen Produkt Search enthält. `source_status` meldet, in welchem Modus eine
+  Instanz läuft.
+- **Ohne Search ist der Server ein schmales Werkzeug.** `search` und
+  `find_accommodation` antworten aus den Listen-Endpoints (Gebiet und Distanz,
+  kein Volltext); `find_tours`, `find_events`, `webcams_near` und
+  `explore_area` antworten mit `degraded: search_unavailable`. Das ist nicht der
+  Server, für den dieses Projekt angetreten ist.
+- **Das Projekt ist eingefroren**, bis discover.swiss eine Anfrage für eine
+  nicht-kommerzielle, öffentliche Referenzinstanz mit Search beantwortet hat.
+  Ist das nicht möglich, wird der Server nicht veröffentlicht.
+- Wer die Daten über MCP nutzt, ist an die Nutzungsbedingungen von
+  discover.swiss und an die Datenlizenzen gebunden, nicht nur die Person mit
+  dem Key.
 
 ---
 
@@ -68,7 +69,7 @@ einem Gate: was entstanden ist, was offen bleibt, und ein Entscheid für
 | P3 | `find_events`, `webcams_near`, `explore_area`, `source_status`, Listen-Fallback | Stop-Gate-Lauf live |
 | P4 | Live-Canaries, Audit, Dokumentation | Canaries grün, Audit publiziert |
 | P5 | Behebung der Findings «vor Release» | gezieltes Re-Audit, Canaries grün |
-| Release | 0.1.0 auf PyPI und in der MCP-Registry | schriftliche Search-Bestätigung durch discover.swiss, kein offener Release-Blocker |
+| Release | 0.1.0 auf PyPI und in der MCP-Registry | Search für eine öffentliche Referenzinstanz mit discover.swiss vereinbart, kein offener Release-Blocker |
 
 ---
 
@@ -247,8 +248,10 @@ Regeln und Whitelist stehen in [docs/LICENSES.md](docs/LICENSES.md).
   Monat genügt ein Cache: 15 Minuten für Search, 24 Stunden für Detail. Eine
   erschöpfte Monatsquota (`403` mit «quota») ist ein Zustand —
   `degraded: quota_exhausted` — und wird nie wiederholt.
-- **Das Risiko ist die Berechtigung.** Search widerspricht der Doku und kann
-  entzogen werden. Bei `401`/`403` auf `/search` weichen `search` und
+- **Das Risiko war die Berechtigung, und es ist eingetreten.** Search gehört
+  nicht zum Infocenter Open (discover.swiss, festgehalten am 05.10.2026); der
+  Server ruft es nur mit `DISCOVER_SWISS_SEARCH_ENTITLED=true` auf. Ohne diese
+  Einstellung und bei `401`/`403` auf `/search` weichen `search` und
   `find_accommodation` auf die typisierten Listen-Endpoints mit
   clientseitigem Orts- und Distanzfilter aus, antworten mit
   `provenance: list_fallback`, `degraded: search_unavailable` und sagen im
@@ -264,7 +267,7 @@ Regeln und Whitelist stehen in [docs/LICENSES.md](docs/LICENSES.md).
 Die zwölf Fundstücke der Live-Probe, die das Verhalten dieses Servers prägen
 (Probe-Report, Abschnitt 10; Details im [CHANGELOG.md](CHANGELOG.md)):
 
-1. **Die Doku verneint Search, die API bejaht sie.** Release-Gate: schriftliche Bestätigung.
+1. **Die Doku verneint Search, die API antwortete trotzdem.** Die Doku stimmt: discover.swiss nennt die Antwort einen Fehler. Search ist aus, ausser der Key enthält es.
 2. **Das Doku-Beispiel-Project `demo-web` liefert 400.** Projects kommen aus `/projects`.
 3. **Paging heisst `nextPageToken`, nicht `continuation`.** Feldnamen aus Live-Antworten, nicht aus der Doku.
 4. **`top=1000` heisst nicht 1000.** Cosmos DB schneidet bei ~4 MB; dem Token wird gefolgt.
@@ -289,7 +292,7 @@ Die zwölf Fundstücke der Live-Probe, die das Verhalten dieses Servers prägen
 | `DISCOVER_SWISS_MCP_HOST` | nein | `127.0.0.1` | Bind-Adresse für den HTTP-Transport |
 | `DISCOVER_SWISS_MCP_PORT` | nein | `8000` | TCP-Port für den HTTP-Transport |
 | `DISCOVER_SWISS_MCP_LOG_LEVEL` | nein | `INFO` | structlog-Level; JSON geht nach stderr |
-| `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED` | nein | `pending` | Datum (`JJJJ-MM-TT`) der schriftlichen Search-Bestätigung durch discover.swiss; von `source_status` gemeldet |
+| `DISCOVER_SWISS_SEARCH_ENTITLED` | nein | `false` | `true` nur bei einem Key, dessen discover.swiss-Produkt `/search` enthält (nicht Infocenter Open); sonst ruft der Server es nie auf. Von `source_status` gemeldet |
 | `DISCOVER_SWISS_MCP_ALLOWED_HOSTS` | bei Bind ausserhalb Loopback | Loopback-`host:port` | Exakte Host-Werte, unter denen der HTTP-Transport antwortet; keine Wildcards |
 | `DISCOVER_SWISS_MCP_ALLOWED_ORIGINS` | nein | Loopback-Origins | Browser-Origins, die der HTTP-Transport annimmt |
 | `DISCOVER_SWISS_MCP_AUTH_*` (fünf) | bei Bind ausserhalb Loopback | — | Eingehendes OAuth: Issuer, Resource-URL, Introspection-URL, Client-ID und -Secret — siehe [SECURITY.md](SECURITY.md) |

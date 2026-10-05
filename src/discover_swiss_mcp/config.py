@@ -21,7 +21,6 @@ operator's authorization server — is read once at start-up and frozen.
 from __future__ import annotations
 
 import os
-from datetime import date
 from typing import Literal
 from urllib.parse import urlparse
 
@@ -58,11 +57,13 @@ class Settings(BaseModel):
     host: str = "127.0.0.1"
     port: int = Field(default=8000, ge=1, le=65535)
     log_level: str = "INFO"
-    # Date on which discover.swiss confirmed in writing that the Open product
-    # may use `/search`, or None while that is still pending. The probe
-    # measured the access; the documentation denies it. `source_status` reports
-    # which of the two a deployment is standing on.
-    entitlement_confirmed: date | None = None
+    # Whether the key belongs to a product that includes `/search`. False by
+    # default: discover.swiss stated in writing (recorded 2026-10-05) that the
+    # Infocenter Open product may not use search — the endpoint answering 200
+    # to an Open key is a fault on their side, not a permission. Only an
+    # operator with a paid search-enabled key sets this; the server then calls
+    # `/search`, and otherwise never does.
+    search_entitled: bool = False
     # Ingress, HTTP transport only. Exact `host:port` values the server
     # answers to, and the origins it accepts. Empty means: derived from a
     # loopback bind (`127.0.0.1:<port>`, `localhost:<port>`, `[::1]:<port>`);
@@ -95,9 +96,7 @@ class Settings(BaseModel):
             "host": self.host,
             "port": self.port,
             "log_level": self.log_level,
-            "entitlement_confirmed": (
-                self.entitlement_confirmed.isoformat() if self.entitlement_confirmed else "pending"
-            ),
+            "search": "entitled" if self.search_entitled else "disabled",
             "api_key": "set" if self.api_key.get_secret_value() else "missing",
             "auth": "oauth" if self.auth_enabled else "none",
         }
@@ -135,18 +134,24 @@ def load_settings(require_key: bool = True) -> Settings:
             f"DISCOVER_SWISS_MCP_TRANSPORT is {transport!r}; expected 'stdio' or 'streamable-http'."
         )
 
-    confirmed_raw = _env("DISCOVER_SWISS_ENTITLEMENT_CONFIRMED", "") or ""
-    confirmed: date | None = None
-    if confirmed_raw and confirmed_raw.lower() != "pending":
-        # Loud rather than lenient: a typo here would silently report «pending»
-        # on a deployment that believes it has the confirmation on record.
-        try:
-            confirmed = date.fromisoformat(confirmed_raw)
-        except ValueError as exc:
-            raise ConfigError(
-                "DISCOVER_SWISS_ENTITLEMENT_CONFIRMED must be a date (YYYY-MM-DD) or "
-                f"'pending', not {confirmed_raw!r}."
-            ) from exc
+    entitled_raw = (_env("DISCOVER_SWISS_SEARCH_ENTITLED", "false") or "false").lower()
+    if entitled_raw not in ("true", "false"):
+        # Loud rather than lenient: a typo must not switch on calls the
+        # subscription does not allow, nor silently drop ones it does.
+        raise ConfigError(
+            f"DISCOVER_SWISS_SEARCH_ENTITLED is {entitled_raw!r}; expected 'true' or 'false'."
+        )
+    legacy = (_env("DISCOVER_SWISS_ENTITLEMENT_CONFIRMED", "") or "").lower()
+    if legacy not in ("", "pending"):
+        # The predecessor variable meant «Open may search, confirmed on this
+        # date». discover.swiss has since said Open may not; refusing a date
+        # keeps an old deployment from believing it is covered. `pending`, the
+        # old `.env.example` value, claimed nothing and is ignored.
+        raise ConfigError(
+            "DISCOVER_SWISS_ENTITLEMENT_CONFIRMED is no longer supported: discover.swiss does "
+            "not allow /search on Infocenter Open. Remove it; set "
+            "DISCOVER_SWISS_SEARCH_ENTITLED=true only with a key whose product includes search."
+        )
 
     allowed_hosts = _split_list("DISCOVER_SWISS_MCP_ALLOWED_HOSTS")
     allowed_origins = _split_list("DISCOVER_SWISS_MCP_ALLOWED_ORIGINS")
@@ -178,7 +183,7 @@ def load_settings(require_key: bool = True) -> Settings:
         host=_env("DISCOVER_SWISS_MCP_HOST", "127.0.0.1") or "127.0.0.1",
         port=port,
         log_level=(_env("DISCOVER_SWISS_MCP_LOG_LEVEL", "INFO") or "INFO").upper(),
-        entitlement_confirmed=confirmed,
+        search_entitled=entitled_raw == "true",
         allowed_hosts=allowed_hosts,
         allowed_origins=allowed_origins,
         **auth,

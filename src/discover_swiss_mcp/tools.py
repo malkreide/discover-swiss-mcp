@@ -241,8 +241,9 @@ DEGRADED_HINTS: dict[str, str] = {
         "exist; tell the user the source is temporarily unreachable and offer to retry."
     ),
     "search_unavailable": (
-        "discover.swiss refused its search endpoint for this key. No result was computed, "
-        "so absence cannot be inferred; tell the user the search is unavailable."
+        "Search is not available to this server: its key does not include discover.swiss "
+        "search, or the source refused it. No result was computed, so absence cannot be "
+        "inferred; tell the user this question cannot be answered from discover.swiss here."
     ),
     "upstream_shape_changed": (
         "discover.swiss answered in a structure this server does not recognise, so nothing "
@@ -774,7 +775,7 @@ def _paging(
 # ---------------------------------------------------------------------------
 
 FALLBACK_HINT = (
-    "Full-text search is currently unavailable upstream; results come from typed lists "
+    "Full-text search is not available to this server; results come from typed lists "
     "filtered by area and distance."
 )
 
@@ -2359,10 +2360,16 @@ COVERAGE_NOTE = (
     "the Romandie."
 )
 
-ENTITLEMENT_NOTE = (
-    "Search access on the Infocenter Open product is used as observed live; written "
-    "confirmation from discover.swiss: {state}"
-)
+ENTITLEMENT_NOTE = {
+    False: (
+        "Search disabled: discover.swiss does not allow /search on Infocenter Open (written "
+        "answer, recorded 2026-10-05). This server reads typed lists only."
+    ),
+    True: (
+        "Search enabled: the operator configured a key whose discover.swiss product "
+        "includes /search (DISCOVER_SWISS_SEARCH_ENTITLED=true)."
+    ),
+}
 
 STATUS_HINTS: dict[str, str] = {
     "no_key": (
@@ -2378,6 +2385,11 @@ STATUS_HINTS: dict[str, str] = {
         "discover.swiss refuses its search endpoint. `search` and `find_accommodation` answer "
         "from typed lists (provenance list_fallback, no full text); find_tours, find_events, "
         "webcams_near and explore_area answer degraded. Search is tried again after 10 minutes."
+    ),
+    "search_not_entitled": (
+        "This server's key does not include discover.swiss search, so it never calls it. "
+        "`search` and `find_accommodation` answer from typed lists (provenance list_fallback, "
+        "no full text); find_tours, find_events, webcams_near and explore_area answer degraded."
     ),
 }
 
@@ -2398,9 +2410,7 @@ class SourceStatusResponse(Envelope):
 
 
 def _entitlement_note(client: DiscoverSwissClient) -> str:
-    confirmed = client.settings.entitlement_confirmed
-    state = f"confirmed {confirmed.isoformat()}" if confirmed else "pending"
-    return ENTITLEMENT_NOTE.format(state=state)
+    return ENTITLEMENT_NOTE[client.settings.search_entitled]
 
 
 async def source_status_impl(client: DiscoverSwissClient) -> SourceStatusResponse:
@@ -2439,6 +2449,9 @@ async def source_status_impl(client: DiscoverSwissClient) -> SourceStatusRespons
         degraded = "upstream_unreachable"
     elif not search_available:
         degraded = "search_unavailable"
+    hint_key = degraded
+    if degraded == "search_unavailable" and not settings.search_entitled:
+        hint_key = "search_not_entitled"
 
     return SourceStatusResponse(
         provenance="live_api",
@@ -2447,7 +2460,7 @@ async def source_status_impl(client: DiscoverSwissClient) -> SourceStatusRespons
         project=state["project"],
         degraded=degraded,
         hint=(
-            STATUS_HINTS.get(degraded, "").format(
+            STATUS_HINTS.get(hint_key or "", "").format(
                 seconds=f"{state.get('rate_limited_for') or 0:.0f}"
             )
             or None

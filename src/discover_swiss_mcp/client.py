@@ -3,7 +3,7 @@
 Everything the eight tools of P2/P3 share lives here: the outbound call with
 its rate-limit budget and retry ladder, the in-memory cache, the search and
 list endpoints, the detail fetch, the area lookup and the narrow fallback that
-keeps the server usable if search entitlement is withdrawn.
+keeps the server usable on a key without search entitlement.
 
 **The probe is the source of truth, not the documentation.** The live probe of
 2026-09-17 (``probes/PROBE_REPORT_discover-swiss-mcp.md``) contradicts the
@@ -11,7 +11,10 @@ published docs in three places that matter here, and this file follows the
 probe every time:
 
 * the docs say the Open product cannot use ``/search``; live it answers 200 as
-  long as ``project`` travels in the body as an array,
+  long as ``project`` travels in the body as an array. Here the docs are
+  right: discover.swiss confirmed in writing that this is a fault, not a
+  permission, so the client calls ``/search`` only for a key configured as
+  search-entitled (``DISCOVER_SWISS_SEARCH_ENTITLED``),
 * the paging token is ``nextPageToken`` (a string) next to ``hasNextPage`` (a
   bool), not the documented ``continuation``,
 * the documented example project ``demo-web`` answers 400; ``dsod-content`` is
@@ -734,7 +737,13 @@ class DiscoverSwissClient:
 
     @property
     def search_available(self) -> bool:
-        """Whether ``/search`` is believed to work right now."""
+        """Whether ``/search`` may be called and is believed to work right now.
+
+        A key without search entitlement never may: discover.swiss does not
+        allow search on Infocenter Open, even while the endpoint still answers.
+        """
+        if not self._settings.search_entitled:
+            return False
         if self._search_unavailable_until is None:
             return True
         if _monotonic() >= self._search_unavailable_until:
@@ -946,6 +955,13 @@ class DiscoverSwissClient:
         if cached is not None:
             return cached.model_copy(update={"provenance": "cached"})
 
+        if not self._settings.search_entitled:
+            # Checked before any request, so an Open key never reaches the
+            # endpoint — not even once to find out.
+            raise SearchUnavailableError(
+                "This key's product does not include /search (DISCOVER_SWISS_SEARCH_ENTITLED "
+                "is not true); the list fallback is the way in."
+            )
         if not self.search_available:
             raise SearchUnavailableError(
                 "discover.swiss refused /search recently; the list fallback is the way in."

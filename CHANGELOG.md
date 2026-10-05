@@ -7,10 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Not released. Release gate: written confirmation of the search entitlement by
-discover.swiss (README «Status»).
+Not released. Frozen: search is not allowed on Infocenter Open; a public
+reference instance with search is requested from discover.swiss (README «Status»).
+
+### Changed
+
+- **Search is off unless the key includes it.** discover.swiss answered in
+  writing (recorded 2026-10-05) that Infocenter Open may not use `/search`; the
+  endpoint answering an Open key is a fault on their side. The new setting
+  `DISCOVER_SWISS_SEARCH_ENTITLED` (default `false`) gates every call: without
+  it the client raises `SearchUnavailableError` before any request, `search`
+  and `find_accommodation` answer from the typed lists, and `find_tours`,
+  `find_events`, `webcams_near` and `explore_area` answer
+  `degraded: search_unavailable`. `source_status` names the mode
+  (`entitlement_note`, hint `search_not_entitled`). Tests in
+  `tests/test_search_entitlement.py` hold that no request reaches `/search`.
+- **`DISCOVER_SWISS_ENTITLEMENT_CONFIRMED` is retired.** A date there meant
+  «Open may search, confirmed»; it is now refused at start-up. `pending`, the
+  old `.env.example` value, is ignored.
+- README «Status» (EN/DE), `docs/DEMO.md` and `.env.example` say that search is
+  not allowed on Infocenter Open and that the demos need a search-enabled key.
 
 ### Release status
+
+- **2026-10-05 — frozen.** discover.swiss does not allow search on Infocenter
+  Open. Without search the server is too narrow to release; a non-commercial
+  public reference instance with search is requested. No release until that
+  is answered.
 
 - **2026-09-26 — release on hold.** The release step (PyPI and MCP registry
   0.1.0, public reference instance on Railway, portfolio status, gate G1 over
