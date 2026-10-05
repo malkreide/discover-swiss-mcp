@@ -18,39 +18,40 @@
 
 ## Status
 
-**pre-release — search entitlement confirmation from discover.swiss: pending.**
+**Frozen — search is not allowed on Infocenter Open. Release on hold.**
 
 | Item | State |
 |---|---|
-| Search entitlement (written confirmation by discover.swiss) | **pending** — release gate |
-| Tools | all eight registered (P3), live canaries in place (P4) |
-| Phase | P5 — remediation of the audit of 2026-09-26 (see *Phases and gates*) |
+| Search on Infocenter Open | **not allowed** — written answer from discover.swiss, recorded 2026-10-05 |
+| Search in this server | **off by default**; only with a key whose product includes search (`DISCOVER_SWISS_SEARCH_ENTITLED=true`) |
+| Public reference instance with search | **asked** — request to discover.swiss open |
+| Tools | all eight registered; without search, `search` and `find_accommodation` answer from typed lists, the other search-based tools answer degraded |
 | Release | none; version 0.1.0 is not published |
-| Release P5 (PyPI, MCP registry, public reference instance) | **on hold since 2026-09-26** — waits for the written confirmation |
 
-The live probe of 2026-09-17 found that `/search` works for the Open
+The live probe of 2026-09-17 found that `/search` answered the Open
 subscription — full text, distance ranking, date filters, 31 facets — although
 the official documentation states the opposite ("You can't use the search
-functionality"). The whole server is built on that endpoint, which makes the
-contradiction its main risk: an entitlement that contradicts the docs can be
-withdrawn without notice.
+functionality"). discover.swiss has since answered in writing: **the
+documentation is right.** Search is not part of Infocenter Open; that the
+endpoint answers an Open key is a fault they will correct (it should answer
+`403`). Using search takes a paid key.
 
-- Written confirmation from discover.swiss is a **release gate**. No release
-  before that conversation has happened. Once it has, set
-  `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED=YYYY-MM-DD` and this section changes
-  from *pending* to *confirmed* with that date.
-- `source_status` reports the same state at runtime, so a host can see it
-  without reading this file.
-- If the entitlement is withdrawn, the server keeps answering through a
-  narrower list fallback (see *Architecture decision*).
+What follows from that:
 
-**Release on hold (2026-09-26).** The release step was started on 2026-09-26
-and stopped at its precondition: no written confirmation from discover.swiss is
-on record. Held until it arrives: the PyPI and MCP-registry release of 0.1.0,
-the public reference instance (it would run on the operator's key, which the
-confirmation has to cover), the portfolio status change and gate G1 over a
-remote endpoint. Until then the server runs **locally with your own key** —
-see [docs/DEMO.md](docs/DEMO.md#run-locally-with-your-own-key).
+- **The server never calls `/search` with an Open key** — not even once to find
+  out. Search is off unless the operator sets
+  `DISCOVER_SWISS_SEARCH_ENTITLED=true`, which is only correct for a key whose
+  product includes search. `source_status` reports which mode a deployment is in.
+- **Without search the server is a narrow tool.** `search` and
+  `find_accommodation` answer from the typed list endpoints (area and distance,
+  no full text); `find_tours`, `find_events`, `webcams_near` and `explore_area`
+  answer `degraded: search_unavailable`. That is not the server this project set
+  out to build.
+- **The project is frozen** until discover.swiss has answered a request for a
+  non-commercial public reference instance with search. If that is not
+  possible, the server is not released.
+- Using the data via MCP binds the people who use it to discover.swiss's terms
+  of use and the data licences, not only the key holder.
 
 ---
 
@@ -67,7 +68,7 @@ built, what is open, and a decision to continue or to discard.
 | P3 | `find_events`, `webcams_near`, `explore_area`, `source_status`, list fallback | stop-gate run live |
 | P4 | Live canaries, audit, documentation | canaries green, audit published |
 | P5 | Remediation of the audit findings marked *fix before release* | targeted re-audit, canaries green |
-| Release | 0.1.0 on PyPI and in the MCP registry | written search confirmation by discover.swiss, no open release blocker |
+| Release | 0.1.0 on PyPI and in the MCP registry | search for a public reference instance agreed with discover.swiss, no open release blocker |
 
 ---
 
@@ -244,9 +245,10 @@ The rules and the whitelist are in [docs/LICENSES.md](docs/LICENSES.md).
   cache is enough: 15 minutes for search, 24 hours for detail. A monthly quota
   exhausted (`403` with «quota») is a state — `degraded: quota_exhausted` —
   and is never retried.
-- **The risk is the entitlement.** Search contradicts the documentation and
-  can be withdrawn. On `401`/`403` from `/search`, `search` and
-  `find_accommodation` fall back to the typed list endpoints with client-side
+- **The risk was the entitlement, and it materialised.** Search is not part of
+  Infocenter Open (discover.swiss, recorded 2026-10-05); the server calls it only
+  with `DISCOVER_SWISS_SEARCH_ENTITLED=true`. Without it, and on `401`/`403`
+  from `/search`, `search` and `find_accommodation` fall back to the typed list endpoints with client-side
   locality and distance filtering, answer `provenance: list_fallback`,
   `degraded: search_unavailable`, and say in `hint` what they ignored. The
   fallback is deliberately narrow: no full text, no star/price/amenity
@@ -260,7 +262,7 @@ The rules and the whitelist are in [docs/LICENSES.md](docs/LICENSES.md).
 The twelve findings of the live probe that shape how this server behaves
 (probe report, section 10; details in [CHANGELOG.md](CHANGELOG.md)):
 
-1. **The documentation denies search; the API grants it.** Release gate: written confirmation.
+1. **The documentation denies search; the API answered anyway.** The documentation is right: discover.swiss calls the answer a fault. Search is off unless the key includes it.
 2. **The documented example project `demo-web` answers 400.** Projects come from `/projects`.
 3. **Paging is `nextPageToken`, not `continuation`.** Field names from live answers, not from the docs.
 4. **`top=1000` does not mean 1000.** Cosmos DB cuts at ~4 MB; the token is followed.
@@ -285,7 +287,7 @@ The twelve findings of the live probe that shape how this server behaves
 | `DISCOVER_SWISS_MCP_HOST` | no | `127.0.0.1` | Bind address for HTTP transport |
 | `DISCOVER_SWISS_MCP_PORT` | no | `8000` | TCP port for HTTP transport |
 | `DISCOVER_SWISS_MCP_LOG_LEVEL` | no | `INFO` | structlog level; JSON goes to stderr |
-| `DISCOVER_SWISS_ENTITLEMENT_CONFIRMED` | no | `pending` | Date (`YYYY-MM-DD`) of discover.swiss's written search confirmation; reported by `source_status` |
+| `DISCOVER_SWISS_SEARCH_ENTITLED` | no | `false` | `true` only for a key whose discover.swiss product includes `/search` (not Infocenter Open); otherwise the server never calls it. Reported by `source_status` |
 | `DISCOVER_SWISS_MCP_ALLOWED_HOSTS` | for a non-loopback bind | loopback `host:port` | Exact Host values the HTTP transport answers to; no wildcards |
 | `DISCOVER_SWISS_MCP_ALLOWED_ORIGINS` | no | loopback origins | Browser origins the HTTP transport accepts |
 | `DISCOVER_SWISS_MCP_AUTH_*` (five) | for a non-loopback bind | — | Inbound OAuth: issuer, resource URL, introspection URL, client id and secret — see [SECURITY.md](SECURITY.md) |

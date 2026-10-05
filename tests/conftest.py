@@ -60,6 +60,10 @@ def _clean_env(monkeypatch) -> None:
     for name in os.environ:
         if name.startswith("DISCOVER_SWISS_") and name != "DISCOVER_SWISS_KEY":
             monkeypatch.delenv(name, raising=False)
+    # The suite exercises `/search` against recorded answers, so it runs as a
+    # search-entitled key. The default (no search) is tested explicitly in
+    # test_search_entitlement.py by deleting this again.
+    monkeypatch.setenv("DISCOVER_SWISS_SEARCH_ENTITLED", "true")
 
 
 @pytest.fixture(autouse=True)

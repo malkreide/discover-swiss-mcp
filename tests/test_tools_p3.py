@@ -29,7 +29,7 @@ from conftest import json_response, probe_fixture
 from pydantic import ValidationError
 
 from discover_swiss_mcp.client import VERIFIED_FACETS, DiscoverSwissClient, odata_facet_names
-from discover_swiss_mcp.config import ConfigError, load_settings
+from discover_swiss_mcp.config import load_settings
 from discover_swiss_mcp.tools import (
     EVENTS_EMPTY_HINT,
     FALLBACK_HINT,
@@ -506,31 +506,11 @@ async def test_status_reports_counters_and_index_total(api_mock, client) -> None
     assert status.last_success is not None
     assert status.cache_entries >= 1
     assert "hotels" in status.coverage.lower() or "Hotels" in status.coverage
-    assert status.entitlement_note.endswith("written confirmation from discover.swiss: pending")
+    assert status.entitlement_note.startswith("Search enabled")
 
     # index_total is cached for an hour: a second status call does not search again.
     await source_status_impl(client)
     assert route.call_count == 1
-
-
-async def test_status_entitlement_confirmed_from_the_environment(monkeypatch, api_mock) -> None:
-    monkeypatch.setenv("DISCOVER_SWISS_ENTITLEMENT_CONFIRMED", "2026-10-01")
-    api_mock.get("/status").mock(return_value=httpx.Response(204))
-    api_mock.post("/search").mock(
-        return_value=json_response({"count": 20817, "values": [], "facets": {"leafType": {}}})
-    )
-    instance = DiscoverSwissClient(load_settings())
-    try:
-        status = await source_status_impl(instance)
-    finally:
-        await instance.aclose()
-    assert status.entitlement_note.endswith("confirmed 2026-10-01")
-
-
-def test_status_entitlement_typo_is_a_config_error(monkeypatch) -> None:
-    monkeypatch.setenv("DISCOVER_SWISS_ENTITLEMENT_CONFIRMED", "yes")
-    with pytest.raises(ConfigError):
-        load_settings()
 
 
 async def test_status_without_key_makes_no_call(monkeypatch, api_mock) -> None:
